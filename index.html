@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <!-- V10.1: 외부 이미지(WBD 프로필) hotlinking 방지 우회 - Referer 헤더 차단 -->
 <meta name="referrer" content="no-referrer">
-<title>WBD Baseball Analyzer V10.3</title>
+<title>WBD Baseball Analyzer V11.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -528,7 +528,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 <!-- ════ UPLOAD PAGE ════ -->
 <div id="upload-page">
   <div class="logo-big">WBD</div>
-  <div class="logo-sub">BASEBALL ANALYZER · V10.3</div>
+  <div class="logo-sub">BASEBALL ANALYZER · V11.0</div>
   <div id="server-library-box" style="width:100%;max-width:640px;margin-bottom:16px;background:var(--card);border:1px solid rgba(245,166,35,0.35);border-radius:12px;padding:20px 22px;display:none;box-shadow:0 0 32px rgba(245,166,35,0.05);text-align:left">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
       <div>
@@ -568,7 +568,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   <!-- 모바일 전용 상단 바 (햄버거) -->
   <div id="mobile-topbar" style="display:none">
     <button id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="메뉴">☰</button>
-    <div class="mobile-logo">WBD <span style="font-size:10px;color:var(--muted);margin-left:2px">V10.3</span></div>
+    <div class="mobile-logo">WBD <span style="font-size:10px;color:var(--muted);margin-left:2px">V11.0</span></div>
     <button class="mobile-icon-btn" onclick="openGlobalSearch()" title="검색">🔍</button>
     <button class="mobile-icon-btn" onclick="document.getElementById('add-file-input').click()" title="경기 추가" style="color:var(--amber)">+</button>
   </div>
@@ -586,7 +586,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   <div id="mobile-menu-overlay" style="display:none" onclick="closeMobileMenu(event)">
     <div id="mobile-menu-panel" onclick="event.stopPropagation()">
       <div class="mobile-menu-header">
-        <div class="mobile-logo" style="font-size:16px;cursor:pointer" onclick="closeMobileMenu();openChangelogModal()" title="업데이트 내역 보기">WBD <span style="background:#ffd700;color:#000;font-size:11px;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:2px">V10.3</span></div>
+        <div class="mobile-logo" style="font-size:16px;cursor:pointer" onclick="closeMobileMenu();openChangelogModal()" title="업데이트 내역 보기">WBD <span style="background:#ffd700;color:#000;font-size:11px;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:2px">V11.0</span></div>
         <button class="mobile-icon-btn" onclick="closeMobileMenu()" style="font-size:20px">✕</button>
       </div>
       <div class="mobile-menu-section">
@@ -625,7 +625,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         <button class="mobile-menu-btn" onclick="closeMobileMenu();openPresetModal()">💾 프리셋</button>
         <button class="mobile-menu-btn" onclick="closeMobileMenu();openThemeModal()">🎨 테마</button>
         <button class="mobile-menu-btn" onclick="closeMobileMenu();openShortcutsModal()">⌨️ 단축키</button>
-        <button class="mobile-menu-btn" onclick="closeMobileMenu();openChangelogModal()" style="background:linear-gradient(90deg,rgba(204,68,255,.15),transparent);color:#cc44ff;font-weight:700">📋 업데이트 내역 (V10.3 NEW!)</button>
+        <button class="mobile-menu-btn" onclick="closeMobileMenu();openChangelogModal()" style="background:linear-gradient(90deg,rgba(204,68,255,.15),transparent);color:#cc44ff;font-weight:700">📋 업데이트 내역 (V11.0 NEW!)</button>
         <button class="mobile-menu-btn" onclick="closeMobileMenu();document.getElementById('add-file-input').click()" style="color:var(--amber)">+ 경기 추가</button>
         <button class="mobile-menu-btn" onclick="closeMobileMenu();openServerLibraryModal()" style="color:#88ccff">☁ 서버 경기 추가</button>
         <button class="mobile-menu-btn" onclick="closeMobileMenu();clearAllGames()" style="color:#ff4560">🗑️ 모든 경기 제거</button>
@@ -634,7 +634,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   </div>
 
   <div id="topnav">
-    <div class="nav-logo">WBD <span style="font-size:11px;color:var(--muted);letter-spacing:1px;margin-left:4px">V10.3</span></div>
+    <div class="nav-logo">WBD <span style="font-size:11px;color:var(--muted);letter-spacing:1px;margin-left:4px">V11.0</span></div>
     <button class="nav-btn active" onclick="showPage('home')">🏠 홈</button>
     <button class="nav-btn" onclick="showPage('pitcher')">⚾ 투수</button>
     <button class="nav-btn" onclick="showPage('batter')">🏏 타자</button>
@@ -4216,6 +4216,7 @@ function renderPitcherHeader(pitcherName,pd){
       <div style="display:flex;flex-direction:column;gap:6px;margin-right:28px">
         <div style="font-size:10px;color:var(--muted);letter-spacing:.8px;text-transform:uppercase">피칭 지표</div>
         <div style="display:flex;gap:18px;flex-wrap:wrap">
+          ${(function(){try{const _pr=_computeRecordsData().pitchers.find(x=>x.name===pitcherName); if(!_pr)return ''; return `<div class="ph-stat" title="승-패"><div class="ph-stat-label" style="color:#ffd700">승-패</div><div class="ph-stat-val" style="font-size:16px;color:#ffd700;font-weight:700">${_pr.W||0}-${_pr.L||0}</div></div>`+((_pr.SV||0)>0?`<div class="ph-stat" title="세이브"><div class="ph-stat-label" style="color:#60a5fa">SV</div><div class="ph-stat-val" style="font-size:16px;color:#60a5fa">${_pr.SV}</div></div>`:'')+((_pr.HLD||0)>0?`<div class="ph-stat" title="홀드"><div class="ph-stat-label" style="color:#a78bfa">HLD</div><div class="ph-stat-val" style="font-size:16px;color:#a78bfa">${_pr.HLD}</div></div>`:'')+((_pr.QS||0)>0?`<div class="ph-stat" title="퀄리티스타트 (6이닝+ 3실점↓)"><div class="ph-stat-label" style="color:#fbbf24">QS</div><div class="ph-stat-val" style="font-size:16px;color:#fbbf24">${_pr.QS}${(_pr.QSP||0)>0?` (QS+ ${_pr.QSP})`:''}</div></div>`:'');}catch(e){return '';}})()}
           <div class="ph-stat" title="이닝 (3아웃 = 1이닝)"><div class="ph-stat-label" style="color:#39ff8a">IP</div><div class="ph-stat-val" style="font-size:16px;color:#39ff8a">${ipDisp}</div></div>
           <div class="ph-stat" title="평균자책점 = 실점 / 이닝 × 9 (낮을수록 좋음)"><div class="ph-stat-label" style="color:#ff4560">ERA</div><div class="ph-stat-val" style="font-size:16px;color:#ff4560">${eraVal}</div></div>
           <div class="ph-stat" title="WHIP = (피안타+볼넷) / 이닝 (낮을수록 좋음, 우수 1.20 미만)"><div class="ph-stat-label" style="color:#ff8800">WHIP</div><div class="ph-stat-val" style="font-size:16px;color:#ff8800">${whipVal}</div></div>
@@ -8549,6 +8550,121 @@ function _getBatterSeason(name){
 // ───── 투수 게임 실점/이닝 계산 (승계주자 룰 적용) ─────
 // 야구 룰: 투수 교체 시 루상 주자가 점수 내면 이전 투수의 실점으로 귀속
 // 각 베이스마다 "어느 투수가 출루시킨 주자인가" owner 트래킹
+// V11: 게임별 투수 결과기록 (승/패/세이브/홀드/QS) 판정
+//   half=1=초(원정공격,홈투수) / half=0=말(홈공격,원정투수). 각 half 투수 = 그 이닝 수비팀.
+//   teamA=원정, teamB=홈. 최종 승팀 투수진 중 규칙에 따라 W, 패팀 중 L, 마무리 S, 중간계투 H.
+function calcGameDecisions(gamePitches, info){
+  const data=gamePitches; if(!data.length) return {};
+  // 최종 점수 (끝내기 보정 포함)
+  const sc=_computeInningScores(data);
+  const finalA=sc.totalA, finalB=sc.totalB;
+  if(finalA===finalB) return {}; // 무승부: 승패 없음
+  const homeWon = finalB>finalA;  // 홈(teamB) 승리 여부
+
+  // 투수별 등판 구간 추적 (각 half 별로 순서대로)
+  //   half=1 투수 = 홈팀(teamB) 투수 / half=0 투수 = 원정팀(teamA) 투수
+  // 각 투수의 등판 동안: 이닝수, 실점, 등판/강판 시점 팀 점수차
+  const stints={};  // key=half|pName, {half,name,firstIdx,lastIdx,outs,runs}
+  const order={1:[],0:[]};
+  let cur={1:null,0:null};
+  data.forEach((d,idx)=>{
+    const hf=+d.half, pn=d.pName; if(!pn) return;
+    const key=hf+'|'+pn;
+    if(!stints[key]){ stints[key]={half:hf,name:pn,firstIdx:idx,lastIdx:idx,team:(hf===1?info.teamB:info.teamA)}; order[hf].push(key); }
+    stints[key].lastIdx=idx;
+  });
+  // 각 투수의 이닝(outs)·실점(runs) 계산: calcPitcherGameStats 재활용
+  const pg=calcPitcherGameStats(data);  // {name:{outs,runs,...}}
+  // half별 투수 순서대로 stint 정보 보강
+  const result={W:null,L:null,S:null,H:[],QS:[],QSP:[]};
+  // 승리팀/패배팀 투수 목록 (half 기준)
+  // 홈 승리 → 홈투수(half=1)가 승/세이브/홀드 대상, 원정투수(half=0) 중 패전
+  const winHalf = homeWon?1:0;   // 이긴 팀이 던진 half
+  const loseHalf = homeWon?0:1;
+  const winPs = order[winHalf].map(k=>stints[k]);   // 이긴 팀 투수들 (등판순)
+  const losePs = order[loseHalf].map(k=>stints[k]);  // 진 팀 투수들
+
+  // 선발 = 각 팀 첫 투수
+  const winStarter=winPs[0], loseStarter=losePs[0];
+
+  // ── 승리투수(W) ──
+  //   리드를 처음 잡아서 끝까지 유지된 시점에 던지던 승리팀 투수.
+  //   선발이 최소 5이닝(15아웃) 던지고 리드 유지 시 선발 승. 아니면 리드 시점 구원투수 승.
+  //   간이 규칙: 결승점(리드가 영구히 바뀐 마지막 동점→리드 전환) 시점의 이닝을 찾고,
+  //   그 시점에 던지던 승리팀 투수가 승. 단 선발이 5이닝 미만이면 다음 투수에게.
+  // 결승타 시점 = 승팀이 마지막으로 동점에서 앞선 순간
+  let leadIdx=-1, curA=0, curB=0;
+  for(let i=0;i<data.length;i++){
+    const a=+data[i].scoreA||0, b=+data[i].scoreB||0;
+    if(a>curA||b>curB){
+      const wasLead = homeWon ? (curB>curA) : (curA>curB);
+      const nowLead = homeWon ? (b>a) : (a>b);
+      if(!wasLead && nowLead) leadIdx=i;  // 동점/뒤지다 → 리드 전환
+      curA=Math.max(curA,a); curB=Math.max(curB,b);
+    }
+  }
+  // 끝내기 보정: score 미반영이면 마지막 투구가 결승
+  if(leadIdx<0) leadIdx=data.length-1;
+  // V11.1 fix: 승리투수 = 결승점 시점에 "이미 등판한"(firstIdx<=leadIdx) 승팀 투수 중 마지막.
+  //   결승점 이후 등판한 투수(firstIdx>leadIdx)는 승리 아님 → 세이브/홀드 후보.
+  //   이닝 번호가 아니라 투구 인덱스(시간 순서)로 비교해야 정확
+  //   (예: 9회초 결승점 후 9회말 새 투수 등판 시 그 투수는 승리 아님).
+  let winner=null;
+  for(const s of winPs){
+    if(s.firstIdx<=leadIdx) winner=s;  // 결승점 시점까지 등판한 마지막 승팀 투수
+  }
+  if(!winner) winner=winStarter;
+  // 선발 5이닝 규칙: winner가 선발인데 5이닝 미만이면 다음(결승점 이전 등판) 투수
+  const starterOuts=(pg[winStarter.name]||{}).outs||0;
+  if(winner===winStarter && starterOuts<15 && winPs.length>1){
+    // 결승점 이전 등판한 두 번째 투수
+    if(winPs[1] && winPs[1].firstIdx<=leadIdx) winner=winPs[1];
+  }
+  if(winner) result.W=winner.name;
+
+  // ── 패전투수(L) ──
+  //   결승점을 허용한 패배팀 투수 = 결승점 시점(leadIdx)에 던지고 있던 패팀 투수.
+  let loser=null;
+  for(const s of losePs){
+    if(s.firstIdx<=leadIdx && leadIdx<=s.lastIdx) { loser=s; break; }  // 결승점 시점 등판 중
+  }
+  if(!loser){ // 폴백: 결승점 직전까지 등판한 마지막 패팀 투수
+    for(const s of losePs){ if(s.firstIdx<=leadIdx) loser=s; }
+  }
+  if(!loser) loser=losePs[losePs.length-1];
+  if(loser) result.L=loser.name;
+
+  // ── 세이브(S) / 홀드(H) ──
+  //   승리투수 이후 등판해 리드 지킨 투수들. 마지막 투수가 경기 끝까지 리드 지키면 세이브.
+  //   승리투수와 마무리 사이 중간계투는 홀드.
+  if(winPs.length>1){
+    const closer=winPs[winPs.length-1];
+    // 마지막 투수가 승리투수가 아니고, 승리투수보다 나중에(또는 결승점 이후) 등판했으면 세이브
+    if(closer.name!==result.W && closer.firstIdx>(winner?winner.firstIdx:-1)){
+      const cOuts=(pg[closer.name]||{}).outs||0;
+      const margin=Math.abs(finalA-finalB);
+      if(cOuts>=1 && (margin<=3 || cOuts>=3)) result.S=closer.name;
+    }
+    // 홀드: 승리투수 다음 ~ 마무리 이전 중간계투 (리드 유지 강판)
+    const winIdx = winPs.findIndex(s=>s.name===result.W);
+    for(let i=Math.max(1,winIdx+1);i<winPs.length-1;i++){
+      const mid=winPs[i];
+      if(mid.name!==result.W && mid.name!==result.S) result.H.push(mid.name);
+    }
+  }
+
+  // ── QS / QS+ ── (선발만, 실점 기준 근사)
+  //   QS: 선발 6이닝(18아웃)+ 3실점 이하. QS+: 7이닝(21아웃)+ 2실점 이하.
+  [winStarter, loseStarter].forEach(st=>{
+    if(!st) return;
+    const o=(pg[st.name]||{}).outs||0, r=(pg[st.name]||{}).runs||0;
+    if(o>=18 && r<=3) result.QS.push(st.name);
+    if(o>=21 && r<=3) result.QSP.push(st.name);  // QS+: 7이닝 3실점 이하
+  });
+
+  return {homeWon, finalA, finalB, decisions:result};
+}
+
 function calcPitcherGameStats(gamePitches){
   const sorted=[...gamePitches];
   const map={};
@@ -10902,7 +11018,9 @@ function renderAwardsPage(){
     const groupCnt={};
     pd.forEach(d=>{const g=pitchGroup(d.pType,d);groupCnt[g]=(groupCnt[g]||0)+1;});
     const validGroups=Object.values(groupCnt).filter(c=>c/pd.length>=0.05).length;
-    return {name:n,card,war,hits,hrs,ks,bbs,kbb,kPct:ks/pd.length*100,baAgainst: ab>0 ? hits/ab : 1, ab, pitches:pd.length,avgSpd:fbSpds.length?fbSpds.reduce((a,b)=>a+b,0)/fbSpds.length:0,avgPotential,whiffPctP,validGroups,team:_playerTeam(n,'pitcher')};
+    const _rp=(()=>{try{return _computeRecordsData().pitchers.find(x=>x.name===n);}catch(e){return null;}})();
+    return {name:n,card,war,hits,hrs,ks,bbs,kbb,kPct:ks/pd.length*100,baAgainst: ab>0 ? hits/ab : 1, ab, pitches:pd.length,avgSpd:fbSpds.length?fbSpds.reduce((a,b)=>a+b,0)/fbSpds.length:0,avgPotential,whiffPctP,validGroups,team:_playerTeam(n,'pitcher'),
+      W:_rp?_rp.W:0, L:_rp?_rp.L:0, SV:_rp?_rp.SV:0, HLD:_rp?_rp.HLD:0, QS:_rp?_rp.QS:0, QSP:_rp?_rp.QSP:0, era:_rp?_rp.era:null, ip:_rp?_rp.IP:0};
   }).filter(Boolean);
 
   const bStats=bNames.map(n=>{
@@ -10943,7 +11061,9 @@ function renderAwardsPage(){
     const singles_b = allB.filter(d => +d['1BSafe']===1 && +d.result!==4).length;
     const wobaDenom = ab + bbs + hbps;
     const woba = wobaDenom>0 ? (0.55*bbs + 0.55*hbps + 0.45*singles_b + 1.80*hrs) / wobaDenom : 0;
-    return {name:n,card,war,hits,hrs,avg,slg,obp,ops,woba,barrels, ab, abs: ab, bbs,hbps,avgEV,whiffPctB,chasePct,team:_playerTeam(n,'batter')};
+    const _rb=(()=>{try{return _computeRecordsData().batters.find(x=>x.name===n);}catch(e){return null;}})();
+    return {name:n,card,war,hits,hrs,avg,slg,obp,ops,woba,barrels, ab, abs: ab, bbs,hbps,avgEV,whiffPctB,chasePct,team:_playerTeam(n,'batter'),
+      wrcPlus:_rb?_rb.wrcPlus:0, iso:_rb?_rb.iso:0, h2B:_rb?_rb.h2B:0};
   }).filter(Boolean);
 
   // ─── 수상자 선정 ───
@@ -11026,6 +11146,13 @@ function renderAwardsPage(){
   const kbbKing=sort(qualifyP,'kbb')[0];                           // K/BB왕
   const whiffKing=sort(qualifyP,'whiffPctP')[0];                   // 헛스윙왕
   const varietyKing=sort(qualifyP,'validGroups')[0];               // 변화구왕
+  // V11: 새 스탯 부문 — 결과기록은 규정 무관(누적), wRC+/ISO는 규정 적용
+  const winKing=sort(qualifyP.filter(x=>x.W>0),'W')[0];            // 다승왕
+  const saveKing=sort(pStats.filter(x=>x.SV>0),'SV')[0];          // 세이브왕 (규정무관 전체)
+  const holdKing=sort(pStats.filter(x=>x.HLD>0),'HLD')[0];        // 홀드왕
+  const qsKing=sort(qualifyP.filter(x=>x.QS>0),'QS')[0];          // QS왕
+  const wrcKing=sort(qualifyB.filter(x=>x.wrcPlus),'wrcPlus')[0]; // wRC+왕
+  const isoKing=sort(qualifyB.filter(x=>x.iso),'iso')[0];         // 장타력(ISO)왕
   
   // ERA/WHIP/이닝이터왕 - 시즌 누적 통계 (활성 게임)
   const pitcherSeasonStats={};
@@ -11126,6 +11253,8 @@ function renderAwardsPage(){
   html+=awardCard('💫','장타왕','SLG Leader',slgKing?{...slgKing,type:'batter'}:null,slgKing?slgKing.slg.toFixed(3).replace(/^0/,''):null,'SLG','#ffaa44');
   html+=awardCard('🌟','OPS왕','OPS Leader',opsKing?{...opsKing,type:'batter'}:null,opsKing?opsKing.ops.toFixed(3):null,'OPS','#ffd700');
   html+=awardCard('⭐','wOBA왕','Weighted OBP',wobaKing?{...wobaKing,type:'batter'}:null,wobaKing?wobaKing.woba.toFixed(3).replace(/^0/,''):null,'wOBA','#cc44ff');
+  html+=awardCard('📈','wRC+왕','wRC+ Leader',wrcKing?{...wrcKing,type:'batter'}:null,wrcKing?wrcKing.wrcPlus.toFixed(0):null,'wRC+','#ffc844');
+  html+=awardCard('🎪','장타력왕','ISO Leader',isoKing?{...isoKing,type:'batter'}:null,isoKing?isoKing.iso.toFixed(3).replace(/^0/,''):null,'ISO','#ffaa66');
   html+='</div>';
   // 파워 + 컨택 (홈런왕/안타왕/배럴왕/강타자)
   html+='<div class="grid4 section">';
@@ -11159,6 +11288,11 @@ function renderAwardsPage(){
   // 변화구
   html+='<div class="grid2 section">';
   html+=awardCard('🎨','변화구왕','Pitch Variety',varietyKing?{...varietyKing,type:'pitcher'}:null,varietyKing?varietyKing.validGroups:null,'유효 구종','#cc44ff');
+  // V11: 결과기록 어워드
+  html+=awardCard('🏆','다승왕','Win Leader',winKing?{...winKing,type:'pitcher'}:null,winKing?winKing.W:null,'승','#ffd700');
+  html+=awardCard('🔐','세이브왕','Save Leader',saveKing?{...saveKing,type:'pitcher'}:null,saveKing?saveKing.SV:null,'세이브','#60a5fa');
+  html+=awardCard('🤝','홀드왕','Hold Leader',holdKing?{...holdKing,type:'pitcher'}:null,holdKing?holdKing.HLD:null,'홀드','#a78bfa');
+  html+=awardCard('💎','퀄리티스타트왕','QS Leader',qsKing?{...qsKing,type:'pitcher'}:null,qsKing?qsKing.QS:null,'QS','#fbbf24');
   html+=awardCard('⭐','신인왕','Rookie of the Year',rookie,rookie?rookie.war.toFixed(1):null,'WAR','#44aaff');
   html+='</div>';
 
@@ -11495,6 +11629,26 @@ function openThemeModal(){
 //   - 버저닝: V9.x (소수점) → 누적되면 V10
 //   - title은 한 줄 핵심 요약, changes는 항목별 (icon + text)
 const CHANGELOG = [
+  {
+    version: 'V11.0',
+    date: '2026-06',
+    title: '🏆 리그전 전용 허브 신규 — 순위·리더보드·기록실·팀기록·로고',
+    badge: '#ffd700',
+    changes: [
+      {icon:'⚾', text:'⭐⭐ <b>투수 결과기록 신규 — 승·패·세이브·홀드·QS·QS+</b> — 게임별 투수 등판·점수·이닝을 추적해 자동 판정(투구 순서 기반). 기록실·리더보드·투수분석·내보내기 전체 적용. QS=선발 6이닝+ 3실점↓, QS+=7이닝+ 3실점↓.'},
+      {icon:'🏆', text:'⭐⭐ <b>리그전 전용 허브 신규</b> — 메인 메뉴 독립 버튼. 정규시즌 해당 시즌 데이터만 자동 수집. 4개 탭(순위·리더보드·기록실·팀기록). 운영자가 <code>WBD_CURRENT_SEASON</code> 한 줄로 기본 시즌 지정.'},
+      {icon:'📋', text:'<b>팀 순위표</b> — 승·패·무·승률·게임차·득실차. 팀 클릭 시 로스터 펼침. 팀명 오타 자동 병합(편집거리 1).'},
+      {icon:'🏅', text:'<b>리더보드 26종</b> — 투타 합산 WAR + 타격/투수 비율(규정충족자)·누적(전원) 분리. 타율·OPS·wOBA·wRC+·ISO·BABIP·ERA·FIP·WHIP·K/9·K%·K/BB 등.'},
+      {icon:'📚', text:'<b>기록실</b> — 타자 20컬럼·투수 17컬럼. 헤더 클릭 정렬. 규정미달 표시(흐리게)+제외 토글. 규정타석/이닝은 팀 경기수 기반 동적(×2.8/×1.8).'},
+      {icon:'👥', text:'<b>팀 기록실</b> — 15컬럼(타율·출루·장타·OPS·ERA·FIP·WHIP·WAR 등). 리그전 출전 팀만. 정렬 가능.'},
+      {icon:'🎨', text:'<b>팀 로고 시스템</b> — GitHub <code>data/logos/팀명.png</code> 자동 로드 + 직접 업로드 + 첫글자 폴백. 순위표·기록실·리더보드에 표시.'},
+      {icon:'🔧', text:'⭐ <b>끝내기 안타/홈런 버그 수정</b> — 경기 종료로 미기록된 득점을 결과 기반 보정. 경기결과·투수 실점 정상화.'},
+      {icon:'⚾', text:'<b>야구식 이닝 표기</b> — 7.667 → 7.2 (7과 2/3). 선수→팀 매핑을 해당 시즌 출전 기준으로(전체 활성 데이터 아님). 포스트시즌 분리 뷰·시즌 비교.'},
+      {icon:'🔧', text:'<b>끝내기 득점·승패 판정 수정</b> — 끝내기 안타/홈런으로 미기록된 득점 보정(경기결과·투수 실점). 승/세이브 판정을 투구 순서 기반으로 정확화.'},
+      {icon:'📊', text:'<b>기록실 정렬 개선</b> — 누적 스탯(승·세이브·홈런 등) 정렬 시 규정 구분 없이 순수 값순, 비율 스탯은 규정충족 우선. 규정미달 표시+제외 토글.'},
+      {icon:'📦', text:'<b>내보내기 schema v10</b> — <code>pitchers[i].season.advanced</code>에 결과기록 <code>{W, L, SV, HLD, QS, QSplus}</code> 추가. appVersion V11.0.'}
+    ]
+  },
   {
     version: 'V10.3',
     date: '2026-06',
@@ -22160,6 +22314,23 @@ function _computeRecordsData(){
     p.war144 = p.pwar!=null ? p.pwar * _war144Scale : null;
   });
   
+  // V11: 결과기록(승/패/세이브/홀드/QS/QS+)을 각 투수에 주입 — 활성 게임 전체 기준
+  try {
+    const decAcc={};
+    const activeGames = GAMES.filter(g=>activeGameIds.has(g.id));  // G는 투구배열이라 GAMES 활성분 사용
+    activeGames.forEach(g=>{
+      const info=_parseGameName(g.name);
+      let d; try{ d=calcGameDecisions(g.pitches, info); }catch(e){ return; }
+      if(!d||!d.decisions) return;
+      const dc=d.decisions;
+      const add=(n,k)=>{ if(!n)return; decAcc[n]=decAcc[n]||{W:0,L:0,S:0,H:0,QS:0,QSP:0}; decAcc[n][k]++; };
+      add(dc.W,'W'); add(dc.L,'L'); add(dc.S,'S');
+      (dc.H||[]).forEach(n=>add(n,'H')); (dc.QS||[]).forEach(n=>add(n,'QS')); (dc.QSP||[]).forEach(n=>add(n,'QSP'));
+    });
+    pitchers.forEach(p=>{ const d=decAcc[p.name]||{W:0,L:0,S:0,H:0,QS:0,QSP:0};
+      p.W=d.W; p.L=d.L; p.SV=d.S; p.HLD=d.H; p.QS=d.QS; p.QSP=d.QSP; });
+  } catch(e){ /* 판정 실패 시 결과기록 0 */ pitchers.forEach(p=>{ p.W=p.W||0;p.L=p.L||0;p.SV=p.SV||0;p.HLD=p.HLD||0;p.QS=p.QS||0;p.QSP=p.QSP||0; }); }
+
   window._recPerf.end = performance.now();
   window._recordsCache = {key: cacheKey, batters, pitchers, lg:{lgR, lgRPA, lgWoba, wobaScale, lgRA9, cFIP, RPW, lgRPG}};
   return window._recordsCache;
@@ -22401,6 +22572,50 @@ function _withSeasonGames(games, fn){
   window._recordsCache=sc;
   return out;
 }
+// V11: 시즌 투수 결과기록 누적 (승/패/세이브/홀드/QS/QS+)
+function _leaguePitcherDecisions(games){
+  const acc={};  // name → {W,L,S,H,QS,QSP}
+  const ensure=n=>{ if(!acc[n])acc[n]={W:0,L:0,S:0,H:0,QS:0,QSP:0}; return acc[n]; };
+  games.forEach(g=>{
+    const info=_parseGameName(g.name);
+    let d; try{ d=calcGameDecisions(g.pitches, info); }catch(e){ return; }
+    if(!d||!d.decisions) return;
+    const dec=d.decisions;
+    if(dec.W) ensure(dec.W).W++;
+    if(dec.L) ensure(dec.L).L++;
+    if(dec.S) ensure(dec.S).S++;
+    (dec.H||[]).forEach(n=>ensure(n).H++);
+    (dec.QS||[]).forEach(n=>ensure(n).QS++);
+    (dec.QSP||[]).forEach(n=>ensure(n).QSP++);
+  });
+  return acc;
+}
+
+// V11: 시즌 게임 기준 선수→팀 매핑 (전체 활성데이터가 아니라 해당 시즌 출전 팀)
+//   half=1=초(원정/teamA), half=0=말(홈/teamB). 타자는 공격팀, 투수는 수비팀.
+function _leaguePlayerTeams(games){
+  const bat={}, pit={};  // name → {team: count}
+  games.forEach(g=>{
+    const info=_parseGameName(g.name);
+    const tA=_normalizeTeam(info.teamA), tB=_normalizeTeam(info.teamB);
+    if(!tA||!tB) return;
+    (g.pitches||[]).forEach(d=>{
+      const half=+d.half;
+      const batTeam = half===1 ? tA : tB;   // 공격팀
+      const pitTeam = half===1 ? tB : tA;   // 수비팀
+      const bn=d.bName, pn=d.pName;
+      if(bn){ bat[bn]=bat[bn]||{}; bat[bn][batTeam]=(bat[bn][batTeam]||0)+1; }
+      if(pn){ pit[pn]=pit[pn]||{}; pit[pn][pitTeam]=(pit[pn][pitTeam]||0)+1; }
+    });
+  });
+  // 최다 출전 팀으로 확정
+  const pick=m=>{ let best=null,bc=-1; for(const t in m){ if(m[t]>bc){bc=m[t];best=t;} } return best; };
+  const bMap={}, pMap={};
+  for(const n in bat) bMap[n]=pick(bat[n]);
+  for(const n in pit) pMap[n]=pick(pit[n]);
+  return {batter:bMap, pitcher:pMap};
+}
+
 // 규정타석/규정이닝 — 팀당 경기수 기준 동적 계산 (PA: ×3.1, IP: ×1.0 비례, 단 최소 보장)
 function _leagueQualThresholds(games){
   // 팀별 경기 수 집계 → 최다 경기 팀 기준 (규정은 보통 팀 경기수 기준)
@@ -22415,8 +22630,12 @@ function _leagueQualThresholds(games){
 function _renderLeagueLeaders(season, games){
   const rec = _withSeasonGames(games, ()=>_computeRecordsData());
   if(!rec) return '<div class="card section" style="padding:30px;text-align:center;color:var(--muted)">집계 실패</div>';
+  const PT = _leaguePlayerTeams(games);
+  const DEC = _leaguePitcherDecisions(games);
   const Q = _leagueQualThresholds(games);
   const bAll = rec.batters, pAll = rec.pitchers;
+  // 결과기록 배열 (다승·세이브 등 리더용)
+  const decArr = Object.entries(DEC).map(([n,d])=>({name:n,...d}));
   const bQ = bAll.filter(b=>(b.PA||0)>=Q.qPA);
   const pQ = pAll.filter(p=>(p.IP||0)>=Q.qIP);
   const N = 5;
@@ -22432,7 +22651,7 @@ function _renderLeagueLeaders(season, games){
     let h2=`<div class="card section" style="flex:1;min-width:260px"><div class="card-title" style="font-size:13px;display:flex;align-items:center;gap:6px">${title} ${badge?`<span style="font-size:8.5px;padding:1px 5px;border-radius:4px;background:var(--bg2);color:var(--muted);font-weight:400">${badge}</span>`:''}</div>
       <div class="tbl-wrap"><table class="data-table"><thead><tr><th>#</th><th>선수</th>${cols.map(c=>`<th>${c.label}</th>`).join('')}</tr></thead><tbody>`;
     if(!rows.length) h2+=`<tr><td colspan="${cols.length+2}" style="text-align:center;color:var(--muted);padding:12px">해당 없음</td></tr>`;
-    rows.forEach((r,i)=>{ h2+=`<tr><td style="font-family:var(--mono);color:${i===0?'var(--amber)':'var(--muted)'}">${i+1}</td><td style="font-weight:600"><span style="display:inline-flex;align-items:center;gap:5px">${(()=>{const t=_normalizeTeam(_playerTeam(r.name,'batter')||_playerTeam(r.name,'pitcher'));return t?_teamLogoHTML(t,16):'';})()}${r.name}</span></td>${cols.map(c=>`<td style="font-family:var(--mono)${c.hl?';color:var(--amber);font-weight:600':''}">${c.fmt(r)}</td>`).join('')}</tr>`; });
+    rows.forEach((r,i)=>{ h2+=`<tr><td style="font-family:var(--mono);color:${i===0?'var(--amber)':'var(--muted)'}">${i+1}</td><td style="font-weight:600"><span style="display:inline-flex;align-items:center;gap:5px">${(()=>{const t=PT.batter[r.name]||PT.pitcher[r.name];return t?_teamLogoHTML(t,16):'';})()}${r.name}</span></td>${cols.map(c=>`<td style="font-family:var(--mono)${c.hl?';color:var(--amber);font-weight:600':''}">${c.fmt(r)}</td>`).join('')}</tr>`; });
     return h2+'</tbody></table></div></div>';
   };
   const f3=v=>(v||0).toFixed(3).replace(/^0/,'');
@@ -22497,12 +22716,27 @@ function _renderLeagueLeaders(season, games){
     card('이닝','전체',top(pAll,'IP'),[{label:'이닝',fmt:r=>_fmtIP(r.IP),hl:1},{label:'탈삼진',fmt:r=>r.K},{label:'ERA',fmt:r=>r.era!=null?r.era.toFixed(2):'-'}])+
     card('볼넷 적은순','전체',top(pAll.filter(p=>p.IP>=Q.qIP*0.5),'BB',N,false),[{label:'볼넷',fmt:r=>r.BB,hl:1},{label:'이닝',fmt:r=>_fmtIP(r.IP)},{label:'K/BB',fmt:r=>(r.kbb||0).toFixed(2)}])
   );
+
+  // ── 투수 결과기록 (승/세이브/홀드/QS) ──
+  html += sec('⚾ 투수 결과기록 (전체)');
+  html += grid(
+    card('🏆 다승','전체',top(decArr,'W'),[{label:'승',fmt:r=>r.W,hl:1},{label:'패',fmt:r=>r.L},{label:'QS',fmt:r=>r.QS}])+
+    card('🔒 세이브','전체',top(decArr,'S'),[{label:'세이브',fmt:r=>r.S,hl:1},{label:'홀드',fmt:r=>r.H},{label:'승',fmt:r=>r.W}])+
+    card('🤝 홀드','전체',top(decArr,'H'),[{label:'홀드',fmt:r=>r.H,hl:1},{label:'세이브',fmt:r=>r.S},{label:'승',fmt:r=>r.W}])
+  );
+  html += grid(
+    card('💎 QS','전체',top(decArr,'QS'),[{label:'QS',fmt:r=>r.QS,hl:1},{label:'QS+',fmt:r=>r.QSP},{label:'승',fmt:r=>r.W}])+
+    card('💠 QS+','전체',top(decArr,'QSP'),[{label:'QS+',fmt:r=>r.QSP,hl:1},{label:'QS',fmt:r=>r.QS},{label:'승',fmt:r=>r.W}])
+  );
   return html;
 }
 
 function _renderLeagueRecords(season, games){
   const rec = _withSeasonGames(games, ()=>_computeRecordsData());
   if(!rec) return '<div class="card section" style="padding:30px;text-align:center;color:var(--muted)">기록 집계 실패</div>';
+  const PT = _leaguePlayerTeams(games);  // 시즌 기준 선수→팀
+  const DEC = _leaguePitcherDecisions(games);  // 승/패/세이브/홀드/QS
+  const _d = (n,k)=>(DEC[n]&&DEC[n][k])||0;
   const isB = window._leagueRecTab==='batter';
   const Q = _leagueQualThresholds(games);
   if(window._leagueHideUnqual===undefined) window._leagueHideUnqual=false;
@@ -22517,18 +22751,22 @@ function _renderLeagueRecords(season, games){
   // 컬럼 정의 (key=정렬키, f=포맷, num=숫자여부)
   const f3 = v=>(v||0).toFixed(3).replace(/^0/,'');
   const batCols = [
-    {k:'name',l:'선수',f:b=>b.name,txt:1},{k:'team',l:'팀',f:b=>{const t=_normalizeTeam(_playerTeam(b.name,'batter'));return t?`<span style="display:inline-flex;align-items:center;gap:5px">${_teamLogoHTML(t,18)}${t}</span>`:'-';},txt:1},
-    {k:'PA',l:'타석',f:b=>b.PA||0},{k:'AB',l:'타수',f:b=>b.AB||0},{k:'H',l:'안타',f:b=>b.H||0},
-    {k:'h2B',l:'2B',f:b=>b.h2B||0},{k:'h3B',l:'3B',f:b=>b.h3B||0},{k:'HR',l:'홈런',f:b=>b.HR||0},
-    {k:'TB',l:'총루타',f:b=>b.TB||0},{k:'BB',l:'볼넷',f:b=>b.BB||0},{k:'K',l:'삼진',f:b=>b.K||0},
+    {k:'name',l:'선수',f:b=>b.name,txt:1},{k:'team',l:'팀',f:b=>{const t=PT.batter[b.name];return t?`<span style="display:inline-flex;align-items:center;gap:5px">${_teamLogoHTML(t,18)}${t}</span>`:'-';},txt:1},
+    {k:'PA',l:'타석',f:b=>b.PA||0,cum:1},{k:'AB',l:'타수',f:b=>b.AB||0,cum:1},{k:'H',l:'안타',f:b=>b.H||0,cum:1},
+    {k:'h2B',l:'2B',f:b=>b.h2B||0,cum:1},{k:'h3B',l:'3B',f:b=>b.h3B||0,cum:1},{k:'HR',l:'홈런',f:b=>b.HR||0,cum:1},
+    {k:'TB',l:'총루타',f:b=>b.TB||0,cum:1},{k:'BB',l:'볼넷',f:b=>b.BB||0,cum:1},{k:'K',l:'삼진',f:b=>b.K||0,cum:1},
     {k:'avg',l:'타율',f:b=>f3(b.avg),hl:1},{k:'obp',l:'출루',f:b=>f3(b.obp)},{k:'slg',l:'장타',f:b=>f3(b.slg)},
     {k:'ops',l:'OPS',f:b=>f3(b.ops),hl:1},{k:'iso',l:'ISO',f:b=>f3(b.iso)},{k:'babip',l:'BABIP',f:b=>f3(b.babip)},
     {k:'woba',l:'wOBA',f:b=>f3(b.woba)},{k:'wrcPlus',l:'wRC+',f:b=>(b.wrcPlus||0).toFixed(0)},{k:'owar',l:'oWAR',f:b=>(b.owar||0).toFixed(2),amber:1}
   ];
   const pitCols = [
-    {k:'name',l:'선수',f:p=>p.name,txt:1},{k:'team',l:'팀',f:p=>{const t=_normalizeTeam(_playerTeam(p.name,'pitcher'));return t?`<span style="display:inline-flex;align-items:center;gap:5px">${_teamLogoHTML(t,18)}${t}</span>`:'-';},txt:1},
-    {k:'G',l:'경기',f:p=>p.G||0},{k:'IP',l:'이닝',f:p=>_fmtIP(p.IP)},{k:'n',l:'투구',f:p=>p.n||0},
-    {k:'K',l:'탈삼진',f:p=>p.K||0},{k:'BB',l:'볼넷',f:p=>p.BB||0},{k:'H',l:'피안타',f:p=>p.H||0},{k:'HR',l:'피홈런',f:p=>p.HR||0},
+    {k:'name',l:'선수',f:p=>p.name,txt:1},{k:'team',l:'팀',f:p=>{const t=PT.pitcher[p.name];return t?`<span style="display:inline-flex;align-items:center;gap:5px">${_teamLogoHTML(t,18)}${t}</span>`:'-';},txt:1},
+    {k:'G',l:'경기',f:p=>p.G||0,cum:1},
+    {k:'_W',l:'승',f:p=>_d(p.name,'W'),get:p=>_d(p.name,'W'),cum:1},{k:'_L',l:'패',f:p=>_d(p.name,'L'),get:p=>_d(p.name,'L'),cum:1},
+    {k:'_S',l:'세이브',f:p=>_d(p.name,'S'),get:p=>_d(p.name,'S'),cum:1},{k:'_H',l:'홀드',f:p=>_d(p.name,'H'),get:p=>_d(p.name,'H'),cum:1},
+    {k:'_QS',l:'QS',f:p=>_d(p.name,'QS'),get:p=>_d(p.name,'QS'),cum:1},{k:'_QSP',l:'QS+',f:p=>_d(p.name,'QSP'),get:p=>_d(p.name,'QSP'),cum:1},
+    {k:'IP',l:'이닝',f:p=>_fmtIP(p.IP),cum:1},{k:'n',l:'투구',f:p=>p.n||0,cum:1},
+    {k:'K',l:'탈삼진',f:p=>p.K||0,cum:1},{k:'BB',l:'볼넷',f:p=>p.BB||0,cum:1},{k:'H',l:'피안타',f:p=>p.H||0,cum:1},{k:'HR',l:'피홈런',f:p=>p.HR||0,cum:1},
     {k:'era',l:'ERA',f:p=>p.era!=null?p.era.toFixed(2):'-',hl:1,asc:1},{k:'fip',l:'FIP',f:p=>p.fip!=null?p.fip.toFixed(2):'-',asc:1},
     {k:'whip',l:'WHIP',f:p=>p.IP>0?((p.H+p.BB)/p.IP).toFixed(2):'-',asc:1},
     {k:'k9',l:'K/9',f:p=>(p.k9||0).toFixed(1)},{k:'kPct',l:'K%',f:p=>(p.kPct||0).toFixed(1)},{k:'bbPct',l:'BB%',f:p=>(p.bbPct||0).toFixed(1),asc:1},
@@ -22545,10 +22783,15 @@ function _renderLeagueRecords(season, games){
   if(hideUnq) rows = rows.filter(r=>(r[sampleKey]||0)>=qVal);
   // 정렬: 규정충족 우선 후 선택 정렬키
   const sc = cols.find(c=>c.k===sortState.key) || cols[0];
+  const getVal = (r,c)=> c.get ? c.get(r) : r[c.k];  // 계산 컬럼(_W 등)은 get 사용
+  // V11.1: 누적 스탯(cum)으로 정렬 시 규정 구분 없이 순수 값순. 비율 스탯은 규정충족 우선.
+  const cumSort = !!sc.cum;
   rows.sort((a,b)=>{
-    const qa=(a[sampleKey]||0)>=qVal, qb=(b[sampleKey]||0)>=qVal;
-    if(qa!==qb) return qa?-1:1;
-    let av=a[sortState.key], bv=b[sortState.key];
+    if(!cumSort){ // 비율 정렬: 규정충족 우선
+      const qa=(a[sampleKey]||0)>=qVal, qb=(b[sampleKey]||0)>=qVal;
+      if(qa!==qb) return qa?-1:1;
+    }
+    let av=getVal(a,sc), bv=getVal(b,sc);
     if(sc.txt){ av=String(av||''); bv=String(bv||''); return sortState.dir==='desc'?bv.localeCompare(av):av.localeCompare(bv); }
     av=+av||0; bv=+bv||0; return sortState.dir==='desc'?bv-av:av-bv;
   });
@@ -22562,7 +22805,8 @@ function _renderLeagueRecords(season, games){
   html += `</tr></thead><tbody>`;
   rows.forEach(r=>{
     const unq=(r[sampleKey]||0)<qVal;
-    html += `<tr style="${unq?'opacity:.45':''}" title="${unq?(isB?'규정타석':'규정이닝')+' 미달':''}">`;
+    const dim = unq && !cumSort;  // 누적 정렬 땐 흐리게 안 함 (값은 정당하므로)
+    html += `<tr style="${dim?'opacity:.45':''}" title="${unq?(isB?'규정타석':'규정이닝')+' 미달':''}">`;
     cols.forEach((c,ci)=>{
       const style = ci===0?'font-weight:600':(c.txt?'color:var(--muted);font-size:11px':`font-family:var(--mono)${c.hl?';font-weight:600':''}${c.amber?';color:var(--amber)':''}`);
       const mark = (ci===0&&unq)?' <span style="font-size:9px;color:var(--muted)">°</span>':'';
@@ -22592,6 +22836,7 @@ function _leagueSortRecords(tab, key, asc){
 function _renderLeagueTeamRecords(season, games){
   const rec = _withSeasonGames(games, ()=>_computeRecordsData());
   if(!rec) return '<div class="card section" style="padding:30px;text-align:center;color:var(--muted)">집계 실패</div>';
+  const PT = _leaguePlayerTeams(games);
   // V10.3: 이 시즌 리그전 게임에 실제 출전한 팀만 (전체 소속팀이 아니라)
   const leagueTeams=new Set();
   games.forEach(g=>{ const i=_parseGameName(g.name);
@@ -22599,10 +22844,10 @@ function _renderLeagueTeamRecords(season, games){
   // 팀별 타격/투수 합산 (리그전 출전팀만)
   const teams={};
   const ini=t=>({team:t,PA:0,AB:0,H:0,h2B:0,h3B:0,HR:0,TB:0,BB:0,K:0,owar:0, IP:0,pK:0,pBB:0,pH:0,pHR:0,era_w:0,fip_w:0,pwar:0});
-  rec.batters.forEach(b=>{ const t=_normalizeTeam(_playerTeam(b.name,'batter')); if(!t||!leagueTeams.has(t))return;
+  rec.batters.forEach(b=>{ const t=PT.batter[b.name]; if(!t||!leagueTeams.has(t))return;
     if(!teams[t])teams[t]=ini(t); const T=teams[t];
     T.PA+=b.PA||0; T.AB+=b.AB||0; T.H+=b.H||0; T.h2B+=b.h2B||0; T.h3B+=b.h3B||0; T.HR+=b.HR||0; T.TB+=b.TB||0; T.BB+=b.BB||0; T.K+=b.K||0; T.owar+=b.owar||0; });
-  rec.pitchers.forEach(p=>{ const t=_normalizeTeam(_playerTeam(p.name,'pitcher')); if(!t||!leagueTeams.has(t))return;
+  rec.pitchers.forEach(p=>{ const t=PT.pitcher[p.name]; if(!t||!leagueTeams.has(t))return;
     if(!teams[t])teams[t]=ini(t); const T=teams[t];
     T.IP+=p.IP||0; T.pK+=p.K||0; T.pBB+=p.BB||0; T.pH+=p.H||0; T.pHR+=p.HR||0; T.pwar+=p.pwar||0;
     if(p.era!=null&&p.IP>0) T.era_w+=p.era*p.IP; if(p.fip!=null&&p.IP>0) T.fip_w+=p.fip*p.IP; });
@@ -22813,21 +23058,23 @@ function _renderLeagueTeamRoster(team, games){
   // 해당 팀 소속 선수들의 정규시즌 기록 (해당 시즌 게임만 활성화된 상태에서 호출됨)
   let rec;
   try { rec = _computeRecordsData(); } catch(e){ return ''; }
-  const bat = rec.batters.filter(b=>_normalizeTeam(_playerTeam(b.name,'batter'))===team);
-  const pit = rec.pitchers.filter(p=>_normalizeTeam(_playerTeam(p.name,'pitcher'))===team);
+  const PT = _leaguePlayerTeams(games);
+  const bat = rec.batters.filter(b=>PT.batter[b.name]===team);
+  const pit = rec.pitchers.filter(p=>PT.pitcher[p.name]===team);
   if(!bat.length && !pit.length) return `<div style="padding:14px;color:var(--muted);font-size:12px">${team} 소속 선수 기록을 찾을 수 없습니다.</div>`;
   bat.sort((a,b)=>(b.PA||0)-(a.PA||0));
   pit.sort((a,b)=>(b.IP||0)-(a.IP||0));
   let h2 = `<div style="padding:12px 14px;background:var(--bg2);border-radius:8px;margin:4px 0 12px">
     <div style="font-size:13px;font-weight:700;margin-bottom:8px">${_teamLogoHTML(team,28)} ${team} 로스터</div>`;
   if(bat.length){
-    h2 += `<div style="font-size:11px;color:var(--muted);margin:6px 0 3px">타자 (${bat.length})</div><div class="tbl-wrap"><table class="data-table"><thead><tr><th>선수</th><th>타석</th><th>타율</th><th>홈런</th><th>OPS</th><th>oWAR</th></tr></thead><tbody>`;
-    bat.forEach(b=>{ h2 += `<tr><td style="font-weight:600">${b.name}</td><td style="font-family:var(--mono)">${b.PA||0}</td><td style="font-family:var(--mono)">${(b.avg||0).toFixed(3).replace(/^0/,'')}</td><td style="font-family:var(--mono)">${b.HR||0}</td><td style="font-family:var(--mono)">${(b.ops||0).toFixed(3).replace(/^0/,'')}</td><td style="font-family:var(--mono)">${(b.owar||0).toFixed(2)}</td></tr>`; });
+    const _f3=v=>(v||0).toFixed(3).replace(/^0/,'');
+    h2 += `<div style="font-size:11px;color:var(--muted);margin:6px 0 3px">타자 (${bat.length})</div><div class="tbl-wrap"><table class="data-table"><thead><tr><th>선수</th><th>타석</th><th>타수</th><th>안타</th><th>2B</th><th>홈런</th><th>볼넷</th><th>삼진</th><th>타율</th><th>출루</th><th>장타</th><th>OPS</th><th>wOBA</th><th>wRC+</th><th>oWAR</th></tr></thead><tbody>`;
+    bat.forEach(b=>{ const _sn=String(b.name).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); h2 += `<tr><td style="font-weight:600;cursor:pointer;color:var(--amber)" onclick="openCardDetail('${_sn}','batter')" title="선수 카드 보기">${b.name}</td><td style="font-family:var(--mono)">${b.PA||0}</td><td style="font-family:var(--mono)">${b.AB||0}</td><td style="font-family:var(--mono)">${b.H||0}</td><td style="font-family:var(--mono)">${b.h2B||0}</td><td style="font-family:var(--mono)">${b.HR||0}</td><td style="font-family:var(--mono)">${b.BB||0}</td><td style="font-family:var(--mono)">${b.K||0}</td><td style="font-family:var(--mono);font-weight:600">${_f3(b.avg)}</td><td style="font-family:var(--mono)">${_f3(b.obp)}</td><td style="font-family:var(--mono)">${_f3(b.slg)}</td><td style="font-family:var(--mono);font-weight:600">${_f3(b.ops)}</td><td style="font-family:var(--mono)">${_f3(b.woba)}</td><td style="font-family:var(--mono)">${(b.wrcPlus||0).toFixed(0)}</td><td style="font-family:var(--mono);color:var(--amber)">${(b.owar||0).toFixed(2)}</td></tr>`; });
     h2 += '</tbody></table></div>';
   }
   if(pit.length){
-    h2 += `<div style="font-size:11px;color:var(--muted);margin:10px 0 3px">투수 (${pit.length})</div><div class="tbl-wrap"><table class="data-table"><thead><tr><th>선수</th><th>이닝</th><th>ERA</th><th>탈삼진</th><th>pWAR</th></tr></thead><tbody>`;
-    pit.forEach(p=>{ h2 += `<tr><td style="font-weight:600">${p.name}</td><td style="font-family:var(--mono)">${_fmtIP(p.IP)}</td><td style="font-family:var(--mono)">${p.era!=null?p.era.toFixed(2):'-'}</td><td style="font-family:var(--mono)">${p.K||0}</td><td style="font-family:var(--mono)">${p.pwar!=null?p.pwar.toFixed(2):'-'}</td></tr>`; });
+    h2 += `<div style="font-size:11px;color:var(--muted);margin:10px 0 3px">투수 (${pit.length})</div><div class="tbl-wrap"><table class="data-table"><thead><tr><th>선수</th><th>경기</th><th>승</th><th>패</th><th>세이브</th><th>홀드</th><th>QS</th><th>이닝</th><th>탈삼진</th><th>볼넷</th><th>ERA</th><th>FIP</th><th>WHIP</th><th>pWAR</th></tr></thead><tbody>`;
+    pit.forEach(p=>{ const whip=p.IP>0?((p.H+p.BB)/p.IP).toFixed(2):'-'; const _sn=String(p.name).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); h2 += `<tr><td style="font-weight:600;cursor:pointer;color:var(--amber)" onclick="openCardDetail('${_sn}','pitcher')" title="선수 카드 보기">${p.name}</td><td style="font-family:var(--mono)">${p.G||0}</td><td style="font-family:var(--mono)">${p.W||0}</td><td style="font-family:var(--mono)">${p.L||0}</td><td style="font-family:var(--mono)">${p.SV||0}</td><td style="font-family:var(--mono)">${p.HLD||0}</td><td style="font-family:var(--mono)">${p.QS||0}</td><td style="font-family:var(--mono)">${_fmtIP(p.IP)}</td><td style="font-family:var(--mono)">${p.K||0}</td><td style="font-family:var(--mono)">${p.BB||0}</td><td style="font-family:var(--mono);font-weight:600">${p.era!=null?p.era.toFixed(2):'-'}</td><td style="font-family:var(--mono)">${p.fip!=null?p.fip.toFixed(2):'-'}</td><td style="font-family:var(--mono)">${whip}</td><td style="font-family:var(--mono);color:var(--amber)">${p.pwar!=null?p.pwar.toFixed(2):'-'}</td></tr>`; });
     h2 += '</tbody></table></div>';
   }
   return h2 + '</div>';
@@ -22919,6 +23166,12 @@ function renderRecordsPage(){
     {k:'G', l:'G', fmt:v=>v},
     {k:'n', l:'투구수', fmt:v=>v},
     {k:'IP', l:'이닝', fmt:function(v){ const o=Math.round(v*3); return Math.floor(o/3)+'.'+(o%3); }, t:'야구식 표기 (38.2 = 38과 2/3이닝)'},
+    {k:'W', l:'승', fmt:v=>v||0, hl:'#4ade80', t:'승리투수'},
+    {k:'L', l:'패', fmt:v=>v||0, hl:'#f87171', t:'패전투수'},
+    {k:'SV', l:'세이브', fmt:v=>v||0, hl:'#60a5fa', t:'세이브'},
+    {k:'HLD', l:'홀드', fmt:v=>v||0, hl:'#a78bfa', t:'홀드'},
+    {k:'QS', l:'QS', fmt:v=>v||0, hl:'#fbbf24', t:'퀄리티스타트 (선발 6이닝+ 3실점 이하)'},
+    {k:'QSP', l:'QS+', fmt:v=>v||0, hl:'#fcd34d', t:'QS+ (선발 7이닝+ 3실점 이하)'},
     {k:'era', l:'ERA', fmt:v=>v==null?'-':v.toFixed(2), hl:'#ff8866', t:'평균자책점 (실점=자책 단순화 — WBD엔 자책 구분 데이터 없음)'},
     {k:'BF', l:'타자', fmt:v=>v, t:'상대 타자 수'},
     {k:'H', l:'피안타', fmt:v=>v},
@@ -25453,8 +25706,8 @@ function exportAnalyticsBundle(opts){
   // 1) 메타 정보
   const meta={
     generatedAt:new Date().toISOString(),
-    appVersion:'V10.3',
-    schemaVersion:9,
+    appVersion:'V11.0',
+    schemaVersion:10,
     schemaChanges:{
       v9_changes:[
         '🆕 league: 리그 기준선 블록 추가 — lgRA9/RPW/wOBA + 타격·투수 부문 평균(자격자 기준). AI가 개별 선수를 리그 평균 대비로 해석 가능',
@@ -25564,7 +25817,8 @@ function exportAnalyticsBundle(opts){
             WHIP:_r.whip!=null?+_r.whip.toFixed(2):null,KBB:_r.kbb!=null?+Math.min(_r.kbb,99).toFixed(1):null,
             pWAR:_r.pwar!=null?+_r.pwar.toFixed(2):null,WAR144:_r.war144!=null?+_r.war144.toFixed(1):null,
             ERA:_r.era!=null?+_r.era.toFixed(2):null,estIP:+_r.IP.toFixed(1),
-            HRpct:_r.hrPct!=null?+_r.hrPct.toFixed(2):null}:null;
+            HRpct:_r.hrPct!=null?+_r.hrPct.toFixed(2):null,
+            W:_r.W||0,L:_r.L||0,SV:_r.SV||0,HLD:_r.HLD||0,QS:_r.QS||0,QSplus:_r.QSP||0}:null;
         }catch(_){return null}})(),
         WHIP:+(season.whip||0).toFixed(2),
         K:season.ks,
@@ -26129,7 +26383,7 @@ function exportFullBackup(){
   // 풀 분석 데이터
   const data={
     generatedAt:new Date().toISOString(),
-    appVersion:'V10.3',
+    appVersion:'V11.0',
     schemaVersion:2,
     
     // 메타 정보
