@@ -1183,6 +1183,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         <option value="p-whiff">💫 헛스윙% (높은순)</option>
         <option value="p-ev">🛡️ 평균 피EV (낮은순)</option>
         <option value="p-hh">🛑 피하드히트% (낮은순)</option>
+        <option value="p-hhp">🛑 피HH+% (≥125, 낮은순)</option>
+        <option value="p-brlp">🛑 피배럴+% (≥125&LA20~40, 낮은순)</option>
         <option value="p-barrel">🧱 피배럴% (낮은순)</option>
         <option value="p-zwhiff">🎯 존내 헛스윙% (높은순)</option>
         <option value="p-ozwhiff">👀 존밖 헛스윙% (높은순)</option>
@@ -1211,7 +1213,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       <optgroup label="🏏 타자 - 타구질">
         <option value="b-ev">🚀 평균 EV</option>
         <option value="b-hh">💪 하드히트% (≥110)</option>
+        <option value="b-hhp">🔥 HH+% (≥125)</option>
         <option value="b-brl">🎯 배럴%</option>
+        <option value="b-brlp">🎯 배럴+% (≥125&LA20~40)</option>
         <option value="b-ld">➡️ 라인드라이브%</option>
         <option value="b-sweet">🎪 스윗스팟%</option>
         <option value="b-dist">📏 평균 비거리</option>
@@ -10160,7 +10164,9 @@ function renderLeaderboard(){
       else if(cat==='p-whiff'){v=whiffPct;display=whiffPct.toFixed(1)+'%';}
       else if(cat==='p-ev'){v=-avgEv;display=avgEv.toFixed(1)+' km/h';}
       else if(cat==='p-hh'){v=-hhPctA;display=hhPctA.toFixed(1)+'%';}
+      else if(cat==='p-hhp'){const hhpA=battedPd.filter(d=>_isHHPlus(d)).length;const p=battedPd.length?hhpA/battedPd.length*100:0;v=-p;display=p.toFixed(1)+'%';}
       else if(cat==='p-barrel'){v=-brlPctA;display=brlPctA.toFixed(1)+'%';}
+      else if(cat==='p-brlp'){const brlpA=battedPd.filter(d=>_isBarrelPlus(d)).length;const p=battedPd.length?brlpA/battedPd.length*100:0;v=-p;display=p.toFixed(1)+'%';}
       else if(cat==='p-zwhiff'){v=zinWhiffPct;display=zinWhiffPct.toFixed(1)+'%';}
       else if(cat==='p-ozwhiff'){v=ozWhiffPctP;display=ozWhiffPctP.toFixed(1)+'%';}
       else if(cat==='p-mistake'){v=-mistakePct;display=mistakePct.toFixed(1)+'%';}
@@ -10262,7 +10268,9 @@ function renderLeaderboard(){
       else if(cat==='b-hits'){v=hits;display=hits+'개';}
       else if(cat==='b-ev'){v=avgEV;display=avgEV.toFixed(1)+' km/h';}
       else if(cat==='b-hh'){v=hhPctB;display=hhPctB.toFixed(1)+'%';}
+      else if(cat==='b-hhp'){const hhpB=bdQ.filter(d=>_isHHPlus(d)).length;const p=bdQ.length?hhpB/bdQ.length*100:0;v=p;display=p.toFixed(1)+'%';}
       else if(cat==='b-brl'){v=brlPct;display=brlPct.toFixed(1)+'%';}
+      else if(cat==='b-brlp'){const brlpB=bdQ.filter(d=>_isBarrelPlus(d)).length;const p=bdQ.length?brlpB/bdQ.length*100:0;v=p;display=p.toFixed(1)+'%';}
       else if(cat==='b-ld'){v=ldPct;display=ldPct.toFixed(1)+'%';}
       else if(cat==='b-sweet'){v=sweetPct;display=sweetPct.toFixed(1)+'%';}
       else if(cat==='b-dist'){v=avgDist;display=avgDist.toFixed(1);}
@@ -10310,12 +10318,12 @@ function renderLeaderboard(){
     'p-k':'K%','p-kbb':'K/BB',
     'p-era':'ERA (방어율)','p-whip':'WHIP','p-ip':'이닝 (IP)','p-runs':'실점',
     'p-ba':'피안타율','p-bb':'BB%','p-hr':'피홈런','p-hrrate':'피홈런%',
-    'p-whiff':'헛스윙%','p-ev':'평균 피EV','p-hh':'피하드히트%','p-barrel':'피배럴%',
+    'p-whiff':'헛스윙%','p-ev':'평균 피EV','p-hh':'피하드히트%','p-hhp':'피HH+%(≥125)','p-barrel':'피배럴%','p-brlp':'피배럴+%(≥125&LA20~40)',
     'p-zwhiff':'존내 헛스윙%','p-ozwhiff':'존밖 헛스윙%','p-mistake':'실투율','p-border':'보더라인%','p-safe':'안전존%',
     'p-strike':'스트라이크%','p-fps':'초구 스트라이크%','p-ppa':'이닝당 투구수',
     'p-chase':'체이스 유도%','p-var':'구종 다양성','p-ovr':'투수 OVR',
     'b-avg':'타율','b-slg':'장타율','b-ops':'OPS','b-obp':'출루율','b-iso':'ISO','b-hr':'홈런','b-hrrate':'홈런%','b-hits':'안타',
-    'b-ev':'평균 EV','b-hh':'하드히트%','b-brl':'배럴%','b-ld':'라인드라이브%','b-sweet':'스윗스팟%','b-dist':'평균 비거리','b-maxdist':'최장 비거리',
+    'b-ev':'평균 EV','b-hh':'하드히트%','b-hhp':'HH+%(≥125)','b-brl':'배럴%','b-brlp':'배럴+%(≥125&LA20~40)','b-ld':'라인드라이브%','b-sweet':'스윗스팟%','b-dist':'평균 비거리','b-maxdist':'최장 비거리',
     'b-whiff':'헛스윙% 전체','b-whiff-in':'헛스윙% 존 안','b-whiff-out':'헛스윙% 존 밖',
     'b-contact':'컨택률 전체','b-contact-in':'컨택률 존 안','b-contact-out':'컨택률 존 밖',
     'b-chase':'체이스%','b-swing':'스윙% 전체','b-swing-in':'스윙% 존 안','b-bb':'BB%',
