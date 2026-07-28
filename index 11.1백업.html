@@ -660,7 +660,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         <button onclick="showPage('compare')">⚖️ 선수 비교</button>
         <button onclick="showPage('matchup')">🎮 매치업</button>
         <button onclick="showPage('pitchtype')">🎯 구종 분석</button>
-        <button onclick="showPage('ballmap')" style="background:linear-gradient(90deg,rgba(255,153,51,.15),transparent);color:#ff9933;font-weight:700">🗺️ 타구 분석 <span style="font-size:9px;background:#ff9933;color:#000;padding:1px 5px;border-radius:3px;margin-left:4px">NEW</span></button>
         <button onclick="showPage('defense')" style="background:linear-gradient(90deg,rgba(57,255,138,.15),transparent);color:#39ff8a;font-weight:700">🛡️ 수비 분석 <span style="font-size:9px;background:#39ff8a;color:#000;padding:1px 5px;border-radius:3px;margin-left:4px">NEW</span></button>
         <button onclick="showPage('defender')" style="background:linear-gradient(90deg,rgba(57,255,138,.1),transparent);color:#39ff8a;font-weight:600">🛡️ 수비수 단독 분석 <span style="font-size:9px;background:#39ff8a;color:#000;padding:1px 5px;border-radius:3px;margin-left:4px">NEW</span></button>
         <button onclick="showPage('scouting')" style="background:linear-gradient(90deg,rgba(204,68,255,.15),transparent);color:#cc44ff;font-weight:700">📋 상대 공략 <span style="font-size:9px;background:#cc44ff;color:#000;padding:1px 5px;border-radius:3px;margin-left:4px">NEW</span></button>
@@ -777,10 +776,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         <div class="tbl-wrap" id="gtable-wrap"><table class="data-table gtable compact" id="p-group-table" style="white-space:nowrap;min-width:1300px"></table></div>
       </div>
       <div class="card section"><div class="card-title">구종별 스핀 맵 (sH × sV)</div><div id="p-spin-map"></div></div>
-      <div class="grid2 section">
-        <div class="card"><div class="card-title">피타구 품질 분류 <span style="font-size:10px;color:var(--muted)">(V11.2 · 허용 타구 · 반원=LA, 반지름=EV)</span></div><div id="p-bbquality"></div></div>
-        <div class="card"><div class="card-title">피타구 품질 분포 <span style="font-size:10px;color:var(--muted)">(vs 리그 평균 · 낮을수록 좋은 존: 배럴+/솔리드/플레어)</span></div><div id="p-bbquality-bars"></div></div>
-      </div>
     </div>
     <!-- B -->
     <div class="spanel" id="ps-1">
@@ -967,10 +962,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           </div>
         </div><div id="b-spray"></div></div>
         <div class="card"><div class="card-title">발사각 × 타구속도 (배럴존)</div><div id="b-barrel"></div></div>
-      </div>
-      <div class="grid2 section">
-        <div class="card"><div class="card-title">타구 품질 분류 <span style="font-size:10px;color:var(--muted)">(V11.2 · WBD 실측 보정 · 반원=LA, 반지름=EV)</span></div><div id="b-bbquality"></div></div>
-        <div class="card"><div class="card-title">타구 품질 분포 <span style="font-size:10px;color:var(--muted)">(vs 리그 평균)</span></div><div id="b-bbquality-bars"></div></div>
       </div>
       <div class="grid2 section">
         <div class="card"><div class="card-title">발사각 분포</div><div id="b-ldeg-hist"></div></div>
@@ -1394,11 +1385,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 <!-- ══ DEFENSE ANALYSIS (V9.9 NEW: 수비 분석) ══ -->
 <div class="page" id="page-defense">
   <div id="defense-content"></div>
-</div>
-
-<!-- ══ BALLMAP (V11.2 NEW: 리그 전체 타구 히트맵 — 메타 확인용) ══ -->
-<div class="page" id="page-ballmap">
-  <div id="ballmap-content"></div>
 </div>
 
 <!-- ══ DEFENDER (V9.9 NEW: 수비수 단독 분석 — 투수/타자 페이지 스타일) ══ -->
@@ -3261,7 +3247,7 @@ function showPage(name,_internal){
   const labels={home:'홈',pitcher:'투수',batter:'타자',matchup:'매치업',cards:'카드',leaderboard:'리더보드',team:'팀',compare:'비교',highlights:'하이라이트',awards:'어워드',insights:'인사이트',myteam:'내 팀'};
   document.querySelectorAll('.nav-btn').forEach(b=>{if(b.textContent.includes(labels[name]))b.classList.add('active');});
   // 현재 페이지 모바일 상단에 표시
-  const pageTitle=({home:'🏠 홈',pitcher:'⚾ 투수 분석',batter:'🏏 타자 분석',cards:'🃏 선수 카드',leaderboard:'🏅 리더보드',team:'🏆 팀 분석',compare:'⚖️ 선수 비교',highlights:'🎬 하이라이트',awards:'🏆 어워드',matchup:'🎮 매치업',insights:'📈 인사이트',myteam:'⚔️ 내 팀 빌더',pitchtype:'🎯 구종 분석',defense:'🛡️ 수비 분석',defender:'🛡️ 수비수 분석',ballmap:'🗺️ 타구 분석',scouting:'📋 상대 공략',scoutreport:'📊 선수 평가',gamereport:'📰 경기후 리포트',pfpmanager:'👤 프로필 사진 관리',records:'📚 기록실'})[name]||name;
+  const pageTitle=({home:'🏠 홈',pitcher:'⚾ 투수 분석',batter:'🏏 타자 분석',cards:'🃏 선수 카드',leaderboard:'🏅 리더보드',team:'🏆 팀 분석',compare:'⚖️ 선수 비교',highlights:'🎬 하이라이트',awards:'🏆 어워드',matchup:'🎮 매치업',insights:'📈 인사이트',myteam:'⚔️ 내 팀 빌더',pitchtype:'🎯 구종 분석',defense:'🛡️ 수비 분석',defender:'🛡️ 수비수 분석',scouting:'📋 상대 공략',scoutreport:'📊 선수 평가',gamereport:'📰 경기후 리포트',pfpmanager:'👤 프로필 사진 관리',records:'📚 기록실'})[name]||name;
   const mobileLogoEl=document.querySelector('#mobile-topbar .mobile-logo');
   if(mobileLogoEl)mobileLogoEl.textContent=pageTitle;
   // 모바일 하단 탭바 active 상태
@@ -3271,7 +3257,7 @@ function showPage(name,_internal){
   // 드롭다운 그룹 활성 표시
   const groupMap={
     leaderboard:'ranking',awards:'ranking',insights:'ranking',
-    compare:'tools',matchup:'tools',highlights:'tools',myteam:'tools',pitchtype:'tools',scouting:'tools',ballmap:'tools'
+    compare:'tools',matchup:'tools',highlights:'tools',myteam:'tools',pitchtype:'tools',scouting:'tools'
   };
   document.querySelectorAll('.nav-dropdown').forEach(d=>{
     const grp=d.querySelector('[data-group]')?.dataset.group;
@@ -3302,7 +3288,6 @@ function showPage(name,_internal){
     else if(name==='insights') renderInsightsPage();
     else if(name==='myteam') renderMyTeamPage();
     else if(name==='pitchtype') renderPitchTypePage();
-    else if(name==='ballmap') renderBallMapPage();
     else if(name==='defense') renderDefensePage();
     else if(name==='defender') renderDefenderPage();
     else if(name==='scouting') renderScoutingPage();
@@ -3360,7 +3345,7 @@ function renderPitcherSubTab(idx){
 }
 
 function renderBatterSubTab(idx){
-  if(idx===0){renderBatterSpray();renderBarrel();renderBBQuality();renderLdegHist();renderSdegFan();}
+  if(idx===0){renderBatterSpray();renderBarrel();renderLdegHist();renderSdegFan();}
   else if(idx===1){renderSwingRadar();renderHpos();renderSpdBand();renderBatterPitchTable();renderTiming();}
   else if(idx===2){renderCountTable();renderRunnerTable();renderHeightStats();renderResultPie();}
   else if(idx===3){batterLogPage=0;renderBatterLog();}
@@ -4193,7 +4178,6 @@ function renderPitcherPage(){
   renderPitcherSpeedHist(pd);
   renderPitcherGroupTable(pd);
   renderSpinMap(pd);
-  renderPitcherBBQuality(pd);
   if(activePitcherTab>0) renderPitcherSubTab(activePitcherTab);
 }
 
@@ -4262,10 +4246,6 @@ function renderPitcherHeader(pitcherName,pd){
   // 피하드히트% (EV>=110)
   const hhAg=battedPdH.filter(d=>+d.ev>=110).length;
   const hhPctAg=battedPdH.length?(hhAg/battedPdH.length*100).toFixed(1):'-';
-  const hhpAg=battedPdH.filter(d=>_isHHPlus(d)).length;
-  const hhpPctAg=battedPdH.length?(hhpAg/battedPdH.length*100).toFixed(1):'-';
-  const brlpAg=battedPdH.filter(d=>_isBarrelPlus(d)).length;
-  const brlpPctAg=battedPdH.length?(brlpAg/battedPdH.length*100).toFixed(1):'-';
 
   const gameCtx=pitcherGameFilter?(' — '+GAMES.find(g=>g.id===pitcherGameFilter)?.name||''):'(전체 경기 합산)';
   // WAR 표시 (투타 겸업 감지)
@@ -4338,8 +4318,6 @@ function renderPitcherHeader(pitcherName,pd){
           <div class="ph-stat" title="헛스윙률 = 스윙했는데 타구 못 만듦 (리그 평균 32%)"><div class="ph-stat-label" style="color:#aa88ff">헛스윙%</div><div class="ph-stat-val" style="font-size:16px;color:#aa88ff">${whiffPct}${whiffPct==='-'?'':'%'}</div></div>
           <div class="ph-stat" title="평균 피타속 (리그 평균 100.4km/h·인플레이 · 낮을수록 강타 억제)"><div class="ph-stat-label" style="color:#ff6b8a">평균 피EV</div><div class="ph-stat-val" style="font-size:16px;color:#ff6b8a">${avgEvAg}<span style="font-size:10px;color:var(--muted)">${avgEvAg==='-'?'':'km/h'}</span></div></div>
           <div class="ph-stat" title="피하드히트% (EV≥110 허용률, 리그 평균 39% · 낮을수록 강타 억제)"><div class="ph-stat-label" style="color:#ff9933">피HH%</div><div class="ph-stat-val" style="font-size:16px;color:#ff9933">${hhPctAg}${hhPctAg==='-'?'':'%'}</div></div>
-          <div class="ph-stat" title="피HH+% (EV≥125 허용률 · V11.2 WBD 실측: BA .485→.650 점프 지점 · 리그 평균 23.6% · 낮을수록 좋음)"><div class="ph-stat-label" style="color:#ff5533">피HH+%</div><div class="ph-stat-val" style="font-size:16px;color:#ff5533">${hhpPctAg}${hhpPctAg==='-'?'':'%'}</div></div>
-          <div class="ph-stat" title="피배럴+% (EV≥125 & LA20~40° 허용률 · 실측 BA .918, 홈런 96% 발생 존 · 리그 평균 10.1% · 낮을수록 좋음)"><div class="ph-stat-label" style="color:#ff2020">피배럴+%</div><div class="ph-stat-val" style="font-size:16px;color:#ff2020">${brlpPctAg}${brlpPctAg==='-'?'':'%'}</div></div>
           <div class="ph-stat" title="초구 스트라이크 비율 (리그 평균 72%)"><div class="ph-stat-label" style="color:#44ccff">초구 S%</div><div class="ph-stat-val" style="font-size:16px;color:#44ccff">${fpsPct}${fpsPct==='-'?'':'%'}</div></div>
           <div class="ph-stat" title="이닝당 투구수 (낮을수록 효율적)"><div class="ph-stat-label" style="color:#ffaa44">P/IP</div><div class="ph-stat-val" style="font-size:16px;color:#ffaa44">${ppPA}</div></div>
         </div>
@@ -5339,8 +5317,6 @@ function renderBatterHeader(batterName,bd){
     +'<div class="ph-stat"><div class="ph-stat-label">평균LA</div><div class="ph-stat-val">'+avgLA+'<span style="font-size:11px;color:var(--muted)">°</span></div></div>'
     +'<div class="ph-stat"><div class="ph-stat-label" style="color:#ff8c44">HH%<span style="font-size:9px;color:var(--muted)"> (≥110)</span></div><div class="ph-stat-val" style="color:#ff8c44">'+hhPct+'%</div></div>'
     +'<div class="ph-stat"><div class="ph-stat-label" style="color:#ffd700">배럴%<span style="font-size:9px;color:var(--muted)"> (≥105&amp;LA8~32)</span></div><div class="ph-stat-val" style="color:#ffd700">'+( bdQ.length>0?(bdQ.filter(d=>+d.ev>=105&&+d.ldeg>=8&&+d.ldeg<=32).length/bdQ.length*100).toFixed(1):0 )+'%</div></div>'
-    +'<div class="ph-stat" title="HH+ = EV 125 이상 (WBD 실측: BA .485→.650 점프 지점)"><div class="ph-stat-label" style="color:#ff5533">HH+%<span style="font-size:9px;color:var(--muted)"> (≥125)</span></div><div class="ph-stat-val" style="color:#ff5533">'+( bdQ.length>0?(bdQ.filter(d=>_isHHPlus(d)).length/bdQ.length*100).toFixed(1):0 )+'%</div></div>'
-    +'<div class="ph-stat" title="배럴+ = EV 125+ &amp; LA 20~40° (WBD 실측 BA .91 · 홈런 전량 이 존)"><div class="ph-stat-label" style="color:#ff2020">배럴+%<span style="font-size:9px;color:var(--muted)"> (≥125&amp;LA20~40)</span></div><div class="ph-stat-val" style="color:#ff2020">'+( bdQ.length>0?(bdQ.filter(d=>_isBarrelPlus(d)).length/bdQ.length*100).toFixed(1):0 )+'%</div></div>'
     +'<div class="ph-stat"><div class="ph-stat-label" style="color:#cc88ff">스윗스팟%<span style="font-size:9px;color:var(--muted)"> (hPos 0.35~0.65)</span></div><div class="ph-stat-val" style="color:#cc88ff">'+sweetPct+(sweetPct==='-'?'':'%')+'</div></div>'
     +'<div class="ph-stat"><div class="ph-stat-label" style="color:#cc88ff">평균 hPos</div><div class="ph-stat-val" style="color:#cc88ff">'+avgHpos+'</div></div>'
     +'<div class="ph-stat" title="초구 스윙률 (리그 평균 49% · 높으면 공격적, 낮으면 선구형)"><div class="ph-stat-label" style="color:#44ccff">초구 스윙%</div><div class="ph-stat-val" style="color:#44ccff">'+fpSwPct+(fpSwPct==='-'?'':'%')+'</div></div>'
@@ -5414,20 +5390,20 @@ function renderBatterSpray(){
   // 홈플레이트: lx=0, lz=-20 (스펙)
   // 내야방향: z- (더 음수 = 외야)
   // lx+: 좌측(3루/LF방향), lx-: 우측(1루/RF방향)
+  // ── V11.2 실측 FIELD_CONFIG 반영 ─────────────
   const HP ={lx:0,     lz:-20};
-  const SQ2=Math.SQRT2;
-  const BD=27.4;
-  const B1={lx:-(BD/SQ2), lz:-20-(BD/SQ2)};  // 1루 (lx=-19.4, lz=-39.4)
-  const B2={lx:0,          lz:-20-BD*SQ2};    // 2루 (lz=-58.8)
-  const B3={lx:+(BD/SQ2),  lz:-20-(BD/SQ2)};  // 3루 (lx=+19.4, lz=-39.4)
-  // 외야 펜스 (블루프린트: CF=118m, 파울라인=98m)
-  // z- 방향으로 전개: lz = -20 - 거리
-  const RFP={lx:-(98/SQ2),   lz:-20-(98/SQ2)}; // 우익폴 (lx=-69, lz=-89)
-  const RC ={lx:-50,          lz:-110};          // 우중 (lz=-110)
-  const CFR={lx:-20,          lz:-138};          // 중견 우측 (폭 40m)
-  const CFL={lx:+20,          lz:-138};          // 중견 좌측
-  const LC ={lx:+50,          lz:-110};          // 좌중
-  const LFP={lx:+(98/SQ2),   lz:-20-(98/SQ2)}; // 좌익폴 (lx=+69, lz=-89)
+  const MND={lx:0,     lz:-38.44};              // 마운드 중심
+  const B1={lx:-19.40, lz:-39.70};              // 1루 (실측)
+  const B2={lx:0,      lz:-59.10};              // 2루 (실측)
+  const B3={lx:+19.40, lz:-39.70};              // 3루 (실측)
+  // 외야 펜스 (실측: 좌우폴 74m, 좌우중간 (54.74,117.5), 중앙 135m)
+  const RFP={lx:-74.0,   lz:-94.30};            // 우익폴
+  const RC ={lx:-54.74,  lz:-117.50};           // 우중
+  const CFR={lx:-20.0,   lz:-135.0};            // 중견 우측
+  const CFC={lx:0,       lz:-135.0};            // 중앙 (신규)
+  const CFL={lx:+20.0,   lz:-135.0};            // 중견 좌측
+  const LC ={lx:+54.74,  lz:-117.50};           // 좌중
+  const LFP={lx:+74.0,   lz:-94.30};            // 좌익폴
 
   // ── 뷰 범위 계산 ─────────────────────────────────────────
   // 내야 모드: 내야 영역만 줌인 (±38m × HP~2루+여유)
@@ -5444,8 +5420,8 @@ function renderBatterSpray(){
     lxMin = Math.min(dataLxMin, B3.lx-8, -32); lxMax = Math.max(dataLxMax, B1.lx+8, 32);
     lzMin = Math.min(dataLzMin, B2.lz-8, -72);  lzMax = Math.max(dataLzMax, HP.lz+8, -12);
   } else {
-    const fieldLx=[HP.lx,B1.lx,B3.lx,RFP.lx,LFP.lx,CFR.lx,CFL.lx];
-    const fieldLz=[HP.lz,B2.lz,CFR.lz,RFP.lz];
+    const fieldLx=[HP.lx,B1.lx,B3.lx,RFP.lx,LFP.lx,CFR.lx,CFL.lx,RC.lx,LC.lx];
+    const fieldLz=[HP.lz,B2.lz,CFR.lz,CFC.lz,RFP.lz,RC.lz];
     const allLx=[...pts.map(d=>+d.lx||0),...fieldLx];
     const allLz=[...pts.map(d=>+d.lz||0),...fieldLz];
     lxMin=Math.min(...allLx)-6; lxMax=Math.max(...allLx)+6;
@@ -5469,10 +5445,11 @@ function renderBatterSpray(){
 
   // 외야 잔디 폴리곤 (내야 줌인 모드에서는 전체 배경만)
   if(!INFIELD_ZOOM){
-    const outPts=[hpP,rfpP,rcP,cfrP,cflP,lcP,lfpP].map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    const cfcP=px(CFC);
+    const outPts=[hpP,rfpP,rcP,cfrP,cfcP,cflP,lcP,lfpP].map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
     items+=sEl('polygon',{points:outPts,fill:'#1e4010',stroke:'rgba(255,255,255,0.15)','stroke-width':'0.5'});
     // 외야 펜스 라인 (파울폴→외야→파울폴)
-    const fencePts=[rfpP,rcP,cfrP,cflP,lcP,lfpP].map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    const fencePts=[rfpP,rcP,cfrP,cfcP,cflP,lcP,lfpP].map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
     items+=`<polyline points="${fencePts}" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>`;
     // 파울라인 (HP→파울폴)
     items+=`<line x1="${hpP.x.toFixed(1)}" y1="${hpP.y.toFixed(1)}" x2="${rfpP.x.toFixed(1)}" y2="${rfpP.y.toFixed(1)}" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>`;
@@ -5494,6 +5471,10 @@ function renderBatterSpray(){
 
 
   // 베이스 마커
+  // 마운드 (V11.2 신규)
+  const mndP=px(MND);
+  items+=sEl('circle',{cx:mndP.x.toFixed(1),cy:mndP.y.toFixed(1),r:'5',fill:'rgba(180,140,90,0.7)',stroke:'rgba(255,255,255,0.4)','stroke-width':'0.5'});
+
   [[hpP,'HP'],[b1P,'1B'],[b2P,'2B'],[b3P,'3B']].forEach(([p,lbl])=>{
     items+=sEl('rect',{x:(p.x-4).toFixed(1),y:(p.y-4).toFixed(1),width:'8',height:'8',fill:'white',rx:'1'});
     items+=sEl('text',{x:p.x.toFixed(1),y:(p.y-7).toFixed(1),fill:'rgba(255,255,255,0.6)','font-size':'7','text-anchor':'middle'},lbl);
@@ -5650,124 +5631,6 @@ function renderBarrel(){
     dot.addEventListener('mouseenter',e=>{const d=G[+dot.dataset.i];showTip(e,`${d.bName} EV:${d.ev}km/h LA:${d.ldeg}°<br>${RESULT_NAMES[d.result]||''}`);});
     dot.addEventListener('mousemove',moveTip);dot.addEventListener('mouseleave',hideTip);
   });
-}
-
-// ═══ V11.2: 타구 품질 분류 반원 극좌표 차트 (Statcast 스타일, WBD 실측 보정) ═══
-function _leagueBBQualityDist(){
-  // 리그 전체 인플레이 타구의 품질 분포 (캐시)
-  const genKey='bbq_'+window._cache.generation;
-  if(window._bbqLeagueCache && window._bbqLeagueCache.key===genKey) return window._bbqLeagueCache.dist;
-  const dist={barrelPlus:0,solid:0,flare:0,topped:0,under:0,weak:0}; let total=0;
-  Object.values(window._cache.batterData).forEach(arr=>{
-    arr.forEach(d=>{
-      if(!_isInPlay(d)||d.ldeg==null||+d.batType===1) return;
-      dist[_bbQuality(d)]++; total++;
-    });
-  });
-  const pct={}; _BBQ_ORDER.forEach(k=>pct[k]=total>0?dist[k]/total*100:0);
-  window._bbqLeagueCache={key:genKey, dist:pct};
-  return pct;
-}
-function renderBBQuality(){
-  const data=getBatterDataFiltered().filter(d=>_isInPlay(d)&&d.ldeg!=null&&+d.batType!==1);
-  _renderBBQCore(data,'b-bbquality','b-bbquality-bars',false);
-}
-function renderPitcherBBQuality(pd){
-  const data=(pd||[]).filter(d=>_isInPlay(d)&&d.ldeg!=null&&+d.batType!==1);
-  _renderBBQCore(data,'p-bbquality','p-bbquality-bars',true);
-}
-function _renderBBQCore(data,elId,barsElId,isPitcher){
-  const el=document.getElementById(elId);
-  const elBars=document.getElementById(barsElId);
-  if(!el) return;
-  if(!data.length){el.innerHTML='<span style="color:var(--muted)">데이터 없음</span>';if(elBars)elBars.innerHTML='';return;}
-  // ── 반원 극좌표: 중심 왼쪽, 각도=LA(-90~+90), 반지름=EV(0~135) ──
-  const W=360,H=340;
-  const cx=30, cy=H/2, maxR=Math.min(W-cx-15,(H-20)/2), maxEV=135;
-  const rOf=ev=>Math.min(ev,maxEV)/maxEV*maxR;
-  const xyOf=(ev,la)=>{const r=rOf(ev),a=la*Math.PI/180;return [cx+r*Math.cos(a), cy-r*Math.sin(a)];};
-  let items='';
-  // 배경 존 채우기: LA 3° × EV 5 그리드 셀을 부채꼴 조각으로
-  const laStep=3, evStep=5;
-  for(let la=-90;la<90;la+=laStep){
-    for(let ev=0;ev<maxEV;ev+=evStep){
-      const q=_bbQuality({ev:ev+evStep/2, ldeg:la+laStep/2});
-      const col=_BBQ_META[q].color;
-      const r1=rOf(ev), r2=rOf(ev+evStep);
-      const a1=la*Math.PI/180, a2=(la+laStep)*Math.PI/180;
-      const p1=[cx+r1*Math.cos(a1),cy-r1*Math.sin(a1)], p2=[cx+r2*Math.cos(a1),cy-r2*Math.sin(a1)];
-      const p3=[cx+r2*Math.cos(a2),cy-r2*Math.sin(a2)], p4=[cx+r1*Math.cos(a2),cy-r1*Math.sin(a2)];
-      items+=`<path d="M${p1[0].toFixed(1)},${p1[1].toFixed(1)} L${p2[0].toFixed(1)},${p2[1].toFixed(1)} A${r2.toFixed(1)},${r2.toFixed(1)} 0 0 ${a2>a1?0:1} ${p3[0].toFixed(1)},${p3[1].toFixed(1)} L${p4[0].toFixed(1)},${p4[1].toFixed(1)} A${r1.toFixed(1)},${r1.toFixed(1)} 0 0 1 ${p1[0].toFixed(1)},${p1[1].toFixed(1)} Z" fill="${col}" opacity="0.30"/>`;
-    }
-  }
-  // 기준선: LA 0°, ±45°, EV 링(110, 125)
-  [[-90,''],[-45,'-45°'],[0,'0°'],[45,'+45°'],[90,'']].forEach(([la,lbl])=>{
-    const [x,y]=xyOf(maxEV,la);
-    items+=sEl('line',{x1:cx,y1:cy,x2:x.toFixed(1),y2:y.toFixed(1),stroke:'rgba(255,255,255,0.25)','stroke-width':'0.6','stroke-dasharray':'3,3'});
-    if(lbl){const [lx,ly]=xyOf(maxEV+6,la);items+=sEl('text',{x:lx.toFixed(1),y:(ly+3).toFixed(1),fill:'#8aa','font-size':'8'},lbl);}
-  });
-  [110,125].forEach(ev=>{
-    const r=rOf(ev);
-    items+=`<path d="M${cx},${(cy+r).toFixed(1)} A${r.toFixed(1)},${r.toFixed(1)} 0 0 1 ${cx},${(cy-r).toFixed(1)}" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="0.7" stroke-dasharray="4,3"/>`;
-    items+=sEl('text',{x:(cx+3).toFixed(1),y:(cy-r-2).toFixed(1),fill:'#8aa','font-size':'7'},'EV'+ev);
-  });
-  // 타구 점 오버레이
-  data.forEach(d=>{
-    const [x,y]=xyOf(+d.ev,+d.ldeg);
-    const isHitD=(+d['1BSafe']===1)||(+d.result===4);
-    const col=+d.result===4?'#ffd700':(isHitD?'#39ff8a':'#f0f4f8');
-    items+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${col}" stroke="rgba(0,0,0,0.5)" stroke-width="0.6" opacity="0.95" class="bbq-dot" data-i="${G.indexOf(d)}"/>`;
-  });
-  // 범례 (오른쪽)
-  const legX=W-4;
-  _BBQ_ORDER.forEach((k,i)=>{
-    const m=_BBQ_META[k];
-    const cnt=data.filter(d=>_bbQuality(d)===k).length;
-    const pct=(cnt/data.length*100).toFixed(0);
-    items+=sEl('rect',{x:legX-92,y:14+i*16,width:'9',height:'9',fill:m.color,opacity:'0.8',rx:'2'});
-    items+=sEl('text',{x:legX-79,y:22+i*16,fill:'#cdd6e0','font-size':'8'},`${m.label} ${cnt} (${pct}%)`);
-  });
-  items+=sEl('text',{x:legX-92,y:8,fill:'var(--muted)','font-size':'7'},'점: 🟡HR 🟢안타 ⚪아웃');
-  el.innerHTML=makeSVG(W,H,items);
-  el.querySelectorAll('.bbq-dot').forEach(dot=>{
-    dot.addEventListener('mouseenter',e=>{const d=G[+dot.dataset.i];if(d){const q=_BBQ_META[_bbQuality(d)];showTip(e,`<b style="color:${q.color}">${q.label}</b><br>EV:${d.ev}km/h LA:${d.ldeg}°<br>${RESULT_NAMES[d.result]||''}`);}});
-    dot.addEventListener('mousemove',moveTip);dot.addEventListener('mouseleave',hideTip);
-  });
-  // ── 분포 막대 (선수 vs 리그) ──
-  if(elBars){
-    const lg=_leagueBBQualityDist();
-    let html='<div style="display:flex;flex-direction:column;gap:8px;padding:6px 4px">';
-    _BBQ_ORDER.forEach(k=>{
-      const m=_BBQ_META[k];
-      const cnt=data.filter(d=>_bbQuality(d)===k).length;
-      const pPct=cnt/data.length*100;
-      const lPct=lg[k]||0;
-      const diff=pPct-lPct;
-      const diffStr=(diff>=0?'+':'')+diff.toFixed(1);
-      const goodHigh=(k==='barrelPlus'||k==='solid'||k==='flare');
-      const isGood=isPitcher ? (goodHigh?diff<=0:diff>=0) : (goodHigh?diff>=0:diff<=0);
-      const diffCol=isGood?'#39ff8a':'#ff6060';
-      html+=`<div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">
-          <span style="color:${m.color};font-weight:600">${m.label}</span>
-          <span style="color:#cdd6e0">${pPct.toFixed(1)}% <span style="color:var(--muted);font-size:9px">(리그 ${lPct.toFixed(1)}%)</span> <span style="color:${diffCol};font-size:10px">${diffStr}</span></span>
-        </div>
-        <div style="position:relative;height:12px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden">
-          <div style="position:absolute;left:0;top:0;height:100%;width:${Math.min(pPct,100).toFixed(1)}%;background:${m.color};opacity:0.75;border-radius:3px"></div>
-          <div style="position:absolute;left:${Math.min(lPct,100).toFixed(1)}%;top:0;height:100%;width:2px;background:#fff;opacity:0.9" title="리그 평균"></div>
-        </div>
-      </div>`;
-    });
-    // HH+/배럴+ 요약
-    const hhp=data.filter(d=>_isHHPlus(d)).length, brlp=data.filter(d=>_isBarrelPlus(d)).length;
-    const pfx=isPitcher?'피':'';
-    html+=`<div style="margin-top:6px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);font-size:11px;display:flex;gap:16px">
-      <span title="EV 125+ (WBD 실측 점프 지점 · 리그 평균 23.6%)"><span style="color:#ff5533;font-weight:700">${pfx}HH+</span> <span style="color:#cdd6e0">${hhp}개 (${(hhp/data.length*100).toFixed(1)}%)</span></span>
-      <span title="EV 125+ & LA 20~40° (실측 BA .918 · 리그 평균 10.1%)"><span style="color:#ff2020;font-weight:700">${pfx}배럴+</span> <span style="color:#cdd6e0">${brlp}개 (${(brlp/data.length*100).toFixed(1)}%)</span></span>
-    </div>`;
-    html+='</div>';
-    elBars.innerHTML=html;
-  }
 }
 
 function renderLdegHist(){
@@ -8228,23 +8091,6 @@ function _isHardHit(d){ return +d.ev >= 110; }
 // 인플레이 타구 판정 — EV·LA·HH%·배럴 등 타구질/타구수 집계는 반드시 이것 사용 (V11.1)
 // WBD에서 파울은 result=3 + call=2 + ev>0 으로 기록됨 → ev>0만으로 거르면 파울이 섞임
 function _isInPlay(d){ return +d.ev>0 && +d.result!==3; }
-// ═══ V11.2: HH+ / 배럴+ / 타구 품질 분류 (WBD 실측 보정: 리그전 30G 1,810 인플레이) ═══
-// HH+ = EV 125+ (실측: BA .485→.650 점프 지점 · 홈런 최소 EV 123)
-function _isHHPlus(d){ return +d.ev>=125; }
-// 배럴+ = EV 125+ & LA 20~40° (실측 BA .91 · 홈런 72개 전부 이 존에서 발생)
-function _isBarrelPlus(d){ const ev=+d.ev, la=+d.ldeg; return ev>=125 && la>=20 && la<=40; }
-// 타구 품질 6분류 (Statcast 스타일, WBD 실측 경계)
-function _bbQuality(d){
-  const ev=+d.ev, la=+d.ldeg;
-  if(ev>=125 && la>=20 && la<=40) return 'barrelPlus';
-  if((ev>=110 && ev<125 && la>=15 && la<=32) || (ev>=125 && la>=8 && la<20)) return 'solid';
-  if((ev<110 && la>=15 && la<25) || (ev>=110 && la>=0 && la<8)) return 'flare';
-  if(la<0) return 'topped';
-  if((la>32 && ev<115) || la>40) return 'under';
-  return 'weak';
-}
-const _BBQ_ORDER=['barrelPlus','solid','flare','topped','under','weak'];
-const _BBQ_META={barrelPlus:{label:'배럴+',color:'#ff2020'},solid:{label:'솔리드',color:'#ff9eb5'},flare:{label:'플레어/버너',color:'#ff9933'},topped:{label:'톱드',color:'#7fc46a'},under:{label:'언더',color:'#7fb8e6'},weak:{label:'위크',color:'#e6c84a'}};
 
 // 표준 AB 판정 (안타 + 인플레이아웃 + K) — 매치업 시뮬 등 AB 스케일 확률용 (V11.1)
 function _isABPitch(d){ const r=+d.result; return +d['1BSafe']===1||r===4||r===1||r===2||(+d.strk===2&&(+d.call===0||+d.call===4)); }
@@ -18092,195 +17938,6 @@ function setDefenseSort(key){
 // V9.9: _renderDefensePlayerDetail은 단독 페이지(renderDefenderPage)로 통합되어 제거됨
 
 
-// ═══════════ V11.2: 타구 분석 (리그 전체 낙구 히트맵 — 메타 확인) ═══════════
-window._ballmapState = window._ballmapState || {period:'all', traj:'all', quality:'all', result:'all', view:'dots', team:'all', split:false};
-function renderBallMapPage(){
-  const st=window._ballmapState;
-  const el=document.getElementById('ballmap-content');
-  if(!el) return;
-  // ── 데이터 수집: 활성 게임 전체 인플레이 (낙구좌표 있는 것) ──
-  const games=GAMES.filter(g=>activeGameIds.has(g.id));
-  // 날짜 정렬 (최근 필터용)
-  const sorted=[...games].sort((a,b)=>String(a.name).localeCompare(String(b.name)));
-  let useGames=sorted;
-  if(st.period==='r5') useGames=sorted.slice(-5);
-  else if(st.period==='r10') useGames=sorted.slice(-10);
-  else if(st.period==='r20') useGames=sorted.slice(-20);
-  const useIds=new Set(useGames.map(g=>g.id));
-  let balls=[];
-  const teamSet=new Set();
-  useGames.forEach(g=>{
-    const info=_parseGameName(g.name);
-    const tA=_normalizeTeam(info.teamA), tB=_normalizeTeam(info.teamB);
-    if(tA) teamSet.add(tA); if(tB) teamSet.add(tB);
-    (g.pitches||[]).forEach(d=>{
-      if(!_isInPlay(d)||+d.batType===1) return;
-      const lx=+d.lx, lz=+d.lz;
-      if(!lx&&!lz) return;
-      if(d.ldeg==null) return;
-      // 공격 팀 = half 1이면 teamA(초 공격), 아니면 teamB
-      d._atkTeam = d.half===1 ? tA : tB;
-      balls.push(d);
-    });
-  });
-  const teamList=[...teamSet].sort();
-  if(st.team!=='all') balls=balls.filter(d=>d._atkTeam===st.team);
-  // ── 필터 적용 ──
-  const la=d=>+d.ldeg, ev=d=>+d.ev;
-  if(st.traj==='gb') balls=balls.filter(d=>la(d)<10);
-  else if(st.traj==='ld') balls=balls.filter(d=>la(d)>=10&&la(d)<25);
-  else if(st.traj==='fb') balls=balls.filter(d=>la(d)>=25&&la(d)<40);
-  else if(st.traj==='pop') balls=balls.filter(d=>la(d)>=40);
-  if(st.quality==='hh') balls=balls.filter(d=>ev(d)>=110);
-  else if(st.quality==='hhp') balls=balls.filter(d=>_isHHPlus(d));
-  else if(st.quality==='brlp') balls=balls.filter(d=>_isBarrelPlus(d));
-  const isHitB=d=>(+d['1BSafe']===1)||(+d.result===4);
-  if(st.result==='hit') balls=balls.filter(d=>isHitB(d));
-  else if(st.result==='out') balls=balls.filter(d=>!isHitB(d));
-  else if(st.result==='hr') balls=balls.filter(d=>+d.result===4);
-  // ── 통계 요약 ──
-  const n=balls.length;
-  const hits=balls.filter(d=>isHitB(d)).length;
-  const hrs=balls.filter(d=>+d.result===4).length;
-  const avgEvV=n?(balls.reduce((s,d)=>s+ev(d),0)/n):0;
-  const avgLaV=n?(balls.reduce((s,d)=>s+la(d),0)/n):0;
-  const dirCnt={pull:0,cen:0,opp:0};
-  balls.forEach(d=>{const s=+d.sdeg; if(s<=-15)dirCnt.pull++;else if(s<15)dirCnt.cen++;else dirCnt.opp++;});
-  // ── 필터 바 UI ──
-  const btn=(grp,val,label)=>{
-    const active=st[grp]===val;
-    return `<button onclick="window._ballmapState.${grp}='${val}';renderBallMapPage()" style="background:${active?'var(--amber)':'rgba(255,255,255,0.04)'};color:${active?'#000':'var(--muted)'};border:1px solid ${active?'var(--amber)':'var(--border)'};padding:5px 10px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:${active?'700':'500'}">${label}</button>`;
-  };
-  let html=`<div class="card section" style="padding:14px 16px">
-    <div class="card-title" style="margin-bottom:10px">🗺️ 리그 전체 타구 낙구 분석 <span style="font-size:10px;color:var(--muted)">(V11.2 · 메타 확인 · 활성 경기 대상 · 파울/번트 제외)</span></div>
-    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:6px">
-      <div><span style="font-size:10px;color:var(--muted);margin-right:6px">팀(공격)</span><select onchange="window._ballmapState.team=this.value;renderBallMapPage()" style="background:rgba(255,255,255,0.05);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:4px;font-size:11px">
-        <option value="all" ${st.team==='all'?'selected':''}>전체 팀</option>
-        ${teamList.map(t=>`<option value="${t}" ${st.team===t?'selected':''}>${t}</option>`).join('')}
-      </select></div>
-      <div><span style="font-size:10px;color:var(--muted);margin-right:6px">기간</span>${btn('period','all','전체')}${btn('period','r20','최근20')}${btn('period','r10','최근10')}${btn('period','r5','최근5')}</div>
-      <div><span style="font-size:10px;color:var(--muted);margin-right:6px">궤적</span>${btn('traj','all','전체')}${btn('traj','gb','땅볼')}${btn('traj','ld','라인드')}${btn('traj','fb','뜬공')}${btn('traj','pop','팝업')}</div>
-      <div><span style="font-size:10px;color:var(--muted);margin-right:6px">품질</span>${btn('quality','all','전체')}${btn('quality','hh','HH(110+)')}${btn('quality','hhp','HH+(125+)')}${btn('quality','brlp','배럴+')}</div>
-      <div><span style="font-size:10px;color:var(--muted);margin-right:6px">결과</span>${btn('result','all','전체')}${btn('result','hit','안타만')}${btn('result','out','아웃만')}${btn('result','hr','홈런만')}</div>
-      <div><span style="font-size:10px;color:var(--muted);margin-right:6px">표시</span>${btn('view','dots','점')}${btn('view','heat','히트맵')}${btn('view','both','점+히트맵')}</div>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:18px;font-size:12px;color:#cdd6e0;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08)">
-      <span>타구 <b style="color:#fff">${n}</b>개</span>
-      <span>BA <b style="color:#39ff8a">${n?(hits/n).toFixed(3).replace(/^0/,''):'-'}</b></span>
-      <span>HR <b style="color:#ffd700">${hrs}</b></span>
-      <span>평균 EV <b>${n?avgEvV.toFixed(1):'-'}</b></span>
-      <span>평균 LA <b>${n?avgLaV.toFixed(1)+'°':'-'}</b></span>
-      <span>방향: 당김 <b>${n?(dirCnt.pull/n*100).toFixed(0):0}%</b> · 중앙 <b>${n?(dirCnt.cen/n*100).toFixed(0):0}%</b> · 밀어침 <b>${n?(dirCnt.opp/n*100).toFixed(0):0}%</b></span>
-      <span style="color:var(--muted)">대상 경기 ${useGames.length}</span>
-    </div>
-  </div>`;
-  html+=`<div class="card section"><div id="ballmap-field"></div></div>`;
-  // 팀별 요약 비교 테이블 (팀=전체일 때)
-  if(st.team==='all' && teamList.length>=2){
-    const rows=teamList.map(t=>{
-      const tb=balls.filter(d=>d._atkTeam===t);
-      if(tb.length<10) return null;
-      const th=tb.filter(d=>(+d['1BSafe']===1)||(+d.result===4)).length;
-      const tev=tb.reduce((s,d)=>s+(+d.ev),0)/tb.length;
-      const tla=tb.reduce((s,d)=>s+(+d.ldeg),0)/tb.length;
-      const dc={p:0,c:0,o:0};
-      tb.forEach(d=>{const s=+d.sdeg;if(s<=-15)dc.p++;else if(s<15)dc.c++;else dc.o++;});
-      const brlp=tb.filter(d=>_isBarrelPlus(d)).length;
-      return {t,n:tb.length,ba:th/tb.length,ev:tev,la:tla,pull:dc.p/tb.length*100,cen:dc.c/tb.length*100,opp:dc.o/tb.length*100,brlp:brlp/tb.length*100};
-    }).filter(Boolean).sort((a,b)=>b.ba-a.ba);
-    if(rows.length){
-      html+=`<div class="card section"><div class="card-title">팀별 타구 프로파일 <span style="font-size:10px;color:var(--muted)">(현재 필터 적용 · 클릭=해당 팀만 보기)</span></div>
-      <div class="tbl-wrap"><table class="data-table compact"><thead><tr><th>팀</th><th>타구</th><th>BA</th><th>평균EV</th><th>평균LA</th><th>당김%</th><th>중앙%</th><th>밀어침%</th><th>배럴+%</th></tr></thead><tbody>
-      ${rows.map(r=>`<tr style="cursor:pointer" onclick="window._ballmapState.team='${r.t}';renderBallMapPage()"><td>${r.t}</td><td>${r.n}</td><td>${r.ba.toFixed(3).replace(/^0/,'')}</td><td>${r.ev.toFixed(1)}</td><td>${r.la.toFixed(1)}°</td><td>${r.pull.toFixed(0)}</td><td>${r.cen.toFixed(0)}</td><td>${r.opp.toFixed(0)}</td><td>${r.brlp.toFixed(1)}</td></tr>`).join('')}
-      </tbody></table></div></div>`;
-    }
-  }
-  el.innerHTML=html;
-  _renderBallMapField(balls);
-}
-function _renderBallMapField(balls){
-  const el=document.getElementById('ballmap-field');
-  if(!el) return;
-  const st=window._ballmapState;
-  // 구장 좌표 (스프레이 차트와 동일)
-  const HP={lx:0,lz:-20};
-  const SQ2=Math.SQRT2, BD=27.4;
-  const B1={lx:-(BD/SQ2),lz:-20-(BD/SQ2)}, B2={lx:0,lz:-20-BD*SQ2}, B3={lx:+(BD/SQ2),lz:-20-(BD/SQ2)};
-  const RFP={lx:-(98/SQ2),lz:-20-(98/SQ2)}, RC={lx:-50,lz:-110}, CFR={lx:-20,lz:-138}, CFL={lx:+20,lz:-138}, LC={lx:+50,lz:-110}, LFP={lx:+(98/SQ2),lz:-20-(98/SQ2)};
-  const W=760,H=620,pad=20;
-  const allLx=[HP.lx,RFP.lx,LFP.lx,CFR.lx,CFL.lx], allLz=[HP.lz,B2.lz,CFR.lz,RFP.lz];
-  const minLx=Math.min(...allLx)-8, maxLx=Math.max(...allLx)+8;
-  const minLz=Math.min(...allLz)-8, maxLz=Math.max(...allLz)+8;
-  const sc=Math.min((W-pad*2)/(maxLx-minLx),(H-pad*2)/(maxLz-minLz));
-  const toX=lx=>W-(pad+(lx-minLx)*sc);  // lx+ 좌측(3루) → 화면 좌측
-  const toY=lz=>pad+(maxLz-lz)*sc;      // 외야(-z) → 화면 위
-  const px=p=>({x:toX(p.lx),y:toY(p.lz)});
-  let items='';
-  // 잔디/필드
-  const hpP=px(HP), rfpP=px(RFP), rcP=px(RC), cfrP=px(CFR), cflP=px(CFL), lcP=px(LC), lfpP=px(LFP);
-  const outPts=[hpP,rfpP,rcP,cfrP,cflP,lcP,lfpP].map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-  items+=sEl('polygon',{points:outPts,fill:'#1e4010',stroke:'rgba(255,255,255,0.15)','stroke-width':'0.5'});
-  const fencePts=[rfpP,rcP,cfrP,cflP,lcP,lfpP].map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-  items+=`<polyline points="${fencePts}" fill="none" stroke="#ffd700" stroke-width="1.5" opacity="0.55"/>`;
-  // 파울라인
-  items+=sEl('line',{x1:hpP.x,y1:hpP.y,x2:rfpP.x,y2:rfpP.y,stroke:'rgba(255,255,255,0.55)','stroke-width':'1'});
-  items+=sEl('line',{x1:hpP.x,y1:hpP.y,x2:lfpP.x,y2:lfpP.y,stroke:'rgba(255,255,255,0.55)','stroke-width':'1'});
-  // 내야 다이아
-  const b1P=px(B1),b2P=px(B2),b3P=px(B3);
-  const dPts=[hpP,b1P,b2P,b3P].map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-  items+=sEl('polygon',{points:dPts,fill:'none',stroke:'rgba(255,255,255,0.85)','stroke-width':'1.2'});
-  [[hpP,'HP'],[b1P,'1B'],[b2P,'2B'],[b3P,'3B']].forEach(([p,lbl])=>{
-    items+=sEl('rect',{x:(p.x-3.5).toFixed(1),y:(p.y-3.5).toFixed(1),width:'7',height:'7',fill:'white',rx:'1'});
-    items+=sEl('text',{x:p.x.toFixed(1),y:(p.y-6).toFixed(1),fill:'rgba(255,255,255,0.6)','font-size':'7','text-anchor':'middle'},lbl);
-  });
-  // ── 히트맵 (격자 밀도) ──
-  if(st.view==='heat'||st.view==='both'){
-    const cell=5; // 5m 격자
-    const grid={};
-    let maxCnt=0;
-    balls.forEach(d=>{
-      const gx=Math.floor(+d.lx/cell), gz=Math.floor(+d.lz/cell);
-      const k=gx+'_'+gz;
-      grid[k]=(grid[k]||0)+1;
-      if(grid[k]>maxCnt)maxCnt=grid[k];
-    });
-    Object.entries(grid).forEach(([k,cnt])=>{
-      const [gx,gz]=k.split('_').map(Number);
-      const x1=toX((gx+1)*cell), y1=toY((gz+1)*cell);
-      const x2=toX(gx*cell), y2=toY(gz*cell);
-      const t=cnt/maxCnt;
-      // 밀도 색: 파랑→노랑→빨강
-      const col=t<0.5?`rgba(${Math.round(80+t*2*175)},${Math.round(160+t*2*95)},60,${0.25+t*0.5})`:`rgba(255,${Math.round(255-(t-0.5)*2*200)},40,${0.35+t*0.45})`;
-      items+=`<rect x="${Math.min(x1,x2).toFixed(1)}" y="${Math.min(y1,y2).toFixed(1)}" width="${Math.abs(x2-x1).toFixed(1)}" height="${Math.abs(y2-y1).toFixed(1)}" fill="${col}" class="bm-cell" data-cnt="${cnt}"/>`;
-    });
-  }
-  // ── 점 표시 ──
-  if(st.view==='dots'||st.view==='both'){
-    balls.forEach((d,i)=>{
-      const x=toX(+d.lx), y=toY(+d.lz);
-      if(x<-15||x>W+15||y<-15||y>H+15)return;
-      const isHR=+d.result===4;
-      const isH=(+d['1BSafe']===1)||isHR;
-      const col=isHR?'#ffd700':(isH?'#39ff8a':'#8090a0');
-      const op=st.view==='both'?0.55:0.8;
-      items+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="${col}" opacity="${op}" class="bm-dot" data-i="${i}"/>`;
-    });
-  }
-  // 범례
-  items+=sEl('text',{x:12,y:16,fill:'#cdd6e0','font-size':'10'},'🟡 홈런 · 🟢 안타 · ⚪ 아웃'+(st.view!=='dots'?' · 히트맵: 밀도 (빨강=최다)':''));
-  el.innerHTML=makeSVG(W,H,items);
-  // 툴팁
-  const bl=balls;
-  el.querySelectorAll('.bm-dot').forEach(dot=>{
-    dot.addEventListener('mouseenter',e=>{const d=bl[+dot.dataset.i];if(d)showTip(e,`${d.bName||''} vs ${d.pName||''}<br>EV:${d.ev} LA:${d.ldeg}°<br>${RESULT_NAMES[d.result]||''}`);});
-    dot.addEventListener('mousemove',moveTip);dot.addEventListener('mouseleave',hideTip);
-  });
-  el.querySelectorAll('.bm-cell').forEach(c=>{
-    c.addEventListener('mouseenter',e=>showTip(e,`이 구역 낙구 ${c.dataset.cnt}개`));
-    c.addEventListener('mousemove',moveTip);c.addEventListener('mouseleave',hideTip);
-  });
-}
-
 function renderDefensePage(){
   const root = document.getElementById('defense-content');
   if(!G || !G.length){
@@ -22636,7 +22293,7 @@ function _computeRecordsData(){
     const all = getBatterDataByName(name);  // 캐시가 이미 활성 게임만 포함
     if(!all.length) return null;
     // V10.2 perf: 12회 재순회 → 단일 패스 집계
-    let PA=0,AB=0,hits=0,hrs=0,h2B=0,h3B=0,TB=0,BB=0,HBP=0,K=0,evSum=0,evN=0,hhN=0,laSum=0,laN=0,hhpN=0,brlpN=0;
+    let PA=0,AB=0,hits=0,hrs=0,h2B=0,h3B=0,TB=0,BB=0,HBP=0,K=0,evSum=0,evN=0,hhN=0,laSum=0,laN=0;
     const gset=new Set();
     const L=all.length;
     for(let j=0;j<L;j++){
@@ -22648,7 +22305,7 @@ function _computeRecordsData(){
       if(isHit)hits++;
       if(res===4)hrs++;
       if(_isK(d))K++;
-      const ev=+d.ev; if(ev>0&&res!==3){evSum+=ev;evN++;if(ev>=110)hhN++;if(ev>=125)hhpN++;const _la2=+d.ldeg;if(d.ldeg!=null&&!isNaN(_la2)){laSum+=_la2;laN++;if(ev>=125&&_la2>=20&&_la2<=40)brlpN++;}}
+      const ev=+d.ev; if(ev>0&&res!==3){evSum+=ev;evN++;if(ev>=110)hhN++;const _la=+d.ldeg;if(d.ldeg!=null&&!isNaN(_la)){laSum+=_la;laN++;}}
       const next=all[j+1];
       // V10.2 fix: 게임 경계(_gameId) + 확정 종료 이벤트(HR/BB/HBP는 그 자체로 타석 종료) 추가
       if(!next || (res>=4&&res<=6) || d._gameId!==next._gameId || d.inn!==next.inn || d.half!==next.half || d.bName!==next.bName){
@@ -22675,8 +22332,7 @@ function _computeRecordsData(){
       kPct: PA>0 ? K/PA*100 : 0, bbPct: PA>0 ? BB/PA*100 : 0,
       hrPct: PA>0 ? hrs/PA*100 : 0, avgEV,
       hhPct: evN>0 ? hhN/evN*100 : 0, avgLA: laN>0 ? laSum/laN : null,
-      hhpPct: evN>0 ? hhpN/evN*100 : 0, brlpPct: evN>0 ? brlpN/evN*100 : 0,
-      evSum, evN, hhN, hhpN, brlpN, laSum, laN
+      evSum, evN, hhN, laSum, laN
     };
   }).filter(Boolean);
   
@@ -22685,7 +22341,7 @@ function _computeRecordsData(){
     const all = getPitcherDataByName(name);  // 캐시가 이미 활성 게임만 포함
     if(!all.length) return null;
     // V10.2 perf: 단일 패스 집계
-    let BF=0,AB=0,hits=0,hrs=0,TB=0,BB=0,HBP=0,K=0,outs=0,swings=0,whiffs=0,evSum=0,evN=0,hhN=0,laSum=0,laN=0,hhpN=0,brlpN=0;
+    let BF=0,AB=0,hits=0,hrs=0,TB=0,BB=0,HBP=0,K=0,outs=0,swings=0,whiffs=0,evSum=0,evN=0,hhN=0,laSum=0,laN=0;
     const gset=new Set();
     const L=all.length;
     for(let j=0;j<L;j++){
@@ -22698,7 +22354,7 @@ function _computeRecordsData(){
       if(res===4)hrs++;
       if(isK_)K++;
       if(d.bSwing){swings++; if(+d.call!==2)whiffs++;}
-      const ev=+d.ev; if(ev>0&&res!==3){evSum+=ev;evN++;if(ev>=110)hhN++;if(ev>=125)hhpN++;const _la2=+d.ldeg;if(d.ldeg!=null&&!isNaN(_la2)){laSum+=_la2;laN++;if(ev>=125&&_la2>=20&&_la2<=40)brlpN++;}}
+      const ev=+d.ev; if(ev>0&&res!==3){evSum+=ev;evN++;if(ev>=110)hhN++;const _la=+d.ldeg;if(d.ldeg!=null&&!isNaN(_la)){laSum+=_la;laN++;}}
       const next=all[j+1];
       // V10.2 fix: 게임 경계(_gameId) + 확정 종료 이벤트(HR/BB/HBP는 그 자체로 타석 종료) 추가
       if(!next || (res>=4&&res<=6) || d._gameId!==next._gameId || d.inn!==next.inn || d.half!==next.half || d.bName!==next.bName){
@@ -22726,8 +22382,7 @@ function _computeRecordsData(){
       hrPct: BF>0 ? hrs/BF*100 : 0,
       whiffPct: swings>0 ? whiffs/swings*100 : 0,
       avgEV: evN>0 ? evSum/evN : 0, hhPct: evN>0 ? hhN/evN*100 : 0, avgLA: laN>0 ? laSum/laN : null,
-      hhpPct: evN>0 ? hhpN/evN*100 : 0, brlpPct: evN>0 ? brlpN/evN*100 : 0,
-      evSum, evN, hhN, hhpN, brlpN, laSum, laN,
+      evSum, evN, hhN, laSum, laN,
       k9: IP>0 ? K/IP*9 : 0
     };
   }).filter(Boolean);
@@ -23296,7 +22951,7 @@ function _renderLeagueRecords(season, games){
     {k:'TB',l:'총루타',f:b=>b.TB||0,cum:1},{k:'BB',l:'볼넷',f:b=>b.BB||0,cum:1},{k:'K',l:'삼진',f:b=>b.K||0,cum:1},
     {k:'avg',l:'타율',f:b=>f3(b.avg),hl:1},{k:'obp',l:'출루',f:b=>f3(b.obp)},{k:'slg',l:'장타',f:b=>f3(b.slg)},
     {k:'ops',l:'OPS',f:b=>f3(b.ops),hl:1},{k:'iso',l:'ISO',f:b=>f3(b.iso)},{k:'babip',l:'BABIP',f:b=>f3(b.babip)},
-    {k:'avgEV',l:'평균EV',f:b=>b.avgEV>0?b.avgEV.toFixed(1):'-'},{k:'hhPct',l:'HH%',f:b=>b.evN>0?(b.hhPct||0).toFixed(1):'-'},{k:'hhpPct',l:'HH+%',f:b=>b.evN>0?(b.hhpPct||0).toFixed(1):'-'},{k:'brlpPct',l:'배럴+%',f:b=>b.evN>0?(b.brlpPct||0).toFixed(1):'-'},{k:'avgLA',l:'평균LA',f:b=>b.avgLA!=null?b.avgLA.toFixed(1)+'°':'-'},
+    {k:'avgEV',l:'평균EV',f:b=>b.avgEV>0?b.avgEV.toFixed(1):'-'},{k:'hhPct',l:'HH%',f:b=>b.evN>0?(b.hhPct||0).toFixed(1):'-'},{k:'avgLA',l:'평균LA',f:b=>b.avgLA!=null?b.avgLA.toFixed(1)+'°':'-'},
     {k:'woba',l:'wOBA',f:b=>f3(b.woba)},{k:'wrcPlus',l:'wRC+',f:b=>(b.wrcPlus||0).toFixed(0)},{k:'owar',l:'oWAR',f:b=>(b.owar||0).toFixed(2),amber:1,cum:1}
   ];
   const pitCols = [
@@ -23311,7 +22966,7 @@ function _renderLeagueRecords(season, games){
     {k:'whip',l:'WHIP',f:p=>p.IP>0?((p.H+p.BB)/p.IP).toFixed(2):'-',asc:1},
     {k:'k9',l:'K/9',f:p=>(p.k9||0).toFixed(1)},{k:'kPct',l:'K%',f:p=>(p.kPct||0).toFixed(1)},{k:'bbPct',l:'BB%',f:p=>(p.bbPct||0).toFixed(1),asc:1},
     {k:'kbb',l:'K/BB',f:p=>(p.kbb||0).toFixed(2)},
-    {k:'avgEV',l:'피EV',f:p=>p.avgEV>0?p.avgEV.toFixed(1):'-',asc:1},{k:'hhPct',l:'피HH%',f:p=>p.evN>0?(p.hhPct||0).toFixed(1):'-',asc:1},{k:'hhpPct',l:'피HH+%',f:p=>p.evN>0?(p.hhpPct||0).toFixed(1):'-',asc:1},{k:'brlpPct',l:'피배럴+%',f:p=>p.evN>0?(p.brlpPct||0).toFixed(1):'-',asc:1},{k:'avgLA',l:'피LA',f:p=>p.avgLA!=null?p.avgLA.toFixed(1)+'°':'-',asc:1},{k:'pwar',l:'pWAR',f:p=>p.pwar!=null?p.pwar.toFixed(2):'-',amber:1,cum:1}
+    {k:'avgEV',l:'피EV',f:p=>p.avgEV>0?p.avgEV.toFixed(1):'-',asc:1},{k:'hhPct',l:'피HH%',f:p=>p.evN>0?(p.hhPct||0).toFixed(1):'-',asc:1},{k:'avgLA',l:'피LA',f:p=>p.avgLA!=null?p.avgLA.toFixed(1)+'°':'-',asc:1},{k:'pwar',l:'pWAR',f:p=>p.pwar!=null?p.pwar.toFixed(2):'-',amber:1,cum:1}
   ];
   const cols = isB ? batCols : pitCols;
   const sampleKey = isB?'PA':'IP', qVal = isB?Q.qPA:Q.qIP;
@@ -23387,11 +23042,11 @@ function _renderLeagueTeamRecords(season, games){
     [i.teamA,i.teamB].forEach(t=>{const n=_normalizeTeam(t); if(n) leagueTeams.add(n);}); });
   // 팀별 타격/투수 합산 (리그전 출전팀만)
   const teams={};
-  const ini=t=>({team:t,PA:0,AB:0,H:0,h2B:0,h3B:0,HR:0,TB:0,BB:0,K:0,owar:0,woba_w:0,wrc_w:0,wraa:0,evSum:0,evN:0,hhN:0,hhpN:0,brlpN:0,laSum:0,laN:0, IP:0,pK:0,pBB:0,pH:0,pHR:0,era_w:0,fip_w:0,pwar:0,pEvSum:0,pEvN:0,pHhN:0,pHhpN:0,pBrlpN:0,pLaSum:0,pLaN:0});
+  const ini=t=>({team:t,PA:0,AB:0,H:0,h2B:0,h3B:0,HR:0,TB:0,BB:0,K:0,owar:0,woba_w:0,wrc_w:0,wraa:0,evSum:0,evN:0,hhN:0,laSum:0,laN:0, IP:0,pK:0,pBB:0,pH:0,pHR:0,era_w:0,fip_w:0,pwar:0,pEvSum:0,pEvN:0,pHhN:0,pLaSum:0,pLaN:0});
   rec.batters.forEach(b=>{ const t=PT.batter[b.name]; if(!t||!leagueTeams.has(t))return;
     if(!teams[t])teams[t]=ini(t); const T=teams[t];
     T.PA+=b.PA||0; T.AB+=b.AB||0; T.H+=b.H||0; T.h2B+=b.h2B||0; T.h3B+=b.h3B||0; T.HR+=b.HR||0; T.TB+=b.TB||0; T.BB+=b.BB||0; T.K+=b.K||0; T.owar+=b.owar||0;
-    T.evSum+=b.evSum||0; T.evN+=b.evN||0; T.hhN+=b.hhN||0; T.hhpN+=b.hhpN||0; T.brlpN+=b.brlpN||0; T.laSum+=b.laSum||0; T.laN+=b.laN||0;
+    T.evSum+=b.evSum||0; T.evN+=b.evN||0; T.hhN+=b.hhN||0; T.laSum+=b.laSum||0; T.laN+=b.laN||0;
     // wOBA·wRC+는 PA 가중 평균 (팀 단위). wRAA는 누적 합산 가능
     if(b.woba!=null) T.woba_w+=(b.woba)*(b.PA||0);
     if(b.wrcPlus!=null) T.wrc_w+=(b.wrcPlus)*(b.PA||0);
@@ -23399,7 +23054,7 @@ function _renderLeagueTeamRecords(season, games){
   rec.pitchers.forEach(p=>{ const t=PT.pitcher[p.name]; if(!t||!leagueTeams.has(t))return;
     if(!teams[t])teams[t]=ini(t); const T=teams[t];
     T.IP+=p.IP||0; T.pK+=p.K||0; T.pBB+=p.BB||0; T.pH+=p.H||0; T.pHR+=p.HR||0; T.pwar+=p.pwar||0;
-    T.pEvSum+=p.evSum||0; T.pEvN+=p.evN||0; T.pHhN+=p.hhN||0; T.pHhpN+=p.hhpN||0; T.pBrlpN+=p.brlpN||0; T.pLaSum+=p.laSum||0; T.pLaN+=p.laN||0;
+    T.pEvSum+=p.evSum||0; T.pEvN+=p.evN||0; T.pHhN+=p.hhN||0; T.pLaSum+=p.laSum||0; T.pLaN+=p.laN||0;
     if(p.era!=null&&p.IP>0) T.era_w+=p.era*p.IP; if(p.fip!=null&&p.IP>0) T.fip_w+=p.fip*p.IP; });
   const arr=Object.values(teams).map(t=>({...t,
     avg:t.AB>0?t.H/t.AB:0, obp:t.PA>0?(t.H+t.BB)/t.PA:0, slg:t.AB>0?t.TB/t.AB:0,
@@ -23409,8 +23064,8 @@ function _renderLeagueTeamRecords(season, games){
     woba:t.PA>0?t.woba_w/t.PA:0, wrcPlus:t.PA>0?t.wrc_w/t.PA:0,
     era:t.IP>0?t.era_w/t.IP:null, fip:t.IP>0?t.fip_w/t.IP:null, whip:t.IP>0?(t.pH+t.pBB)/t.IP:null,
     k9:t.IP>0?t.pK/t.IP*9:0, bb9:t.IP>0?t.pBB/t.IP*9:0, kbb:t.pBB>0?t.pK/t.pBB:(t.pK>0?99:0),
-    avgEV:t.evN>0?t.evSum/t.evN:0, hhPct:t.evN>0?t.hhN/t.evN*100:0, hhpPct:t.evN>0?t.hhpN/t.evN*100:0, brlpPct:t.evN>0?t.brlpN/t.evN*100:0, avgLA:t.laN>0?t.laSum/t.laN:null,
-    pAvgEV:t.pEvN>0?t.pEvSum/t.pEvN:0, pHhPct:t.pEvN>0?t.pHhN/t.pEvN*100:0, pHhpPct:t.pEvN>0?t.pHhpN/t.pEvN*100:0, pBrlpPct:t.pEvN>0?t.pBrlpN/t.pEvN*100:0, pAvgLA:t.pLaN>0?t.pLaSum/t.pLaN:null,
+    avgEV:t.evN>0?t.evSum/t.evN:0, hhPct:t.evN>0?t.hhN/t.evN*100:0, avgLA:t.laN>0?t.laSum/t.laN:null,
+    pAvgEV:t.pEvN>0?t.pEvSum/t.pEvN:0, pHhPct:t.pEvN>0?t.pHhN/t.pEvN*100:0, pAvgLA:t.pLaN>0?t.pLaSum/t.pLaN:null,
     war:(t.owar||0)+(t.pwar||0)
   }));
   // 정렬 상태
@@ -23440,7 +23095,7 @@ function _renderLeagueTeamRecords(season, games){
     {k:'slg',l:'장타',f:t=>_f3(t.slg)},{k:'ops',l:'OPS',f:t=>_f3(t.ops),hl:1},
     {k:'iso',l:'ISO',f:t=>_f3(t.iso)},{k:'bbPct',l:'BB%',f:t=>t.bbPct.toFixed(1)},{k:'kPct',l:'K%',f:t=>t.kPct.toFixed(1)},
     {k:'woba',l:'wOBA',f:t=>_f3(t.woba)},{k:'wrcPlus',l:'wRC+',f:t=>t.wrcPlus.toFixed(0),hl:1},
-    {k:'avgEV',l:'평균EV',f:t=>t.avgEV>0?t.avgEV.toFixed(1):'-'},{k:'hhPct',l:'HH%',f:t=>t.evN>0?t.hhPct.toFixed(1):'-'},{k:'hhpPct',l:'HH+%',f:t=>t.evN>0?t.hhpPct.toFixed(1):'-'},{k:'brlpPct',l:'배럴+%',f:t=>t.evN>0?t.brlpPct.toFixed(1):'-'},{k:'avgLA',l:'평균LA',f:t=>t.avgLA!=null?t.avgLA.toFixed(1)+'°':'-'},
+    {k:'avgEV',l:'평균EV',f:t=>t.avgEV>0?t.avgEV.toFixed(1):'-'},{k:'hhPct',l:'HH%',f:t=>t.evN>0?t.hhPct.toFixed(1):'-'},{k:'avgLA',l:'평균LA',f:t=>t.avgLA!=null?t.avgLA.toFixed(1)+'°':'-'},
     {k:'owar',l:'oWAR',f:t=>t.owar.toFixed(2),amber:1}
   ];
   const teamPitCols=[
@@ -23450,7 +23105,7 @@ function _renderLeagueTeamRecords(season, games){
     {k:'era',l:'ERA',f:t=>t.era!=null?t.era.toFixed(2):'-',asc:1,hl:1},{k:'fip',l:'FIP',f:t=>t.fip!=null?t.fip.toFixed(2):'-',asc:1},
     {k:'whip',l:'WHIP',f:t=>t.whip!=null?t.whip.toFixed(2):'-',asc:1},
     {k:'k9',l:'K/9',f:t=>t.k9.toFixed(2)},{k:'bb9',l:'BB/9',f:t=>t.bb9.toFixed(2),asc:1},{k:'kbb',l:'K/BB',f:t=>t.kbb>=99?'∞':t.kbb.toFixed(2)},
-    {k:'avgEV',l:'피EV',f:t=>t.pAvgEV>0?t.pAvgEV.toFixed(1):'-',asc:1},{k:'pHhPct',l:'피HH%',f:t=>t.pEvN>0?t.pHhPct.toFixed(1):'-',asc:1},{k:'pHhpPct',l:'피HH+%',f:t=>t.pEvN>0?t.pHhpPct.toFixed(1):'-',asc:1},{k:'pBrlpPct',l:'피배럴+%',f:t=>t.pEvN>0?t.pBrlpPct.toFixed(1):'-',asc:1},{k:'pAvgLA',l:'피LA',f:t=>t.pAvgLA!=null?t.pAvgLA.toFixed(1)+'°':'-',asc:1},
+    {k:'avgEV',l:'피EV',f:t=>t.pAvgEV>0?t.pAvgEV.toFixed(1):'-',asc:1},{k:'pHhPct',l:'피HH%',f:t=>t.pEvN>0?t.pHhPct.toFixed(1):'-',asc:1},{k:'pAvgLA',l:'피LA',f:t=>t.pAvgLA!=null?t.pAvgLA.toFixed(1)+'°':'-',asc:1},
     {k:'pwar',l:'pWAR',f:t=>t.pwar.toFixed(2),amber:1}
   ];
   // 서브탭 (타격/투수)
