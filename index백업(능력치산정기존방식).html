@@ -417,18 +417,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 
   /* 경기 바 패딩 줄이기 */
   #games-bar-summary{padding:0 12px !important;height:32px !important}
-
-  /* ── V11.2 신규 요소 모바일 대응 ── */
-  /* 타구 분석 필터바: 버튼/셀렉트 줄바꿈 + 축소 */
-  #ballmap-content .card-title{font-size:12px !important}
-  #ballmap-content button{font-size:10px !important;padding:4px 7px !important;min-height:32px}
-  #ballmap-content select{font-size:10px !important;padding:4px 6px !important}
-  #ballmap-content > .card > div[style*="flex-wrap"]{gap:8px !important}
-  /* 요약바 폰트 축소 */
-  #ballmap-content > .card > div[style*="border-top"]{font-size:11px !important;gap:10px !important}
-  /* 타구 품질 분포 막대 폰트 */
-  #b-bbquality-bars,#p-bbquality-bars{font-size:10px}
-  /* 품질 차트/구장 SVG는 makeSVG가 width:100%라 자동 축소됨 */
 }
 @media (max-width:480px){
   .page{padding:8px 6px !important}
@@ -4487,7 +4475,7 @@ function renderPitcherGroupTable(pd){
     <th title="평균 구속 (게임)">평균구속</th><th title="최고 구속">최고구속</th><th title="최저 구속">최저구속</th>
     <th title="원본 평균 구속">원본평균</th><th title="원본 최고 구속">원본최고</th><th title="원본 최저 구속">원본최저</th>
     <th title="스트라이크 비율">Strike%</th><th title="헛스윙률">헛스윙%</th>
-    <th title="피안타율">피안타율</th><th title="평균 타구속도">피EV</th><th title="평균 피발사각">피LA</th><th title="피HH+% (EV125+ 허용률)">피HH+%</th><th title="피배럴+% (EV125+&LA20~40 허용률, 홈런 96% 존)">피배럴+%</th>
+    <th title="피안타율">피안타율</th><th title="평균 타구속도">피EV</th>
     <th title="평균 수평 회전">avg sH</th><th title="평균 수직 회전">avg sV</th><th title="평균 자이로">avg Gyro</th>
     <th title="100투구당 PV (실제 결과)">PV/100</th>
     <th title="100투구당 xPV (EV/LA 기반 기대치)">xPV/100</th>
@@ -4509,16 +4497,8 @@ function renderPitcherGroupTable(pd){
       const r=+d.result;
       return +d['1BSafe']===1||r===4||r===1||r===2||(+d.strk===2 && (+d.call===0 || +d.call===4));
     }).length;
-    const ipArr=gd.filter(d=>_isInPlay(d)&&!_isBunt(d));
-    const evArr=ipArr.map(d=>+d.ev);
+    const evArr=gd.filter(d=>_isInPlay(d)&&!_isBunt(d)).map(d=>+d.ev);
     const avgEv=avgF(evArr);
-    // V11.2: 피발사각 + 피HH+/피배럴+
-    const laArr=ipArr.filter(d=>d.ldeg!=null).map(d=>+d.ldeg);
-    const avgLa=avgF(laArr);
-    const hhpG=ipArr.filter(d=>_isHHPlus(d)).length;
-    const brlpG=ipArr.filter(d=>_isBarrelPlus(d)).length;
-    const hhpRateG=ipArr.length?hhpG/ipArr.length*100:0;
-    const brlpRateG=ipArr.length?brlpG/ipArr.length*100:0;
     const sh=gd.filter(d=>d.sH!=null).map(d=>+d.sH);
     const sv=gd.filter(d=>d.sV!=null).map(d=>+d.sV);
     const gy=gd.filter(d=>d.gyro!=null && +d.gyro!==0).map(d=>Math.abs(+d.gyro));
@@ -4558,9 +4538,6 @@ function renderPitcherGroupTable(pd){
       <td>${swings>0?(hsw/swings*100).toFixed(0):0}%</td>
       <td>${ab>0?(hits/ab).toFixed(3):'---'}</td>
       <td style="color:${evCol}">${avgEv!=null?avgEv.toFixed(1):'-'}</td>
-      <td style="color:var(--muted)">${avgLa!=null?avgLa.toFixed(1)+'°':'-'}</td>
-      <td style="color:#ff5533">${ipArr.length?hhpRateG.toFixed(0)+'%':'-'}</td>
-      <td style="color:#ff2020">${ipArr.length?brlpRateG.toFixed(0)+'%':'-'}</td>
       <td style="color:#88ccff">${avgSH!=null?avgSH.toFixed(2):'-'}${isFb?gradeSH_fb(avgSH):gradeSH_br(avgSH)}</td>
       <td style="color:#88ffcc">${avgSV!=null?avgSV.toFixed(2):'-'}${isFb?gradeSV(avgSV):gradeSH_br(avgSV)}</td>
       <td style="color:#ffcc88">${avgGY!=null?avgGY.toFixed(2):'-'}${gradeS(avgGY)}</td>
@@ -6016,24 +5993,16 @@ function renderBatterPitchTable(){
     const avgN=ab>0?hits/ab:null;
     const whiffN=swings>0?hsw/swings*100:0;
     const hhRateN=evVals.length>0?evVals.filter(v=>v>=110).length/evVals.length*100:0;
-    // V11.2: 배럴%/HH+/배럴+ (인플레이 기준, 번트 제외)
-    const ipG=gd.filter(d=>_isInPlay(d)&&+d.batType!==1);
-    const brlN=ipG.filter(d=>+d.ev>=105&&+d.ldeg>=8&&+d.ldeg<=32).length;
-    const hhpN=ipG.filter(d=>_isHHPlus(d)).length;
-    const brlpN=ipG.filter(d=>_isBarrelPlus(d)).length;
-    const brlRate=ipG.length?brlN/ipG.length*100:0;
-    const hhpRate=ipG.length?hhpN/ipG.length*100:0;
-    const brlpRate=ipG.length?brlpN/ipG.length*100:0;
-    data.push({group:g, pitches:gd.length, ab, hits, avg:avgN, whiff:whiffN, ev:avgEV, la:avgLA, hh:hhRateN, brl:brlRate, hhp:hhpRate, brlp:brlpRate});
+    data.push({group:g, pitches:gd.length, ab, hits, avg:avgN, whiff:whiffN, ev:avgEV, la:avgLA, hh:hhRateN});
   });
   const sorted=_applyTblSort('b-pitch-table', data, (r,k)=>r[k]);
   const sh=(k,l)=>_sortHeader('b-pitch-table',k,l,'renderBatterPitchTable');
-  let html=`<thead><tr>${sh('group','구종그룹')}${sh('pitches','투구수')}${sh('avg','안타율')}${sh('whiff','헛스윙%')}${sh('ev','평균EV')}${sh('la','평균LA')}${sh('hh','HH%(≥110)')}${sh('brl','배럴%')}${sh('hhp','HH+%')}${sh('brlp','배럴+%')}</tr></thead><tbody>`;
+  let html=`<thead><tr>${sh('group','구종그룹')}${sh('pitches','투구수')}${sh('avg','안타율')}${sh('whiff','헛스윙%')}${sh('ev','평균EV')}${sh('la','평균LA')}${sh('hh','HH%(≥110)')}</tr></thead><tbody>`;
   sorted.forEach(r=>{
     const avgStr=r.avg!=null?r.avg.toFixed(3):'---';
     const evStr=r.ev!=null?r.ev.toFixed(1):'-';
     const laStr=r.la!=null?r.la.toFixed(1)+'°':'-';
-    html+='<tr><td style="color:'+GROUP_COLORS[r.group]+'">'+r.group+'</td><td>'+r.pitches+'</td><td>'+avgStr+'</td><td>'+r.whiff.toFixed(0)+'%</td><td>'+evStr+'</td><td>'+laStr+'</td><td style="color:#ff8c44">'+r.hh.toFixed(0)+'%</td><td style="color:#ffd700">'+r.brl.toFixed(0)+'%</td><td style="color:#ff5533">'+r.hhp.toFixed(0)+'%</td><td style="color:#ff2020">'+r.brlp.toFixed(0)+'%</td></tr>';
+    html+='<tr><td style="color:'+GROUP_COLORS[r.group]+'">'+r.group+'</td><td>'+r.pitches+'</td><td>'+avgStr+'</td><td>'+r.whiff.toFixed(0)+'%</td><td>'+evStr+'</td><td>'+laStr+'</td><td style="color:#ff8c44">'+r.hh.toFixed(0)+'%</td></tr>';
   });
   html+='</tbody>';
   document.getElementById('b-pitch-table').innerHTML=html;
@@ -6423,18 +6392,13 @@ function _calcPitcherCardImpl(name){
   const barrelsAgainst=battedPd.filter(d=>+d.ev>=105 && +d.ldeg>=8 && +d.ldeg<=32).length;
   const barrelPctAg=battedPd.length?barrelsAgainst/battedPd.length*100:18.5;
   const barrelSuppress=(15.9-barrelPctAg)*1.2; // V11.1 인플레이 재보정 (구 앵커 13, 델타 +2.9 평행이동)
-  // V11.2: 피배럴+% 억제 (EV125+&LA20~40 — 홈런 96% 발생 치명존 · 리그 p10=0.8/p50=9.6/p90=15.5 실측)
-  // 절대 기준 사용 (상대 타자 키가 섞이므로 공정) · p50 기여 0이라 리그 평균 등급 보존
-  const brlpAgainst=battedPd.filter(d=>_isBarrelPlus(d)).length;
-  const brlpPctAg=battedPd.length?brlpAgainst/battedPd.length*100:9.6;
-  const brlpSuppress=(9.6-brlpPctAg)*1.0;
   // 체이스 유도 (존밖 스윙 유도, 리그 p10=43, p50=55, p90=64): 높을수록 좋음
   const outZone=pd.filter(d=>d.zoneX!=null && (Math.abs(+d.zoneX)>1||Math.abs(+d.zoneY||0)>1));
   const ozSwings=outZone.filter(d=>d.bSwing);
   const ozSwPct=outZone.length?ozSwings.length/outZone.length*100:55;
   const chaseBonus=(ozSwPct-55)*0.4; // -5 ~ +4 범위
-  // 통합 점수 (V11.2: +brlpSuppress)
-  const domScore=(0.48-baAgainst)*120+(7.0-Math.min(7,hrAgainst))*6+evSuppress+zinBonus+barrelSuppress+brlpSuppress+chaseBonus;
+  // 통합 점수
+  const domScore=(0.48-baAgainst)*120+(7.0-Math.min(7,hrAgainst))*6+evSuppress+zinBonus+barrelSuppress+chaseBonus;
   const DOM=pw(domScore,-30,60,1.1);
 
   // 제구 (V7.15 수정): zoneX/Y 둘 다 -1~1 대칭 · 공 반지름 감안 보더 0.85~1.15
@@ -6622,28 +6586,19 @@ function _calcBatterCardImpl(name){
   const hhAdjSum = hhAdjArr.reduce((a,b)=>a+b,0);
   const hhAdjPct = bdQ.length ? hhAdjSum/bdQ.length*100 : hhPct;
   
-  // V11.2: 키보정 HH+% 추가 (EV≥키캡-5) — 순수 타구속도 상위 변별 강화
-  const adjHhpN = bdQ.filter(d=>_isHHPlusAdj(d)).length;
-  const adjHhpPct = bdQ.length ? adjHhpN/bdQ.length*100 : 0;
   const gapScore = (adjAvgEV - 85) * 1.5    // 키 보정 평균 EV
-                 + adjHhpPct * 1.0            // 키 보정 HH+% (V11.2 신규 — 상위 변별)
-                 + hhPct * 0.8;               // HH% (꾸준한 강타 생산)
-  const GAP = pw(gapScore, -10, 120, 0.60);  // V11.2 재보정 (30G 실측 96타자 · 리그 평균 등급 보존: p10 72/p50 89/p90 106)
+                 + hhAdjPct * 1.5;            // 키 보정 HH%
+  const GAP = pw(gapScore, -7.5, 122.5, 0.65);  // V11.1 인플레이 재보정 (+2.5 평행이동, 평균 등급 보존)
   
   // 파워 (POW): 얼마나 강하고 효율 좋은 타구를 보내는가 (HR/장타로 이어지는 능력)
   // HR 결과 중심 — 키 작아서 못 넘기면 진짜 파워 낮은 게 맞음 (보정 X)
   const ldHits=bdQ.filter(d=>+d.ldeg>=10&&+d.ldeg<=30).length;
   const ldPct=bdQ.length?ldHits/bdQ.length*100:0;
   
-  // V11.2: 키보정 배럴+%(홈런 직결 스윙) + ISO(추정 2·3루타 반영) 신규 — HH%는 GAP과 중복이라 제거
-  const adjBrlpN = bdQ.filter(d=>_isBarrelPlusAdj(d)).length;
-  const adjBrlpPct = bdQ.length ? adjBrlpN/bdQ.length*100 : 0;
-  const isoV = Math.max(0, slg - batAvg);
-  const pwrScore = hrPct * 4.5                // HR% 핵심 (결과 — 절대 기준)
-                 + adjBrlpPct * 1.5             // 키보정 배럴+% (홈런 직결 과정 — 상대 기준, V11.2 신규)
-                 + brlPct * 1.0                 // 기존 배럴% (솔리드 장타 생산)
-                 + isoV * 30;                   // ISO — 추정 2·3루타 드디어 반영 (V11.2)
-  const PWR = pw(pwrScore, 0, 80, 0.40);  // V11.2 재보정 (30G 실측 96타자 · 리그 평균 등급 보존: p10 65/p50 89/p90 113)
+  const pwrScore = hrPct * 5.0                // HR% 핵심
+                 + brlPct * 2.0                // 배럴% 보조
+                 + hhPct * 0.5;                // HH% 보조
+  const PWR = pw(pwrScore, -1.5, 108.5, 0.55);  // V11.1 인플레이 재보정 (+8.5 평행이동, 평균 등급 보존)
 
   // 컨택 (V8.5): 타율 50% + 헛스윙 회피 25% + 존내 컨택 15% + 존밖 컨택 10%
   // 타율이 모두가 아닌 "결과 지표"로 50%만, 나머지는 실제 컨택 능력(존별 컨택) 반영
@@ -6744,8 +6699,8 @@ const STAT_INFO={
   '구위':{
     label:'구위 (Dominance / Stuff)',
     icon:'💪',
-    desc:'타자를 압도하는 종합 능력. 피안타율·피홈런·피EV·존내헛스윙·배럴허용·배럴+허용·체이스 유도 통합',
-    formula:'(0.48 − 피안타율)×120 + (7 − min(7, 피홈런%))×6 + (100.2 − 평균피EV)×3 + (존내헛스윙% − 22)×0.6 + (15.9 − 배럴허용%)×1.2 + (9.6 − 배럴+허용%)×1.0 [V11.2 신규: EV125+&LA20~40 치명존 억제] + (존밖스윙% − 55)×0.4 → pw(score, −30, 60, 1.1) + ERA 보너스',
+    desc:'타자를 압도하는 종합 능력. 피안타율·피홈런·피EV·존내헛스윙·배럴허용·체이스 유도 6가지 통합',
+    formula:'(0.48 − 피안타율)×120 + (7 − min(7, 피홈런%))×6 + (100.2 − 평균피EV)×3 + (존내헛스윙% − 22)×0.6 + (15.9 − 배럴허용%)×1.2 + (존밖스윙% − 55)×0.4 → pw(score, −30, 60, 1.1) + ERA 보너스 [백업본: V11.1 방식]',
     detail:'피안타율 0.38이 기준점. 평균 피EV가 100mph 이하·존내 헛스윙 22% 이상·배럴 허용 13% 이하·체이스 유도 55% 이상이면 보너스. ERA ≤3.0이면 +5, ≤4.0이면 +3, ≤5.0이면 +1.'
   },
   '제구':{
@@ -6787,15 +6742,15 @@ const STAT_INFO={
   '파워':{
     label:'파워 (Power)',
     icon:'💥',
-    desc:'순수 장타력. HR%(핵심) + 키보정 배럴+% + 배럴% + ISO(추정 2·3루타 반영)',
-    formula:'HR%×4.5 + 키보정배럴+%×1.5 + 배럴%×1.0 + ISO×30 → pw(score, 0, 80, 0.40) [V11.2 개편]. 배럴+=EV≥키캡−5 & LA20~40°(홈런 직결 과정, 키 상대화), HR%=절대 기준(결과), ISO=추정 2·3루타 반영. 30G 실측 96타자 재보정',
+    desc:'순수 장타력. HR%(핵심) + 배럴% + HH%(EV≥110)',
+    formula:'HR%×5.0 + 배럴%×2.0 + HH%×0.5 → pw(score, −1.5, 108.5, 0.55). 배럴=EV≥105 + 발사각 8~32°. 키 보정 X (못 넘기면 진짜 파워 낮은 것) [백업본: V11.1 방식]',
     detail:'홈런 자체가 가장 큰 비중. 배럴(좋은 발사각의 강타구)·하드힛(EV 110+)이 보조. p50 약 82점.'
   },
   '갭파워':{
     label:'갭파워 (Gap Power)',
     icon:'📈',
-    desc:'타구 강도. 키 보정 평균 EV + 키 보정 HH+% + HH%',
-    formula:'(키보정 평균EV − 85)×1.5 + 키보정 HH+%×1.0 + HH%×0.8 → pw(score, −10, 120, 0.60) [V11.2 개편]. 키보정 HH+=EV≥키캡−5 (상위 변별 강화). 키별 EV 캡: 160cm=120, 165cm=125, 170cm=128, 175cm+=130',
+    desc:'타구 강도. 키 보정 적용된 평균 EV + 키 보정 HH%',
+    formula:'(키보정 평균EV − 85)×1.5 + 키보정 HH%×1.5 → pw(score, −7.5, 122.5, 0.65). 키별 EV 캡: 160cm=120, 165cm=125, 170cm=128, 175cm+=130 [백업본: V11.1 방식]',
     detail:'작은 선수의 110+ 도달 더 어려운 점 보정. 같은 EV라도 키 작으면 약간 가산점. p50 약 79점.'
   },
   '컨택':{
@@ -11973,19 +11928,16 @@ const CHANGELOG = [
   {
     version: 'V11.2',
     date: '2026-07',
-    title: '🎯 HH+/배럴+ 신규 지표 · 타구 품질 6분류 · 타구 분석 탭 · 능력치 개편',
+    title: '🎯 HH+/배럴+ 신규 지표 · 타구 품질 6분류 · 타구 분석 탭 · 능력치 개편 <b>[이 백업본은 OVR 산정식만 V11.1 기존 방식 유지]</b>',
     badge: '#ff2020',
     changes: [
-      {icon:'📊', text:'⭐⭐ <b>구종 관련 화면에 발사각·HH+·배럴+ 확대</b> — (1) 투수 구종 그룹별 핵심지표에 <b>피LA·피HH+%·피배럴+%</b> 추가. (2) 구종 분석 투수별 랭킹에 <b>HH+%·배럴+%·피LA</b> 추가. (3) 타자 구종별 대응 성적에 <b>배럴%·HH+%·배럴+%</b> 추가 (기존 HH%만 있던 것 확대).'},
-      {icon:'📦', text:'<b>내보내기 schema v11</b> — batters[].season.battedBall에 hhPlusPct/barrelPlusPct/quality(6분류) 추가. 구종 groups·playersByGroup에 avgLA/hhPlusPct/barrelPlusPct 추가. glossary에 HH+/배럴+/타구품질 정의 추가. appVersion V11.2.'},
-      {icon:'📱', text:'<b>모바일 대응 최신화</b> — 타구 분석 탭 필터바(버튼·셀렉트 축소·줄바꿈)·요약바·품질 분포 막대 모바일 CSS 추가. 품질 반원 차트·구장 SVG는 width:100% viewBox라 자동 반응형.'},
       {icon:'🐛', text:'⭐⭐ <b>존 분석 핫/콜드존 장타율 버그픽스</b> — 사용자 발견: 존별 히트맵의 SLG(장타율)가 2·3루타를 전부 1루타로 계산하는 옛날 방식이었음(안타=+1, 홈런만 +4). 카드·기록실은 이미 추정베이스(<code>_hitBase</code>) 기반이었으나 존맵만 누락. <code>_hitBase</code> 기반 정확한 총루타로 통일 — 갭히터의 존별 장타 능력이 이제 제대로 반영됨.'},
       {icon:'🔥', text:'⭐⭐⭐ <b>HH+/배럴+ 신규 타구질 지표</b> — 기존 HH(110+)/배럴(105+&LA8~32)이 인플레이 45%/22%가 해당돼 변별력이 무뎌진 문제 해결. <b>HH+</b>=EV 125+(WBD 실측: BA .485→.650 점프 지점, 홈런 최소 EV 123). <b>배럴+</b>=EV 125+ & LA 20~40°(실측 BA .918, 리그 홈런 96%가 이 존). 기존 HH/배럴은 유지하고 +로 병행 표기. 적용: 타자/투수 헤더, 일반·리그 기록실, 팀 로스터, 리그 팀기록, 리더보드 전부.'},
       {icon:'📊', text:'⭐⭐ <b>타구 품질 6분류 (Statcast 스타일 · WBD 실측 보정)</b> — 배럴+(BA.918/10.1%)·솔리드(.620)·플레어버너(.547)·톱드(.248/39.9%)·언더(.225)·위크(.298). 리그전 1,810 인플레이로 경계 검증, BA가 위→아래 깨끗이 계층화. 타자/투수 상세에 <b>반원 극좌표 차트</b>(각도=LA, 반지름=EV) + 리그 평균 대비 분포 막대. 투수는 색상 방향 반전(허용 낮을수록 초록).'},
       {icon:'🗺️', text:'⭐⭐ <b>타구 분석 탭 신규</b> — 도구 메뉴. 리그 전체 낙구(lx/lz) 히트맵으로 메타 확인. 필터: <b>팀(공격)·기간(전체/최근20/10/5)·궤적(땅볼/라인드/뜬공/팝업)·품질(HH/HH+/배럴+)·결과(안타/아웃/홈런)·표시(점/히트맵/점+히트맵)</b>. 팀별 타구 프로파일 비교 테이블(당김/중앙/밀어침%·배럴+%). 수비 배치·상대 분석 도구로 활용.'},
       {icon:'⚾', text:'<b>타자/투수 헤더에 HR% 추가</b> — 타구당 홈런 비율(타자)·타구당 홈런 허용(투수). 기록실 4위치(일반/리그 기록실·팀 로스터)에도 HR%·배럴%·HH+%·배럴+% 컬럼 전면 통일.'},
       {icon:'🏟️', text:'<b>구장 좌표 실측 반영</b> — 스프레이/타구 분석 구장을 실측 FIELD_CONFIG로 통일(폴 ±74m, 좌우중간 ±54.74/−117.5, 중앙 135m, 실측 베이스·마운드). 타구 분석은 홈플레이트를 하단에 배치(표준 방향)하고 크기 축소로 한 화면에 정리.'},
-      {icon:'⚡', text:'⭐⭐ <b>투타 능력치 산정식 개편</b> — <b>PWR</b>: HR%×4.5 + 키보정배럴+%×1.5 + 배럴%×1.0 + <b>ISO×30</b>(추정 2·3루타 드디어 반영). <b>GAP</b>: 키보정EV×1.5 + 키보정HH+%×1.0 + HH%×0.8(상위 변별 강화). <b>투수 구위(DOM)</b>: 피배럴+% 억제 항 신규((9.6−피배럴+%)×1.0, 홈런 96% 치명존). 키 상대화 HH+/배럴+(EV≥키캡−5)로 작은 타자 시스템 차별 제거. 30G 96타자 실측으로 pw() 재보정 — 리그 평균 등급 보존(PWR p50 89·GAP p50 89 유지).'},
+      {icon:'⏪', text:'<b>[백업본] OVR 산정식 V11.1 방식 유지</b> — PWR/GAP/투수 구위(DOM)는 개편 이전 식 그대로. 나머지 신규 기능(HH+/배럴+/타구품질/타구분석/구장)은 모두 포함. 능력치 개편판이 안정화되면 정식 승격 예정.'},
     ]
   },
   {
@@ -13642,9 +13594,6 @@ function _aggregatePitchTypeStats(){
       s.evSum+=+d.ev;s.evN++;
       if(+d.ev>=110)s.hardHit++;
       if(+d.ev>=105 && d.ldeg>=8 && d.ldeg<=32)s.barrel++;
-      if(d.ldeg!=null){s.laSum=(s.laSum||0)+(+d.ldeg);s.laN=(s.laN||0)+1;}
-      if(_isHHPlus(d))s.hhp=(s.hhp||0)+1;
-      if(_isBarrelPlus(d))s.brlp=(s.brlp||0)+1;
     }
     
     // 존
@@ -13685,9 +13634,6 @@ function _aggregatePitchTypeStats(){
       ps.evSum+=+d.ev;ps.evN++;
       if(+d.ev>=110)ps.hardHit++;
       if(+d.ev>=105 && d.ldeg>=8 && d.ldeg<=32)ps.barrel++;
-      if(d.ldeg!=null){ps.laSum=(ps.laSum||0)+(+d.ldeg);ps.laN=(ps.laN||0)+1;}
-      if(_isHHPlus(d))ps.hhp=(ps.hhp||0)+1;
-      if(_isBarrelPlus(d))ps.brlp=(ps.brlp||0)+1;
     }
     if(zx>=-1 && zx<=1 && zy>=-1 && zy<=1)ps.inZone++;
   });
@@ -14019,9 +13965,6 @@ function renderPitchTypePage(){
         hr:s.hr,
         hhPct:s.evN>0?s.hardHit/s.evN*100:0,
         brlPct:s.evN>0?s.barrel/s.evN*100:0,
-        hhpPct:s.evN>0?(s.hhp||0)/s.evN*100:0,
-        brlpPct:s.evN>0?(s.brlp||0)/s.evN*100:0,
-        avgLA:s.laN>0?(s.laSum||0)/s.laN:null,
         inZonePct:s.pitches>0?s.inZone/s.pitches*100:0,
         pv: pv,
         xpv: xpv,
@@ -14073,9 +14016,6 @@ function renderPitchTypePage(){
             <th onclick="${setSort('hr')}" title="피홈런 (개수)">피HR${sortIcon('hr')}</th>
             <th onclick="${setSort('hhPct')}" title="하드힛% (EV≥110)">HH%${sortIcon('hhPct')}</th>
             <th onclick="${setSort('brlPct')}" title="배럴% (EV≥105 + 8~32°)">배럴%${sortIcon('brlPct')}</th>
-            <th onclick="${setSort('hhpPct')}" title="HH+% (EV≥125 허용률)">HH+%${sortIcon('hhpPct')}</th>
-            <th onclick="${setSort('brlpPct')}" title="배럴+% (EV≥125 & LA20~40°, 홈런 96% 존)">배럴+%${sortIcon('brlpPct')}</th>
-            <th onclick="${setSort('avgLA')}" title="평균 피발사각">피LA${sortIcon('avgLA')}</th>
             <th onclick="${setSort('pv100')}" title="100투구당 PV (실제)">PV/100${sortIcon('pv100')}</th>
             <th onclick="${setSort('xpv100')}" title="100투구당 xPV (기대치)">xPV/100${sortIcon('xpv100')}</th>
             <th onclick="${setSort('xpvPlus100')}" title="100투구당 xPV+ (리그 평균 대비)">xPV+/100${sortIcon('xpvPlus100')}</th>
@@ -14100,9 +14040,6 @@ function renderPitchTypePage(){
               <td>${r.hr}</td>
               <td style="color:${r.hhPct>25?'#ff4560':'inherit'}">${r.hhPct?r.hhPct.toFixed(1):'-'}</td>
               <td style="color:${r.brlPct>10?'#ff2020':'inherit'}">${r.brlPct?r.brlPct.toFixed(1):'-'}</td>
-              <td style="color:${r.hhpPct>23?'#ff5533':'inherit'}">${r.hhpPct?r.hhpPct.toFixed(1):'-'}</td>
-              <td style="color:${r.brlpPct>10?'#ff2020':'inherit'}">${r.brlpPct?r.brlpPct.toFixed(1):'-'}</td>
-              <td style="color:var(--muted)">${r.avgLA!=null?r.avgLA.toFixed(1)+'°':'-'}</td>
               <td style="color:${r.pv100>1.5?'#39ff8a':r.pv100<-1.5?'#ff4560':'inherit'};font-weight:${Math.abs(r.pv100)>1.5?'700':'400'};font-family:var(--mono)">${r.pv100>0?'+':''}${r.pv100.toFixed(2)}</td>
               <td style="color:${r.xpv100>1.5?'#39ff8a':r.xpv100<-1.5?'#ff4560':'inherit'};font-family:var(--mono)">${r.xpv100>0?'+':''}${r.xpv100.toFixed(2)}</td>
               <td style="color:${r.xpvPlus100>1?'#39ff8a':r.xpvPlus100<-1?'#ff4560':'inherit'};font-weight:${Math.abs(r.xpvPlus100)>1?'700':'400'};font-family:var(--mono)">${r.xpvPlus100>0?'+':''}${r.xpvPlus100.toFixed(2)}</td>
@@ -26520,15 +26457,8 @@ function exportAnalyticsBundle(opts){
   const meta={
     generatedAt:new Date().toISOString(),
     appVersion:'V11.2',
-    schemaVersion:11,
+    schemaVersion:10,
     schemaChanges:{
-      v11_changes:[
-        '🆕 batters[i].season.battedBall에 HH+/배럴+/타구품질 추가 — {hhPlusPct(EV125+), barrelPlusPct(EV125+&LA20~40°), quality:{barrelPlus,solid,flare,topped,under,weak 각 비율}}. WBD 실측 보정 6분류',
-        '🆕 pitchTypes.groups[g] 및 playersByGroup에 avgLA/hhPlusPct/barrelPlusPct 추가 — 피발사각·피HH+·피배럴+ 허용률',
-        '🆕 glossary에 HH+/배럴+/타구품질 6분류 정의 추가',
-        '📌 HH+/배럴+ 실측 근거: HH+(EV125+)=BA .485→.650 점프 지점, 배럴+(EV125+&LA20~40°)=BA .918·홈런 96% 발생 존',
-        '📌 기존 v10 구조 모두 유지 (하위 호환)'
-      ],
       v9_changes:[
         '🆕 league: 리그 기준선 블록 추가 — lgRA9/RPW/wOBA + 타격·투수 부문 평균(자격자 기준). AI가 개별 선수를 리그 평균 대비로 해석 가능',
         '🆕 glossary: 지표 사전 추가 — 모든 커스텀/세이버 지표의 정의·방향(높을/낮을수록 좋음)·산식 요약',
@@ -26771,12 +26701,6 @@ function exportAnalyticsBundle(opts){
             las.forEach(v => { if(v<10) gb++; else if(v<25) ld++; else fb++; });
             const total = las.length;
             const avgLA = las.reduce((a,b)=>a+b,0)/total;
-            // V11.2: HH+/배럴+/타구품질 6분류
-            const hhPlus = pitches.filter(d=>_isHHPlus(d)).length;
-            const barrelPlus = pitches.filter(d=>_isBarrelPlus(d)).length;
-            const q={barrelPlus:0,solid:0,flare:0,topped:0,under:0,weak:0};
-            pitches.forEach(d=>{q[_bbQuality(d)]++;});
-            const qPct={}; Object.keys(q).forEach(k=>qPct[k]=+(q[k]/total*100).toFixed(1));
             return {
               n: total,
               avgLA: +avgLA.toFixed(2),
@@ -26784,11 +26708,7 @@ function exportAnalyticsBundle(opts){
               ldPct: +(ld/total*100).toFixed(1),
               fbPct: +(fb/total*100).toFixed(1),
               gb, ld, fb,
-              thresholds: '<10°=GB / 10°~24°=LD / >=25°=FB',
-              hhPlusPct: +(hhPlus/total*100).toFixed(1),
-              barrelPlusPct: +(barrelPlus/total*100).toFixed(1),
-              quality: qPct,
-              qualityDef: 'barrelPlus=EV125+&LA20~40° / solid / flare / topped=LA<0 / under / weak (WBD 실측 6분류)'
+              thresholds: '<10°=GB / 10°~24°=LD / >=25°=FB'
             };
           } catch(_) { return {n:0, avgLA:null, gbPct:null, ldPct:null, fbPct:null}; }
         })(),
@@ -26883,11 +26803,8 @@ function exportAnalyticsBundle(opts){
         hr:s.hr,
         hrPer1000:+(s.hr/s.pitches*1000).toFixed(2),
         avgEV:s.evN>0?+(s.evSum/s.evN).toFixed(2):null,
-        avgLA:s.laN>0?+((s.laSum||0)/s.laN).toFixed(2):null,
         hardHitPct:s.evN>0?+(s.hardHit/s.evN*100).toFixed(2):null,
         barrelPct:s.evN>0?+(s.barrel/s.evN*100).toFixed(2):null,
-        hhPlusPct:s.evN>0?+((s.hhp||0)/s.evN*100).toFixed(2):null,
-        barrelPlusPct:s.evN>0?+((s.brlp||0)/s.evN*100).toFixed(2):null,
         // ⚖️ 구종 가치 (V9.7 CRV 정밀 계산)
         pv,           // 시즌 누적 PV (실제 결과 기반)
         xpv,          // 기대 PV (EV/LA 기반, BABIP 운 제거)
@@ -26924,11 +26841,8 @@ function exportAnalyticsBundle(opts){
           ba:s.ab>0?+(s.hit/s.ab).toFixed(3):null,
           hr:s.hr,
           avgEV:s.evN>0?+(s.evSum/s.evN).toFixed(2):null,
-          avgLA:s.laN>0?+((s.laSum||0)/s.laN).toFixed(2):null,
           hardHitPct:s.evN>0?+(s.hardHit/s.evN*100).toFixed(2):null,
           barrelPct:s.evN>0?+(s.barrel/s.evN*100).toFixed(2):null,
-          hhPlusPct:s.evN>0?+((s.hhp||0)/s.evN*100).toFixed(2):null,
-          barrelPlusPct:s.evN>0?+((s.brlp||0)/s.evN*100).toFixed(2):null,
           // ⚖️ 구종 가치 (V9.7 CRV + xPV+ + 운/100)
           pv, xpv, xpvPlus, pv100, xpv100, xpvPlus100, pvDiff, pvDiff100
         };
@@ -27116,9 +27030,6 @@ function exportAnalyticsBundle(opts){
       ERA:'평균자책점(실점=자책 단순화). 낮을수록 좋음',
       WHIP:'이닝당 출루허용(피안타+볼넷). 낮을수록 좋음',
       HRpct:'타자=홈런/타석%, 투수=피홈런/상대타자%',
-      'HH+':'하드힛 플러스 = EV 125km/h 이상 인플레이 타구 비율. WBD 실측: BA .485→.650 점프 지점. 기존 HH(110+)보다 상위 강타 변별. 타자=높을수록/투수=낮을수록 좋음',
-      'barrel+':'배럴 플러스 = EV 125+ & 발사각 20~40° 인플레이 타구 비율. WBD 실측 BA .918, 리그 홈런 96%가 이 존에서 발생. 홈런 직결 최상급 컨택. 타자=높을수록/투수=낮을수록 좋음',
-      battedBallQuality:'타구 품질 6분류(WBD 실측 보정): barrelPlus(EV125+&LA20~40°, BA.918) / solid(BA.620) / flare(플레어·버너, BA.547) / topped(LA<0 땅볼, BA.248) / under(밑긁음 팝업, BA.225) / weak(빗맞음, BA.298). Statcast 스타일',
       seasonPV:'구종 가치 합 — 투구 결과 기반 누적 득점기여(투수 관점). 높을수록 좋음',
       seasonXPV:'기대 구종 가치 — 타구질 기반 기대값',
       OAA:'수비 아웃 기여(Outs Above Average). 양수면 평균 이상 수비',
