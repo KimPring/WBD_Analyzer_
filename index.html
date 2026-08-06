@@ -23568,11 +23568,7 @@ function _renderLeagueRecords(season, games){
     (isB?batGroupBtns:pitGroupBtns)+
     `<span style="font-size:10px;color:var(--muted);opacity:.7;margin-left:4px">`+
     (isB?'선수·팀·POS·타석·타수·안타·홈런·삼진·슬래시라인·wRC+·oWAR 고정':'선수·팀·경기·이닝·승패·탈삼진·볼넷·피안타·ERA·FIP·WHIP·K/9·pWAR 고정')+
-    `</span>`+
-    (()=>{const sk=sortState.key; if(!sk||cols.some(c=>c.k===sk))return '';
-      const all=isB?batColsAll:pitCols; const sn=(all.find(c=>c.k===sk)||{}).l||sk;
-      return `<span style="font-size:10px;color:var(--amber);opacity:.85;margin-left:6px">↕ ${sn} 기준 정렬 중 (현재 그룹에 없는 컬럼)</span>`;})()+
-    `</div>`);
+    `</span><!--SORTHINT--></div>`);
   const sampleKey = isB?'PA':'IP', qVal = isB?Q.qPA:Q.qIP;
   // 정렬 상태
   if(!window._leagueRecSort) window._leagueRecSort={};
@@ -23585,6 +23581,14 @@ function _renderLeagueRecords(season, games){
   if(isB && posFilter!=='all') rows = rows.filter(r=>POS[r.name]===posFilter);
   if(teamFilter!=='all'){ const tmap=isB?PT.batter:PT.pitcher; rows = rows.filter(r=>tmap[r.name]===teamFilter); }
   // 정렬: 규정충족 우선 후 선택 정렬키
+  // V11.4: 숨은 컬럼으로 정렬 중이면 안내 (sortState 확정 후 삽입 — TDZ 회피)
+  html = html.replace('<!--SORTHINT-->', (()=>{
+    const sk = sortState.key;
+    if(!sk || cols.some(c=>c.k===sk)) return '';
+    const all = isB?batColsAll:pitCols;
+    const sn = (all.find(c=>c.k===sk)||{}).l || sk;
+    return `<span style="font-size:10px;color:var(--amber);opacity:.85;margin-left:6px">↕ ${sn} 기준 정렬 중 (현재 그룹에 없는 컬럼)</span>`;
+  })());
   const sc = cols.find(c=>c.k===sortState.key) || cols[0];
   const getVal = (r,c)=> c.get ? c.get(r) : r[c.k];  // 계산 컬럼(_W 등)은 get 사용
   // V11.1: 누적 스탯(cum)으로 정렬 시 규정 구분 없이 순수 값순. 비율 스탯은 규정충족 우선.
@@ -24083,9 +24087,8 @@ function renderRecordsPage(){
   // ── V11.4: 컬럼 그룹 (고정 + 3탭) ──
   const R_BAT_FIXED = ['name','team','G','PA','AB','H','HR','K','avg','obp','slg','ops','wrcPlus','owar'];
   const R_BAT_GROUPS = {
-    basic:  {label:'📋 기본',   cols:['h1B','h2B','h3B','TB','BB','HBP','GIDP','iso','babip','kPct','bbPct','hrPct','woba','wraa']},
+    basic:  {label:'📋 기본',   cols:['h1B','h2B','h3B','TB','BB','HBP','GIDP','iso','babip','kPct','bbPct','hrPct','woba','wraa','war144','dOaa','dWar','war']},
     batted: {label:'💥 타구질', cols:['BB','GIDP','hrPct','iso','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct']},
-    defense:{label:'🛡️ 수비·WAR', cols:['woba','wraa','war144','dOaa','dWar','war']},
     all:    {label:'📚 전체',   cols:['h1B','h2B','h3B','TB','BB','HBP','GIDP','iso','babip','kPct','bbPct','hrPct','woba','wraa','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct','war144','dOaa','dWar','war']}
   };
   const R_PIT_FIXED = ['name','team','G','IP','W','L','K','BB','H','era','fip','whip','k9','pwar'];
@@ -24141,7 +24144,7 @@ function renderRecordsPage(){
   
   out.innerHTML = `<div class="container">
     <h1 style="margin:0 0 6px">📚 기록실</h1>
-    <div style="color:var(--muted);font-size:12px;margin-bottom:16px">지표 그룹을 선택해 보세요 — 컬럼 헤더 클릭으로 정렬 <span style="opacity:.5;font-size:10px">[B0806-0941]</span></div>
+    <div style="color:var(--muted);font-size:12px;margin-bottom:16px">지표 그룹을 선택해 보세요 — 컬럼 헤더 클릭으로 정렬 <span style="opacity:.5;font-size:10px">[B0806-0949]</span></div>
     
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
       <div style="display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden">
