@@ -188,6 +188,9 @@ select:focus{border-color:var(--amber)}
 .data-table th{background:#0a1520;color:var(--muted);font-size:11px;letter-spacing:.8px;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap;position:sticky;top:0}
 .data-table th:hover{color:var(--amber);background:#0e1a2a}
 .data-table td{padding:7px 10px;border-bottom:1px solid #0d1e30;font-family:var(--mono);font-size:11px;white-space:nowrap;transition:background .12s}
+/* V11.4: 컬럼 많은 기록실용 — 패딩/폰트 축소로 가로 폭 절약 */
+.data-table.dense th{padding:6px 5px;font-size:10px;letter-spacing:.2px}
+.data-table.dense td{padding:5px 5px;font-size:10.5px}
 .data-table tbody tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
 .data-table tbody tr:hover td{background:rgba(245,166,35,0.08);cursor:pointer}
 .data-table tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--amber)}
@@ -23505,19 +23508,13 @@ function _renderLeagueRecords(season, games){
   const BAT_FIXED = ['name','team','pos','PA','AB','H','HR','K','avg','obp','slg','ops','wrcPlus','owar'];
   const BAT_GROUPS = {
     basic:  {label:'📋 기본',   cols:['h2B','h3B','TB','BB','GIDP','iso','babip','hrPct','woba']},
-    batted: {label:'💥 타구질', cols:['BB','GIDP','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct']},
+    batted: {label:'💥 타구질', cols:['BB','GIDP','hrPct','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct']},
     all:    {label:'📚 전체',   cols:['h2B','h3B','TB','BB','GIDP','iso','babip','hrPct','woba','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct']}
   };
   if(!window._leagueBatColGroup) window._leagueBatColGroup='basic';
-  // 정렬 중인 컬럼이 현재 그룹에 없으면, 그 컬럼이 속한 그룹으로 자동 전환 (정렬 유지)
-  (function(){
-    const sk = (window._leagueRecSort && window._leagueRecSort.b && window._leagueRecSort.b.key) || null;
-    if(!sk || BAT_FIXED.includes(sk)) return;
-    const cur = BAT_GROUPS[window._leagueBatColGroup];
-    if(cur && cur.cols.includes(sk)) return;
-    const found = Object.keys(BAT_GROUPS).find(g=>BAT_GROUPS[g].cols.includes(sk));
-    if(found) window._leagueBatColGroup = found;
-  })();
+  // V11.4 fix: 그룹 선택은 사용자 의도가 최우선 — 자동 전환하지 않음.
+  //   (이전엔 정렬 컬럼이 있는 그룹으로 되돌려서 탭이 안 바뀌는 문제가 있었음)
+  //   정렬 컬럼이 현재 그룹에 없으면 아래에서 정렬만 기본값으로 안전 복귀.
   const _bcg = window._leagueBatColGroup;
   function _filterCols(all, fixed, groupCols){
     const want = new Set([...fixed, ...groupCols]);
@@ -23542,7 +23539,8 @@ function _renderLeagueRecords(season, games){
     {k:'K',l:'탈삼진',f:p=>p.K||0,cum:1},{k:'BB',l:'볼넷',f:p=>p.BB||0,cum:1},{k:'H',l:'피안타',f:p=>p.H||0,cum:1},{k:'HR',l:'피홈런',f:p=>p.HR||0,cum:1},
     {k:'era',l:'ERA',f:p=>p.era!=null?p.era.toFixed(2):'-',hl:1,asc:1},{k:'fip',l:'FIP',f:p=>p.fip!=null?p.fip.toFixed(2):'-',asc:1},
     {k:'whip',l:'WHIP',f:p=>p.IP>0?((p.H+p.BB)/p.IP).toFixed(2):'-',asc:1},
-    {k:'hrPct',l:'피HR%',f:p=>(p.hrPct||0).toFixed(1),asc:1,t:'피홈런/상대타자'},{k:'GIDP',l:'병살유도',f:p=>p.GIDP||0,cum:1,t:'유도한 땅볼 병살 수'},
+    {k:'oAvg',l:'피안타율',f:p=>p.oAvg!=null?(p.oAvg).toFixed(3).replace(/^0/,''):'-',asc:1},{k:'oObp',l:'피출루',f:p=>p.oObp!=null?(p.oObp).toFixed(3).replace(/^0/,''):'-',asc:1},{k:'oSlg',l:'피장타',f:p=>p.oSlg!=null?(p.oSlg).toFixed(3).replace(/^0/,''):'-',asc:1},{k:'oOps',l:'피OPS',f:p=>p.oOps!=null?(p.oOps).toFixed(3).replace(/^0/,''):'-',asc:1,hl:1},
+    {k:'hrPct',l:'피HR%',f:p=>(p.hrPct||0).toFixed(1),asc:1,t:'피홈런/상대타자'},{k:'GIDP',l:'병살',f:p=>p.GIDP||0,cum:1,t:'유도한 땅볼 병살 수'},
     {k:'k9',l:'K/9',f:p=>(p.k9||0).toFixed(1)},{k:'kPct',l:'K%',f:p=>(p.kPct||0).toFixed(1)},{k:'bbPct',l:'BB%',f:p=>(p.bbPct||0).toFixed(1),asc:1},
     {k:'kbb',l:'K/BB',f:p=>(p.kbb||0).toFixed(2)},
     {k:'avgEV',l:'피EV',f:p=>p.avgEV>0?p.avgEV.toFixed(1):'-',asc:1},{k:'hhPct',l:'피HH%',f:p=>p.evN>0?(p.hhPct||0).toFixed(1):'-',asc:1},{k:'brlPct',l:'피배럴%',f:p=>p.evN>0?(p.brlPct||0).toFixed(1):'-',asc:1},{k:'hhpPct',l:'피HH+%',f:p=>p.evN>0?(p.hhpPct||0).toFixed(1):'-',asc:1},{k:'brlpPct',l:'피배럴+%',f:p=>p.evN>0?(p.brlpPct||0).toFixed(1):'-',asc:1},{k:'avgLA',l:'피LA',f:p=>p.avgLA!=null?p.avgLA.toFixed(1)+'°':'-',asc:1},{k:'pwar',l:'pWAR',f:p=>p.pwar!=null?p.pwar.toFixed(2):'-',amber:1,cum:1}
@@ -23550,19 +23548,13 @@ function _renderLeagueRecords(season, games){
   // V11.4: 투수 컬럼 그룹 (타자와 동일 구조)
   const PIT_FIXED = ['name','team','G','IP','_W','_L','K','BB','H','era','fip','whip','k9','pwar'];
   const PIT_GROUPS = {
-    basic:  {label:'📋 기본',     cols:['_S','_H','_QS','_QSP','n','HR','kPct','bbPct','kbb','hrPct','GIDP']},
-    batted: {label:'💥 피타구질', cols:['HR','GIDP','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct']},
-    all:    {label:'📚 전체',     cols:['_S','_H','_QS','_QSP','n','HR','kPct','bbPct','kbb','hrPct','GIDP','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct']}
+    basic:  {label:'📋 기본',     cols:['_S','_H','_QS','_QSP','n','HR','kPct','bbPct','kbb','GIDP']},
+    against:{label:'🎯 피안타',   cols:['HR','hrPct','oAvg','oObp','oSlg','oOps','GIDP']},
+    batted: {label:'💥 피타구질', cols:['HR','GIDP','hrPct','oOps','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct']},
+    all:    {label:'📚 전체',     cols:['_S','_H','_QS','_QSP','n','HR','kPct','bbPct','kbb','hrPct','GIDP','oAvg','oObp','oSlg','oOps','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct']}
   };
   if(!window._leaguePitColGroup) window._leaguePitColGroup='basic';
-  (function(){
-    const sk = (window._leagueRecSort && window._leagueRecSort.p && window._leagueRecSort.p.key) || null;
-    if(!sk || PIT_FIXED.includes(sk)) return;
-    const cur = PIT_GROUPS[window._leaguePitColGroup];
-    if(cur && cur.cols.includes(sk)) return;
-    const found = Object.keys(PIT_GROUPS).find(g=>PIT_GROUPS[g].cols.includes(sk));
-    if(found) window._leaguePitColGroup = found;
-  })();
+
   const _pcg = window._leaguePitColGroup;
   const pitColsView = _filterCols(pitCols, PIT_FIXED, (PIT_GROUPS[_pcg]||PIT_GROUPS.basic).cols);
   const pitGroupBtns = Object.entries(PIT_GROUPS).map(([k,v])=>
@@ -23576,7 +23568,11 @@ function _renderLeagueRecords(season, games){
     (isB?batGroupBtns:pitGroupBtns)+
     `<span style="font-size:10px;color:var(--muted);opacity:.7;margin-left:4px">`+
     (isB?'선수·팀·POS·타석·타수·안타·홈런·삼진·슬래시라인·wRC+·oWAR 고정':'선수·팀·경기·이닝·승패·탈삼진·볼넷·피안타·ERA·FIP·WHIP·K/9·pWAR 고정')+
-    `</span></div>`);
+    `</span>`+
+    (()=>{const sk=sortState.key; if(!sk||cols.some(c=>c.k===sk))return '';
+      const all=isB?batColsAll:pitCols; const sn=(all.find(c=>c.k===sk)||{}).l||sk;
+      return `<span style="font-size:10px;color:var(--amber);opacity:.85;margin-left:6px">↕ ${sn} 기준 정렬 중 (현재 그룹에 없는 컬럼)</span>`;})()+
+    `</div>`);
   const sampleKey = isB?'PA':'IP', qVal = isB?Q.qPA:Q.qIP;
   // 정렬 상태
   if(!window._leagueRecSort) window._leagueRecSort={};
@@ -23603,7 +23599,7 @@ function _renderLeagueRecords(season, games){
     av=+av||0; bv=+bv||0; return sortState.dir==='desc'?bv-av:av-bv;
   });
 
-  html += `<div class="tbl-wrap"><table class="data-table"><thead><tr>`;
+  html += `<div class="tbl-wrap"><table class="data-table${cols.length>18?' dense':''}"><thead><tr>`;
   cols.forEach(c=>{
     const active=sortState.key===c.k;
     const arrow=active?(sortState.dir==='desc'?' ▼':' ▲'):'';
@@ -23715,7 +23711,7 @@ function _renderLeagueTeamRecords(season, games){
     {k:'era',l:'ERA',f:t=>t.era!=null?t.era.toFixed(2):'-',asc:1,hl:1},{k:'fip',l:'FIP',f:t=>t.fip!=null?t.fip.toFixed(2):'-',asc:1},
     {k:'whip',l:'WHIP',f:t=>t.whip!=null?t.whip.toFixed(2):'-',asc:1},
     {k:'k9',l:'K/9',f:t=>t.k9.toFixed(2)},{k:'bb9',l:'BB/9',f:t=>t.bb9.toFixed(2),asc:1},{k:'kbb',l:'K/BB',f:t=>t.kbb>=99?'∞':t.kbb.toFixed(2)},
-    {k:'avgEV',l:'피EV',f:t=>t.pAvgEV>0?t.pAvgEV.toFixed(1):'-',asc:1},{k:'pHhPct',l:'피HH%',f:t=>t.pEvN>0?t.pHhPct.toFixed(1):'-',asc:1},{k:'pGIDP',l:'병살유도',f:t=>t.pGIDP||0},{k:'pBrlPct',l:'피배럴%',f:t=>t.pEvN>0?t.pBrlPct.toFixed(1):'-',asc:1},{k:'pHhpPct',l:'피HH+%',f:t=>t.pEvN>0?t.pHhpPct.toFixed(1):'-',asc:1},{k:'pBrlpPct',l:'피배럴+%',f:t=>t.pEvN>0?t.pBrlpPct.toFixed(1):'-',asc:1},{k:'pAvgLA',l:'피LA',f:t=>t.pAvgLA!=null?t.pAvgLA.toFixed(1)+'°':'-',asc:1},
+    {k:'avgEV',l:'피EV',f:t=>t.pAvgEV>0?t.pAvgEV.toFixed(1):'-',asc:1},{k:'pHhPct',l:'피HH%',f:t=>t.pEvN>0?t.pHhPct.toFixed(1):'-',asc:1},{k:'pGIDP',l:'병살',f:t=>t.pGIDP||0},{k:'pBrlPct',l:'피배럴%',f:t=>t.pEvN>0?t.pBrlPct.toFixed(1):'-',asc:1},{k:'pHhpPct',l:'피HH+%',f:t=>t.pEvN>0?t.pHhpPct.toFixed(1):'-',asc:1},{k:'pBrlpPct',l:'피배럴+%',f:t=>t.pEvN>0?t.pBrlpPct.toFixed(1):'-',asc:1},{k:'pAvgLA',l:'피LA',f:t=>t.pAvgLA!=null?t.pAvgLA.toFixed(1)+'°':'-',asc:1},
     {k:'pwar',l:'pWAR',f:t=>t.pwar.toFixed(2),amber:1}
   ];
   // 서브탭 (타격/투수)
@@ -24040,7 +24036,7 @@ function renderRecordsPage(){
     {k:'brlPct', l:'배럴%', fmt:f1, hl:'#ffd700', t:'배럴 비율 — EV 105+ & 발사각 8~32° / 인플레이 타구'},
     {k:'hhpPct', l:'HH+%', fmt:f1, hl:'#ff5533', t:'HH+ 비율 — EV 125+ / 인플레이 타구 (WBD 실측 BA .485→.650 점프 지점)'},
     {k:'brlpPct', l:'배럴+%', fmt:f1, hl:'#ff2020', t:'배럴+ 비율 — EV 125+ & LA 20~40° / 인플레이 타구 (실측 BA .918, 홈런 96% 발생)'},
-    {k:'avgLA', l:'평균LA', fmt:v=>v.toFixed(1)+'°', t:'평균 발사각 — 인플레이만 (파울 제외)'}
+    {k:'avgLA', l:'평균LA', fmt:v=>(v==null||isNaN(v))?'-':(+v).toFixed(1)+'°', t:'평균 발사각 — 인플레이만 (파울 제외)'}
   ];
   const pitCols = [
     {k:'name', l:'선수', fmt:v=>v, w:'120px'},
@@ -24077,41 +24073,33 @@ function renderRecordsPage(){
     {k:'whiffPct', l:'헛스윙%', fmt:f1, hl:'#ff4560'},
     {k:'avgEV', l:'피EV', fmt:f1, t:'피 평균 타구속도 — 인플레이만 (파울 제외). 낮을수록 좋음'},
     {k:'hhPct', l:'피HH%', fmt:f1, t:'피 하드힛 비율 — EV 110mph 이상. 낮을수록 좋음'},
-    {k:'GIDP', l:'병살유도', fmt:v=>String(v||0), t:'유도한 땅볼 병살 수 (신규 CSV 한정)'},
+    {k:'GIDP', l:'병살', fmt:v=>String(v||0), t:'유도한 땅볼 병살 수 (신규 CSV 한정)'},
     {k:'brlPct', l:'피배럴%', fmt:f1, t:'피 배럴 비율 — EV 105+ & LA 8~32°. 낮을수록 좋음'},
     {k:'hhpPct', l:'피HH+%', fmt:f1, t:'피 HH+ 비율 — EV 125+. 낮을수록 좋음'},
     {k:'brlpPct', l:'피배럴+%', fmt:f1, t:'피 배럴+ 비율 — EV 125+ & LA 20~40° (홈런 96% 발생 존). 낮을수록 좋음'},
-    {k:'avgLA', l:'피LA', fmt:v=>v.toFixed(1)+'°', t:'피 평균 발사각 — 낮을수록 땅볼 유도형'},
+    {k:'avgLA', l:'피LA', fmt:v=>(v==null||isNaN(v))?'-':(+v).toFixed(1)+'°', t:'피 평균 발사각 — 낮을수록 땅볼 유도형'},
     {k:'k9', l:'K/9', fmt:f1, t:'9이닝당 탈삼진 (추정)'}
   ];
   // ── V11.4: 컬럼 그룹 (고정 + 3탭) ──
   const R_BAT_FIXED = ['name','team','G','PA','AB','H','HR','K','avg','obp','slg','ops','wrcPlus','owar'];
   const R_BAT_GROUPS = {
     basic:  {label:'📋 기본',   cols:['h1B','h2B','h3B','TB','BB','HBP','GIDP','iso','babip','kPct','bbPct','hrPct','woba','wraa']},
-    batted: {label:'💥 타구질', cols:['BB','GIDP','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct']},
-    value:  {label:'🏆 가치',   cols:['woba','wraa','war144','dOaa','dWar','war']},
+    batted: {label:'💥 타구질', cols:['BB','GIDP','hrPct','iso','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct']},
+    defense:{label:'🛡️ 수비·WAR', cols:['woba','wraa','war144','dOaa','dWar','war']},
     all:    {label:'📚 전체',   cols:['h1B','h2B','h3B','TB','BB','HBP','GIDP','iso','babip','kPct','bbPct','hrPct','woba','wraa','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct','war144','dOaa','dWar','war']}
   };
   const R_PIT_FIXED = ['name','team','G','IP','W','L','K','BB','H','era','fip','whip','k9','pwar'];
   const R_PIT_GROUPS = {
     basic:  {label:'📋 기본',     cols:['n','SV','HLD','QS','QSP','BF','HR','HBP','fipMinus','kPct','bbPct','kbb','hrPct','whiffPct','GIDP','war144']},
-    against:{label:'🎯 피안타',   cols:['BF','HR','oAvg','oObp','oSlg','oOps','whiffPct','GIDP']},
-    batted: {label:'💥 피타구질', cols:['HR','GIDP','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct']},
+    against:{label:'🎯 피안타',   cols:['BF','HR','HBP','oAvg','oObp','oSlg','oOps','whiffPct','GIDP']},
+    batted: {label:'💥 피타구질', cols:['BF','HR','GIDP','whiffPct','oAvg','oOps','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct']},
     all:    {label:'📚 전체',     cols:['n','SV','HLD','QS','QSP','BF','HR','HBP','fipMinus','kPct','bbPct','kbb','hrPct','whiffPct','GIDP','war144','oAvg','oObp','oSlg','oOps','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct']}
   };
   const _rFixed = isB ? R_BAT_FIXED : R_PIT_FIXED;
   const _rGroups = isB ? R_BAT_GROUPS : R_PIT_GROUPS;
   const _rgKey = isB ? '_recBatColGroup' : '_recPitColGroup';
   if(!window[_rgKey]) window[_rgKey]='basic';
-  // 정렬 컬럼이 현재 그룹에 없으면 해당 그룹으로 자동 전환
-  (function(){
-    const sk = window._recordsState && window._recordsState.sortKey;
-    if(!sk || _rFixed.includes(sk)) return;
-    const cur=_rGroups[window[_rgKey]];
-    if(cur && cur.cols.includes(sk)) return;
-    const found=Object.keys(_rGroups).find(g=>_rGroups[g].cols.includes(sk));
-    if(found) window[_rgKey]=found;
-  })();
+  // V11.4 fix: 사용자가 고른 그룹을 그대로 존중 (자동 전환 없음)
   const _rcg = window[_rgKey];
   const _rWant = new Set([..._rFixed, ...((_rGroups[_rcg]||_rGroups.basic).cols)]);
   const _rOrder = [..._rFixed, ...((_rGroups[_rcg]||_rGroups.basic).cols)];
@@ -24138,7 +24126,7 @@ function renderRecordsPage(){
     const rowBg = i%2 ? '#181d2c' : '#141828';
     const cells = cols.map(c => {
       const v = r[c.k];
-      const txt = (v==null) ? '-' : c.fmt(v);
+      let txt; try{ txt = (v==null) ? '-' : c.fmt(v); }catch(_){ txt='-'; }
       if(c.k === 'name'){
         return `<td onclick="openCardDetail('${String(r.name).replace(/'/g,"\\'")}','${isB?'batter':'pitcher'}')" title="${String(r.name).replace(/"/g,'&quot;')}" style="cursor:pointer;color:var(--text);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:4px 6px;position:sticky;left:${STICKY.name.left}px;z-index:2;background:${rowBg};min-width:${STICKY.name.w}px;max-width:${STICKY.name.w}px">${txt}</td>`;
       }
@@ -24153,7 +24141,7 @@ function renderRecordsPage(){
   
   out.innerHTML = `<div class="container">
     <h1 style="margin:0 0 6px">📚 기록실</h1>
-    <div style="color:var(--muted);font-size:12px;margin-bottom:16px">지표 그룹을 선택해 보세요 — 컬럼 헤더 클릭으로 정렬</div>
+    <div style="color:var(--muted);font-size:12px;margin-bottom:16px">지표 그룹을 선택해 보세요 — 컬럼 헤더 클릭으로 정렬 <span style="opacity:.5;font-size:10px">[B0806-0941]</span></div>
     
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
       <div style="display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden">
@@ -24167,6 +24155,7 @@ function renderRecordsPage(){
       <span style="width:100%;height:0"></span>
       <span style="font-size:10.5px;color:var(--muted)">지표:</span>${recGroupBtns}
       <span style="font-size:10px;color:var(--muted);opacity:.7">${isB?'선수·팀·G·타석·타수·안타·홈런·삼진·슬래시·wRC+·oWAR':'선수·팀·G·이닝·승패·K·BB·피안타·ERA·FIP·WHIP·K/9·pWAR'} 고정</span>
+      ${(()=>{const sk=st.sortKey; if(!sk||cols.some(c=>c.k===sk))return ''; const sn=(_allCols.find(c=>c.k===sk)||{}).l||sk; return `<span style="font-size:10px;color:#ffc844;opacity:.85">↕ ${sn} 기준 정렬 중 (현재 그룹에 없는 컬럼)</span>`;})()}
       <span style="width:100%;height:0"></span>
       <label style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted)">
         최소 ${isB?'타석':'투구'}:
