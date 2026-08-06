@@ -24087,8 +24087,8 @@ function renderRecordsPage(){
   // ── V11.4: 컬럼 그룹 (고정 + 3탭) ──
   const R_BAT_FIXED = ['name','team','G','PA','AB','H','HR','K','avg','obp','slg','ops','wrcPlus','owar'];
   const R_BAT_GROUPS = {
-    basic:  {label:'📋 기본',   cols:['h1B','h2B','h3B','TB','BB','HBP','GIDP','iso','babip','kPct','bbPct','hrPct','woba','wraa','war144','dOaa','dWar','war']},
-    batted: {label:'💥 타구질', cols:['BB','GIDP','hrPct','iso','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct']},
+    basic:  {label:'📋 기본',   cols:['h1B','h2B','h3B','TB','BB','HBP','GIDP','iso','babip','kPct','bbPct','hrPct','woba','wraa']},
+    batted: {label:'💥 타구질', cols:['BB','GIDP','hrPct','iso','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct','dOaa','dWar','war144','war']},
     all:    {label:'📚 전체',   cols:['h1B','h2B','h3B','TB','BB','HBP','GIDP','iso','babip','kPct','bbPct','hrPct','woba','wraa','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct','war144','dOaa','dWar','war']}
   };
   const R_PIT_FIXED = ['name','team','G','IP','W','L','K','BB','H','era','fip','whip','k9','pwar'];
@@ -24144,7 +24144,7 @@ function renderRecordsPage(){
   
   out.innerHTML = `<div class="container">
     <h1 style="margin:0 0 6px">📚 기록실</h1>
-    <div style="color:var(--muted);font-size:12px;margin-bottom:16px">지표 그룹을 선택해 보세요 — 컬럼 헤더 클릭으로 정렬 <span style="opacity:.5;font-size:10px">[B0806-0949]</span></div>
+    <div style="color:var(--muted);font-size:12px;margin-bottom:16px">지표 그룹을 선택해 보세요 — 컬럼 헤더 클릭으로 정렬 <span style="opacity:.5;font-size:10px">[B0806-1010]</span></div>
     
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
       <div style="display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden">
