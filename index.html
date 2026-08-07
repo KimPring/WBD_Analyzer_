@@ -8644,7 +8644,7 @@ function _renderSprayField(dots, opts){
   // V11.4: 내야 모드는 내야 영역만 줌인 (타자 스프레이와 동일 — 라벨 겹침 방지)
   const _zoomIn = opts.zoneOverlay==='infield';
   const lxMin=(opts.lxMin!=null?opts.lxMin:(_zoomIn?-32:-80)), lxMax=(opts.lxMax!=null?opts.lxMax:(_zoomIn?32:80));
-  const lzMin=(opts.lzMin!=null?opts.lzMin:(_zoomIn?-50:-142)), lzMax=(opts.lzMax!=null?opts.lzMax:-14);
+  const lzMin=(opts.lzMin!=null?opts.lzMin:(_zoomIn?-72:-142)), lzMax=(opts.lzMax!=null?opts.lzMax:(_zoomIn?-12:-14));
   const mPerPx=Math.max((lzMax-lzMin)/(H-PAD*2),(lxMax-lxMin)/(W-PAD*2));
   const fx=lx=>PAD+(lxMax-lx)/mPerPx;   // lx+ → 화면 왼쪽(3루/LF)
   const fy=lz=>PAD+(lz-lzMin)/mPerPx;   // 외야 위, 홈플레이트 아래
@@ -8721,13 +8721,13 @@ function _renderSprayField(dots, opts){
       let zi = ang<=-27?0 : ang<=-9?1 : ang<=9?2 : ang<=27?3 : 4;
       cnt[zi]++; tot++;
     });
-    // 타자 스프레이 차트와 동일 방식: 고정 반지름 + 모드별 도넛
-    //   (SVG는 clip-path로 잘리므로 넘쳐도 안전, 라벨은 outerR*0.65에 배치해 겹침 없음)
+    // 부채꼴 반지름 — 실제 거리(m) 기준으로 환산해 구장 안에 정확히 맞춤
     let outerR, innerR;
-    const _R = Math.max(W,H) * 0.58;      // 기준 반지름 (타자 차트의 210에 대응)
-    if(mode==='all'){ outerR=_R; innerR=0; }
-    else if(mode==='infield'){ outerR=Math.min(IR/mPerPx, _R); innerR=0; }
-    else { innerR=Math.min(IR/mPerPx, _R*0.38); outerR=_R; }
+    const _fenceR = 118/mPerPx;              // 담장까지 (중앙 135m − HP 20m ≈ 115m, 여유 포함)
+    const _infR   = IR/mPerPx;               // 내야 30m
+    if(mode==='infield'){ outerR=_infR; innerR=0; }
+    else if(mode==='outfield'){ innerR=_infR; outerR=_fenceR; }
+    else { outerR=_fenceR; innerR=0; }
     const toRad=deg=>(-90-deg)*Math.PI/180;
     [[-45,-27,0],[-27,-9,1],[-9,9,2],[9,27,3],[27,45,4]].forEach(([a1,a2,zi])=>{
       const r1=toRad(a2), r2=toRad(a1);
@@ -8745,7 +8745,7 @@ function _renderSprayField(dots, opts){
       s+=`<path d="${path}" fill="${ZC[zi]}" opacity="${0.10+Math.min(0.30,pct/100*0.9)}" stroke="${ZC[zi]}" stroke-width="0.8" stroke-opacity="0.5"/>`;
       // 라벨
       // 라벨 위치 (타자 스프레이와 동일): 도넛이면 중간, 아니면 65% 지점
-      const midR = innerR>0 ? (innerR+outerR)/2 : outerR*(mode==='infield'?0.90:0.65);
+      const midR = innerR>0 ? (innerR+outerR)/2 : outerR*(mode==='infield'?0.88:0.72);
       const midA=toRad((a1+a2)/2);
       const lx2=hp.x+midR*Math.cos(midA), ly2=hp.y+midR*Math.sin(midA);
       if(lx2>4&&lx2<W-4&&ly2>12&&ly2<H-6){
