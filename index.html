@@ -2122,7 +2122,7 @@ function _rebuildCaches(){
   window._lgInPlayCache=null; window._lgBBQCache=null; window._lgDirCache=null;
   window._teamPitchCache=null; window._teamProfCache=null; window._gIdxMap=null; window._formCache=null;
   window._bbqLeagueCache=null; window._scoutLeagueCache=null; window._teamScoutLeagueCache=null;
-  window._defenseDataCache=null; window._lgDefCache=null;
+  window._defenseDataCache=null; window._lgDefCache=null; window._lgClutchCache=null;
   c.pitcherData = {};
   c.batterData = {};
   c.pitcherCard = {};
@@ -11265,43 +11265,18 @@ function renderTeamOverview(){
       const prof=_computeTeamProfiles();
       const t=prof.byName[team];
       if(!t){ el.innerHTML=`<div class="card section" style="padding:30px;text-align:center;color:var(--muted)">데이터 부족 (${team})</div>`; return; }
-      const A=_teamAreaScores(prof,t);
       const P=prof.pctOf;
       // V11.3: 상대 비교
       const cmpName=window._teamCompare;
       const ct=(cmpName&&prof.byName[cmpName])?prof.byName[cmpName]:null;
       const CA=ct?_teamAreaScores(prof,ct):null;
 
-      // ── 종합 등급 (타격 / 투수 / 팀) ──
-      // 타격 = 컨택 35% + 파워 40% + 선구 25%
-      const batScore = A.contact*0.35 + A.power*0.40 + A.eye*0.25;
-      // 투수 = 구위 35% + 제구 25% + 결과 40%
-      const pitScore = A.pStuff*0.35 + A.pCtrl*0.25 + A.pResult*0.40;
-      // 팀 종합 = 타격 45% + 투수 45% + 수비 10% (수비는 OAA 신뢰도 감안해 낮게)
-      let defPct=0.5, defOAA=null;
-      try{
-        const dd=_computeDefenseData();
-        if(dd&&dd.byPlayer){
-          const tot={};
-          Object.values(dd.byPlayer).forEach(pl=>{
-            const tm=_playerTeam(pl.name,'batter');
-            if(!tm||tm==='—')return;
-            if(!tot[tm])tot[tm]=0;
-            Object.values(pl.byPos||{}).forEach(ps=>{tot[tm]+=ps.oaaWeighted||0;});
-          });
-          const vals=Object.values(tot);
-          defOAA=tot[team]!=null?tot[team]:null;
-          if(defOAA!=null&&vals.length>1){
-            const below=vals.filter(v=>v<=defOAA).length;
-            defPct=Math.max(0,Math.min(1,below/vals.length));
-          }
-        }
-      }catch(_){}
-      const teamScore = batScore*0.45 + pitScore*0.45 + defPct*0.10;
-      const gradeOf=p=> p>=0.90?'S+' : p>=0.80?'S' : p>=0.70?'A+' : p>=0.60?'A'
-                      : p>=0.50?'B+' : p>=0.40?'B' : p>=0.30?'C+' : p>=0.20?'C' : p>=0.10?'D' : 'F';
-      const gradeCol=g=> g.startsWith('S')?'#ff2d55' : g.startsWith('A')?'#ff8c44'
-                       : g.startsWith('B')?'#ffd700' : g.startsWith('C')?'#39ff8a' : g==='D'?'#88ccff':'#7a8fa6';
+      // ── 종합 등급 (개요·진단서 공통 기준: TEAM_W) ──
+      const S=_teamScores(prof,t);
+      const A=S.A;
+      const batScore=S.bat, pitScore=S.pit, defPct=S.def, teamScore=S.total;
+      const defOAA=S.defInfo.oaa;
+      const gradeOf=_teamGrade, gradeCol=_teamGradeColor;
       const gradeBox=(label,score,sub)=>{
         const g=gradeOf(score), c=gradeCol(g);
         return `<div style="flex:1;min-width:110px;background:linear-gradient(160deg,${c}22,var(--card2));border:1px solid ${c}66;border-radius:10px;padding:14px 10px;text-align:center">
@@ -11318,6 +11293,17 @@ function renderTeamOverview(){
           ${gradeBox('⚾ 투수 종합', pitScore, '구위35 · 제구25 · 결과40')}
           ${gradeBox('🛡️ 수비', defPct, defOAA!=null?`팀 OAA ${defOAA>0?'+':''}${defOAA.toFixed(1)}`:'데이터 부족')}
           ${gradeBox('🏆 팀 종합', teamScore, '타격45 · 투수45 · 수비10')}
+          ${[['💥 클러치 타격','bat'],['🔥 클러치 투수','pit']].map(([lbl,side])=>{
+            const CL=_teamClutch(team,side);
+            if(CL.ops==null) return '';
+            const g=_teamGrade(CL.pct), col=_teamGradeColor(g);
+            const good = side==='pit' ? CL.diff<0 : CL.diff>0;
+            return `<div style="flex:1;min-width:118px;text-align:center;background:var(--card2);border:1px dashed ${col}55;border-radius:8px;padding:11px;opacity:0.9" title="득점권(2·3루) OPS · 종합 등급 미반영 참고 지표">
+              <div style="font-size:11px;color:var(--muted)">${lbl} <span style="font-size:8.5px;opacity:0.8">참고</span></div>
+              <div style="font-family:var(--cond);font-size:28px;font-weight:900;color:${col};line-height:1.15">${g}</div>
+              <div style="font-size:9.5px;color:var(--muted);margin-top:2px">OPS ${CL.ops.toFixed(3).replace(/^0/,'')} <span style="color:${good?'#39ff8a':'#ff4560'}">${CL.diff>=0?'+':''}${(CL.diff*1000).toFixed(0)}</span></div>
+            </div>`;
+          }).join('')}
         </div>
         <div style="font-size:10px;color:var(--muted);margin-top:8px">
           ※ 수비(OAA)는 신뢰도를 감안해 팀 종합에서 <b>10%만</b> 반영합니다.
@@ -11595,53 +11581,16 @@ function renderTeamReport(){
       const ct=(cmpName&&prof.byName[cmpName])?prof.byName[cmpName]:null;
       const CA=ct?_teamAreaScores(prof,ct):null;
 
-      // ── 수비 점수 (참고용, 비중 5%) ──
-      let defScore=0.5, defOAA=null, defRank=null, defTeams=0;
-      try{
-        const dd=_computeDefenseData();
-        if(dd&&dd.byPlayer){
-          const tt={};
-          Object.values(dd.byPlayer).forEach(p=>{
-            const tm=_playerTeam(p.name,'batter'); if(!tm||tm==='—')return;
-            if(!tt[tm])tt[tm]=0;
-            Object.values(p.byPos||{}).forEach(ps=>{tt[tm]+=ps.oaaWeighted||0;});
-          });
-          const arr=Object.entries(tt).map(([tm,v])=>({tm,v})).sort((a,b)=>b.v-a.v);
-          defTeams=arr.length;
-          const idx=arr.findIndex(x=>x.tm===team);
-          if(idx>=0){ defOAA=arr[idx].v; defRank=idx+1;
-            defScore=arr.length>1?1-(idx/(arr.length-1)):0.5; }
-        }
-      }catch(_){}
-
-      // ── 종합 점수 (가중) ──
-      const W={contact:0.15,power:0.20,eye:0.10,pStuff:0.20,pCtrl:0.10,pResult:0.15,def:0.05,clutch:0.05};
-      // 클러치: 득점권 타율 (없으면 팀 타율로 대체)
-      let clutch=0.5;
-      try{
-        const pit=_teamPitchIndex().bat[team]||[];
-        const rsp=pit.filter(d=>(+d.b2===1||+d.b3===1));
-        const ab=rsp.filter(_isABPitch).length, h=rsp.filter(_isHit).length;
-        if(ab>=10){
-          const ba=h/ab;
-          // 리그 득점권 타율 대비
-          const lgRsp=_leagueInPlay().length?G.filter(d=>(+d.b2===1||+d.b3===1)):[];
-          const lab=lgRsp.filter(_isABPitch).length, lh=lgRsp.filter(_isHit).length;
-          const lgBa=lab>0?lh/lab:0.3;
-          clutch=Math.max(0,Math.min(1,0.5+(ba-lgBa)*2.5));
-        }
-      }catch(_){}
-      const total = A.contact*W.contact + A.power*W.power + A.eye*W.eye
-                  + A.pStuff*W.pStuff + A.pCtrl*W.pCtrl + A.pResult*W.pResult
-                  + defScore*W.def + clutch*W.clutch;
-
-      let grade,gColor,gLabel;
-      if(total>=0.85){grade='A+';gColor='#ff4560';gLabel='우승 후보 — 전 영역 리그 최상위';}
-      else if(total>=0.72){grade='A';gColor='#ff8c44';gLabel='상위권 — 포스트시즌 경쟁력 충분';}
-      else if(total>=0.60){grade='B+';gColor='#ffd700';gLabel='중상위 — 강점 살리면 상위권 도전';}
-      else if(total>=0.45){grade='B';gColor='#39ff8a';gLabel='중위권 — 약점 보완이 관건';}
-      else if(total>=0.30){grade='C';gColor='#88ccff';gLabel='하위권 — 구조적 보강 필요';}
-      else {grade='D';gColor='#888';gLabel='재건 단계';}
+      // ── 종합 등급 (개요와 동일 기준: TEAM_W) ──
+      const S=_teamScores(prof,t);
+      const batScore=S.bat, pitScore=S.pit, defScore=S.def, total=S.total;
+      const defOAA=S.defInfo.oaa, defRank=S.defInfo.rank, defTeams=S.defInfo.n;
+      const W={contact:TEAM_W.total.bat*TEAM_W.bat.contact, power:TEAM_W.total.bat*TEAM_W.bat.power,
+               eye:TEAM_W.total.bat*TEAM_W.bat.eye, pStuff:TEAM_W.total.pit*TEAM_W.pit.pStuff,
+               pCtrl:TEAM_W.total.pit*TEAM_W.pit.pCtrl, pResult:TEAM_W.total.pit*TEAM_W.pit.pResult,
+               def:TEAM_W.total.def};
+      const CLb=_teamClutch(team,'bat'), CLp=_teamClutch(team,'pit');
+      const grade=_teamGrade(total), gColor=_teamGradeColor(grade), gLabel=_teamGradeLabel(total);
 
       // ── 8영역 바 ──
       const areas=[
@@ -11652,7 +11601,12 @@ function renderTeamReport(){
         {k:'투수 제구',v:A.pCtrl,w:W.pCtrl,d:`실투 ${t.pMidPct.toFixed(1)}% · 보더라인 ${t.pBorderPct.toFixed(1)}% · BB% ${t.pBBPct.toFixed(1)}%`},
         {k:'투수 결과',v:A.pResult,w:W.pResult,d:`FIP ${t.fip!=null?t.fip.toFixed(2):'-'} · ERA ${t.era!=null?t.era.toFixed(2):'-'} · WHIP ${t.whip!=null?t.whip.toFixed(2):'-'} · K/9 ${t.k9.toFixed(1)}`},
         {k:'수비 (참고)',v:defScore,w:W.def,d:defOAA!=null?`팀 OAA ${defOAA>0?'+':''}${defOAA.toFixed(1)} · 리그 ${defRank}/${defTeams}위`:'데이터 부족',ref:true},
-        {k:'클러치',v:clutch,w:W.clutch,d:'득점권 상황 타격'}
+        {k:'클러치 타격 (참고)',v:CLb.pct,w:0,
+         d:CLb.ops!=null?`득점권 OPS ${CLb.ops.toFixed(3).replace(/^0/,'')} (리그 ${CLb.lgOps.toFixed(3).replace(/^0/,'')} · ${CLb.diff>=0?'+':''}${(CLb.diff*1000).toFixed(0)}) · ${CLb.ab}타수`:'표본 부족 (10타수 미만)',
+         ref:true, noWeight:true},
+        {k:'클러치 투수 (참고)',v:CLp.pct,w:0,
+         d:CLp.ops!=null?`득점권 피OPS ${CLp.ops.toFixed(3).replace(/^0/,'')} (리그 ${CLp.lgOps.toFixed(3).replace(/^0/,'')} · ${CLp.diff>=0?'+':''}${(CLp.diff*1000).toFixed(0)}) · ${CLp.ab}타수`:'표본 부족 (10타수 미만)',
+         ref:true, noWeight:true}
       ];
       // 영역 키 → CA 매핑 (비교용)
       const _areaKeyMap={'컨택':'contact','파워':'power','선구':'eye','투수 구위':'pStuff','투수 제구':'pCtrl','투수 결과':'pResult'};
@@ -11665,7 +11619,7 @@ function renderTeamReport(){
         const cc=cv!=null?_pctColor(cv):null;
         return `<div style="margin-bottom:10px;${a.ref?'opacity:0.75':''}">
           <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:12px;margin-bottom:3px">
-            <span style="font-weight:600">${a.k} <span style="font-size:9px;color:var(--muted)">비중 ${(a.w*100).toFixed(0)}%</span></span>
+            <span style="font-weight:600">${a.k} <span style="font-size:9px;color:var(--muted)">${a.noWeight?'등급 미반영':'비중 '+(a.w*100).toFixed(0)+'%'}</span></span>
             <span style="font-family:var(--mono);color:${c};font-weight:700">${tier} <span style="font-size:10px">${_pctLabel(a.v)}</span>
               ${cv!=null?`<span style="font-size:10px;color:var(--muted);margin-left:5px">vs</span> <span style="color:${cc};font-size:12px" title="${cmpName}">${_pctTier(cv)}</span>`:''}</span>
           </div>
@@ -11744,6 +11698,22 @@ function renderTeamReport(){
               총 WAR <b style="color:var(--amber)">${t.war.toFixed(2)}</b>
             </div>
           </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${[['🏏 타격',batScore,`컨택${(TEAM_W.bat.contact*100).toFixed(0)}·파워${(TEAM_W.bat.power*100).toFixed(0)}·선구${(TEAM_W.bat.eye*100).toFixed(0)}`],
+               ['⚾ 투수',pitScore,`구위${(TEAM_W.pit.pStuff*100).toFixed(0)}·제구${(TEAM_W.pit.pCtrl*100).toFixed(0)}·결과${(TEAM_W.pit.pResult*100).toFixed(0)}`],
+               ['🛡️ 수비',defScore, defOAA!=null?`OAA ${defOAA>0?'+':''}${defOAA.toFixed(1)} · ${defRank}/${defTeams}위`:'데이터 부족'],
+               ['💥 클러치 타격',CLb.pct, CLb.ops!=null?`득점권 OPS ${CLb.ops.toFixed(3).replace(/^0/,'')} · ${CLb.diff>=0?'+':''}${(CLb.diff*1000).toFixed(0)}`:'표본 부족', true],
+               ['🔥 클러치 투수',CLp.pct, CLp.ops!=null?`득점권 피OPS ${CLp.ops.toFixed(3).replace(/^0/,'')} · ${CLp.diff>=0?'+':''}${(CLp.diff*1000).toFixed(0)}`:'표본 부족', true]]
+              .map(([lbl,sc,sub,ref])=>{
+                const g=_teamGrade(sc), col=_teamGradeColor(g);
+                return `<div style="min-width:96px;text-align:center;background:var(--card2);border:1px ${ref?'dashed':'solid'} ${col}44;border-radius:7px;padding:9px 11px${ref?';opacity:0.88':''}"${ref?' title="종합 등급 미반영 참고 지표"':''}>
+                  <div style="font-size:10.5px;color:var(--muted)">${lbl}${ref?' <span style="font-size:8px;opacity:0.8">참고</span>':''}</div>
+                  <div style="font-family:var(--cond);font-size:26px;font-weight:900;color:${col};line-height:1.15">${g}</div>
+                  <div style="font-size:9px;color:${col};opacity:0.85">${(sc*100).toFixed(0)}점</div>
+                  <div style="font-size:8.5px;color:var(--muted);margin-top:2px">${sub}</div>
+                </div>`;
+              }).join('')}
+          </div>
         </div>
       </div>
 
@@ -11775,7 +11745,8 @@ function renderTeamReport(){
       </div>
 
       <div style="font-size:10px;color:var(--muted);text-align:center;padding:10px">
-        ※ 활성 경기 기준 · 가중치: 파워/투수구위 20%, 컨택/투수결과 15%, 선구/투수제구 10%, 수비·클러치 각 5%<br>
+        ※ 활성 경기 기준 · <b>개요 탭과 동일한 기준</b>으로 계산 (타격 45% + 투수 45% + 수비 10%)<br>
+        타격 = 컨택 35 · 파워 40 · 선구 25 &nbsp;|&nbsp; 투수 = 구위 35 · 제구 25 · 결과 40<br>
         상세 분석은 각 탭(타격·투수·수비·추이)에서 확인
       </div>`;
     }catch(e){
@@ -13818,6 +13789,8 @@ const CHANGELOG = [
     title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화',
     badge: '#ff8c44',
     changes: [
+      {icon:'💥', text:'⭐⭐ <b>클러치 지표 신규 — 타격·투수 양쪽, OPS 기반</b> — 득점권(2·3루 주자) 상황 성적을 리그 평균과 비교해 등급화. <b>피안타율 대신 OPS 사용</b> — 안타와 홈런의 실점 영향이 다르고 볼넷도 득점권에선 위험하기 때문(실측 316경기: 득점권 피안타율은 리그 대비 +39인데 <b>피OPS는 +78</b>로 격차가 두 배). 장타율은 <code>_hitBase</code> 기반 정확한 총루타로 계산. <b>클러치 타격</b>(득점권 OPS↑ 좋음)과 <b>클러치 투수</b>(득점권 피OPS↓ 좋음) 두 지표를 개요·진단서에 각각 표시. <b>종합 등급에는 미반영</b>하고 점선 테두리 + "참고" 라벨로 구분(표본 변동이 크기 때문). 10타수 미만이면 자동 미표시.'},
+      {icon:'🔗', text:'⭐⭐⭐ <b>개요·진단서 평가 기준 통일 (불일치 수정)</b> — 두 화면이 <b>서로 다른 가중치로 같은 팀을 다르게 평가</b>하던 문제를 발견해 수정. 개요는 "타격 45%(컨택35·파워40·선구25) + 투수 45%(구위35·제구25·결과40) + 수비 10%", 진단서는 "컨택15·파워20·선구10·구위20·제구10·결과15·수비5·클러치5"로 <b>내부 배분과 수비 비중(10% vs 5%)이 달랐음</b>. 공통 상수 <code>TEAM_W</code>와 <code>_teamScores()</code>·<code>_teamGrade()</code>로 일원화 — 이제 어느 화면에서 봐도 같은 등급. 표본이 적은 클러치(득점권) 항목은 제거. <b>진단서에 타격·투수·수비 종합 등급</b>을 별도 박스로 추가(각 영역 배분도 함께 표기)해 종합만 보이던 것을 세분화.'},
       {icon:'📋', text:'⭐⭐ <b>업데이트 내역 정리 — 카테고리 분류 + 필터</b> — 22개 버전 273개 항목이 한 줄로 나열돼 찾아보기 어렵던 것을 <b>6개 카테고리</b>로 자동 분류: <b>✨신규 기능(89) · 🎨UI·시각화(69) · 📐지표·분석(61) · 🐛버그 수정(29) · 📦데이터·내보내기(15) · ⚡성능·안정성(10)</b>. 상단 필터로 원하는 유형만 볼 수 있고, 각 버전 안에서도 카테고리별로 묶여 표시됨. <b>최신 버전만 펼쳐지고 나머지는 접힘</b>(제목 클릭으로 열기, 전체 펼치기/접기 버튼 제공)이라 스크롤이 대폭 짧아짐. 버전 헤더에 카테고리 분포 칩(예: ✨5 📐3 🐛2)을 표시해 어떤 성격의 업데이트였는지 한눈에 파악.'},
       {icon:'📐', text:'⭐⭐⭐ <b>평가 지표 재설계 — 316경기 실측 검증 기반</b> — 전체 데이터(중복 제거 후 <b>316경기 58,889투구</b>)로 지표별 편중·변별력을 전수 검증하고 6영역을 재구성. <b>파워</b>: EV125 기준(HH+·배럴+)이 체격에 크게 좌우됨을 확인(≤170cm 대비 ≥185cm 격차 — 배럴+ <b>6.4배</b>, HH+ 3.7배, 반면 HH/배럴은 1.6~1.7배로 완만. 160cm 배럴+는 0.1%로 사실상 0) → 홈런형(배럴+·HH+·HR%)과 장타형(ISO·배럴%·HH%·평균EV)을 균형 배치해 작은 선수 위주 팀의 구조적 불이익 해소. <b>컨택</b>: 팀타율·K%에 <b>존내 컨택%</b>(리그 73.0% — "칠 수 있는 공을 실제로 맞히는 능력") 추가. 스윗스팟(hPos)은 파워와 성격 중복, BABIP는 운·상대수비 영향이 커서 제외. <b>선구</b>: BB%·체이스% 중심에 존내 스윙%(적극성)를 보조(0.10)로 — 존밖 헛스윙은 "쫓아간 뒤 못 맞힌 것"이라 컨택 성격이므로 제외. <b>투수 결과</b>: K/9·피홈런% 추가하고 FIP를 ERA보다 높은 가중치로(수비·운 영향 배제). <b>투수 제구</b>: 존인%는 한복판 몰림도 "제구 좋음"으로 잡는 문제가 있어 <b>실투율(감점)·보더라인%(가점)</b> 중심으로 재편 — 제구는 결과가 아닌 <b>의도한 곳에 넣는 능력</b>으로 평가.'},
       {icon:'⚡', text:'⭐⭐ <b>성능 최적화 검증 (316경기 규모 실측)</b> — 선수 120명 조회 <b>162.1ms → 0.1ms</b>(인덱스 캐시), 2,000점 인덱스 역참조 <b>21.1ms → 0.8ms</b>(Map). 캐시 구축 비용(1회 24~34ms)은 전 화면이 공유. 리그 비교·팀 프로파일·수비·기록실·폼 등 <b>캐시 11종을 모두 <code>_rebuildCaches</code>에 연결</b>해 데이터 변경 시 정확히 무효화(투구 수가 같아도 경기가 교체되는 경우까지 대응).'},
@@ -24069,6 +24042,97 @@ function _computeTeamProfiles(){
   const out={teams:arr, pctOf, byName:Object.fromEntries(arr.map(t=>[t.team,t]))};
   window._teamProfCache={_k:G.length, v:out};
   return out;
+}
+// ═══ V11.4: 팀 종합 등급 — 개요/진단서 공통 기준 ═══
+// 두 화면이 서로 다른 가중치를 쓰던 문제를 통일 (같은 팀이 다른 등급을 받지 않도록)
+const TEAM_W = {
+  bat:  {contact:0.35, power:0.40, eye:0.25},          // 타격 내부 배분
+  pit:  {pStuff:0.35,  pCtrl:0.25, pResult:0.40},      // 투수 내부 배분
+  total:{bat:0.45, pit:0.45, def:0.10}                 // 팀 종합 (수비는 OAA 신뢰도 감안)
+};
+// 팀 수비 백분위 (0~1) — 리그 팀 OAA 순위 기반
+function _teamDefPct(team){
+  try{
+    const dd=_computeDefenseData();
+    if(!dd||!dd.byPlayer) return {pct:0.5, oaa:null, rank:null, n:0};
+    const tot={};
+    Object.values(dd.byPlayer).forEach(p=>{
+      const tm=_playerTeam(p.name,'batter');
+      if(!tm||tm==='—')return;
+      if(!tot[tm])tot[tm]=0;
+      Object.values(p.byPos||{}).forEach(ps=>{tot[tm]+=ps.oaaWeighted||0;});
+    });
+    const arr=Object.entries(tot).map(([tm,v])=>({tm,v})).sort((a,b)=>b.v-a.v);
+    const idx=arr.findIndex(x=>x.tm===team);
+    if(idx<0) return {pct:0.5, oaa:null, rank:null, n:arr.length};
+    const pct=arr.length>1 ? 1-(idx/(arr.length-1)) : 0.5;
+    return {pct, oaa:arr[idx].v, rank:idx+1, n:arr.length};
+  }catch(_){ return {pct:0.5, oaa:null, rank:null, n:0}; }
+}
+// ═══ 클러치 지표 (참고용 — 종합 등급에는 미반영) ═══
+// 득점권(2·3루 주자) 상황의 OPS를 리그 평균과 비교
+//   피안타율만 보면 볼넷·장타를 못 잡음 (실측 316경기: 득점권 피안타율 +39 vs 피OPS +78)
+function _clutchStats(arr){
+  let ab=0,h=0,tb=0,bb=0,hbp=0;
+  for(let i=0;i<arr.length;i++){
+    const d=arr[i], r=+d.result;
+    if(r===5)bb++;
+    else if(r===6)hbp++;
+    if(_isABPitch(d))ab++;
+    if(_isHit(d)){ h++; tb += (+d._hitBase || (r===4?4:1)); }
+  }
+  const pa=ab+bb+hbp;
+  if(ab<10) return null;
+  const ba=h/ab, obp=pa>0?(h+bb+hbp)/pa:0, slg=tb/ab;
+  return {ab,pa,ba,obp,slg,ops:obp+slg};
+}
+// 리그 득점권 기준 (캐시)
+function _leagueClutch(){
+  if(window._lgClutchCache && window._lgClutchCache._k===G.length) return window._lgClutchCache.v;
+  const rsp=G.filter(d=>(+d.b2===1||+d.b3===1));
+  const v=_clutchStats(rsp);
+  window._lgClutchCache={_k:G.length, v};
+  return v;
+}
+// 팀 클러치 — side:'bat'(타격) | 'pit'(투수)
+function _teamClutch(team, side){
+  try{
+    const idx=_teamPitchIndex();
+    const src=(side==='pit') ? (idx.pit[team]||[]) : (idx.bat[team]||[]);
+    const rsp=src.filter(d=>(+d.b2===1||+d.b3===1));
+    const s=_clutchStats(rsp);
+    const lg=_leagueClutch();
+    if(!s||!lg) return {ops:null, lgOps:lg?lg.ops:null, diff:null, pct:0.5, ab:s?s.ab:0, side};
+    const diff=s.ops-lg.ops;
+    // 투수는 낮을수록 좋음 → 부호 반전
+    const signed = (side==='pit') ? -diff : diff;
+    const pct=Math.max(0,Math.min(1,0.5+signed*1.2));
+    return {ops:s.ops, ba:s.ba, obp:s.obp, slg:s.slg, lgOps:lg.ops, diff, pct, ab:s.ab, side};
+  }catch(_){ return {ops:null, lgOps:null, diff:null, pct:0.5, ab:0, side}; }
+}
+// 타격/투수/수비/종합 점수 일괄 계산 (개요·진단서 공용)
+function _teamScores(prof, t){
+  const A=_teamAreaScores(prof,t);
+  const W=TEAM_W;
+  const bat = A.contact*W.bat.contact + A.power*W.bat.power + A.eye*W.bat.eye;
+  const pit = A.pStuff*W.pit.pStuff + A.pCtrl*W.pit.pCtrl + A.pResult*W.pit.pResult;
+  const d = _teamDefPct(t.team);
+  const total = bat*W.total.bat + pit*W.total.pit + d.pct*W.total.def;
+  return {A, bat, pit, def:d.pct, defInfo:d, total};
+}
+// 공통 등급 (개요·진단서 동일)
+function _teamGrade(p){
+  return p>=0.90?'S+' : p>=0.80?'S' : p>=0.70?'A+' : p>=0.60?'A'
+       : p>=0.50?'B+' : p>=0.40?'B' : p>=0.30?'C+' : p>=0.20?'C' : 'D';
+}
+function _teamGradeColor(g){
+  return g.startsWith('S')?'#ff2d55' : g.startsWith('A')?'#ff8c44'
+       : g.startsWith('B')?'#ffd700' : g.startsWith('C')?'#88ccff' : '#8a97a8';
+}
+function _teamGradeLabel(p){
+  return p>=0.80?'리그 최상위 — 우승 후보' : p>=0.70?'상위권 — 포스트시즌 경쟁력'
+       : p>=0.60?'중상위 — 강점 살리면 상위권 도전' : p>=0.45?'중위권 — 약점 보완이 관건'
+       : p>=0.30?'하위권 — 구조적 보강 필요' : '재건 단계';
 }
 // 팀 6영역 스코어 + 구성 지표 상세 (0~1 백분위)
 // 각 영역이 "어떤 지표로 이루어졌고 각각 어땠는지" 보여주기 위해 breakdown 포함
