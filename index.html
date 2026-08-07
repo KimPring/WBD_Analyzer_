@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <!-- V10.1: 외부 이미지(WBD 프로필) hotlinking 방지 우회 - Referer 헤더 차단 -->
 <meta name="referrer" content="no-referrer">
-<title>WBD Baseball Analyzer V11.3</title>
+<title>WBD Baseball Analyzer V11.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -543,7 +543,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 <!-- ════ UPLOAD PAGE ════ -->
 <div id="upload-page">
   <div class="logo-big">WBD</div>
-  <div class="logo-sub">BASEBALL ANALYZER · V11.3</div>
+  <div class="logo-sub">BASEBALL ANALYZER · V11.4</div>
   <div id="server-library-box" style="width:100%;max-width:640px;margin-bottom:16px;background:var(--card);border:1px solid rgba(245,166,35,0.35);border-radius:12px;padding:20px 22px;display:none;box-shadow:0 0 32px rgba(245,166,35,0.05);text-align:left">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
       <div>
@@ -583,7 +583,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   <!-- 모바일 전용 상단 바 (햄버거) -->
   <div id="mobile-topbar" style="display:none">
     <button id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="메뉴">☰</button>
-    <div class="mobile-logo">WBD <span style="font-size:10px;color:var(--muted);margin-left:2px">V11.3</span></div>
+    <div class="mobile-logo">WBD <span style="font-size:10px;color:var(--muted);margin-left:2px">V11.4</span></div>
     <button class="mobile-icon-btn" onclick="openGlobalSearch()" title="검색">🔍</button>
     <button class="mobile-icon-btn" onclick="document.getElementById('add-file-input').click()" title="경기 추가" style="color:var(--amber)">+</button>
   </div>
@@ -601,7 +601,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   <div id="mobile-menu-overlay" style="display:none" onclick="closeMobileMenu(event)">
     <div id="mobile-menu-panel" onclick="event.stopPropagation()">
       <div class="mobile-menu-header">
-        <div class="mobile-logo" style="font-size:16px;cursor:pointer" onclick="closeMobileMenu();openChangelogModal()" title="업데이트 내역 보기">WBD <span style="background:#ffd700;color:#000;font-size:11px;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:2px">V11.3</span></div>
+        <div class="mobile-logo" style="font-size:16px;cursor:pointer" onclick="closeMobileMenu();openChangelogModal()" title="업데이트 내역 보기">WBD <span style="background:#ffd700;color:#000;font-size:11px;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:2px">V11.4</span></div>
         <button class="mobile-icon-btn" onclick="closeMobileMenu()" style="font-size:20px">✕</button>
       </div>
       <div class="mobile-menu-section">
@@ -640,7 +640,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         <button class="mobile-menu-btn" onclick="closeMobileMenu();openPresetModal()">💾 프리셋</button>
         <button class="mobile-menu-btn" onclick="closeMobileMenu();openThemeModal()">🎨 테마</button>
         <button class="mobile-menu-btn" onclick="closeMobileMenu();openShortcutsModal()">⌨️ 단축키</button>
-        <button class="mobile-menu-btn" onclick="closeMobileMenu();openChangelogModal()" style="background:linear-gradient(90deg,rgba(204,68,255,.15),transparent);color:#cc44ff;font-weight:700">📋 업데이트 내역 (V11.3 NEW!)</button>
+        <button class="mobile-menu-btn" onclick="closeMobileMenu();openChangelogModal()" style="background:linear-gradient(90deg,rgba(204,68,255,.15),transparent);color:#cc44ff;font-weight:700">📋 업데이트 내역 (V11.4 NEW!)</button>
         <button class="mobile-menu-btn" onclick="closeMobileMenu();document.getElementById('add-file-input').click()" style="color:var(--amber)">+ 경기 추가</button>
         <button class="mobile-menu-btn" onclick="closeMobileMenu();openServerLibraryModal()" style="color:#88ccff">☁ 서버 경기 추가</button>
         <button class="mobile-menu-btn" onclick="closeMobileMenu();clearAllGames()" style="color:#ff4560">🗑️ 모든 경기 제거</button>
@@ -649,7 +649,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   </div>
 
   <div id="topnav">
-    <div class="nav-logo">WBD <span style="font-size:11px;color:var(--muted);letter-spacing:1px;margin-left:4px">V11.3</span></div>
+    <div class="nav-logo">WBD <span style="font-size:11px;color:var(--muted);letter-spacing:1px;margin-left:4px">V11.4</span></div>
     <button class="nav-btn active" onclick="showPage('home')">🏠 홈</button>
     <button class="nav-btn" onclick="showPage('pitcher')">⚾ 투수</button>
     <button class="nav-btn" onclick="showPage('batter')">🏏 타자</button>
@@ -2121,6 +2121,8 @@ function _rebuildCaches(){
   // V11.3: 팀 탭/리그 비교용 파생 캐시도 함께 무효화 (G.length가 같아도 내용이 바뀔 수 있음)
   window._lgInPlayCache=null; window._lgBBQCache=null; window._lgDirCache=null;
   window._teamPitchCache=null; window._teamProfCache=null; window._gIdxMap=null; window._formCache=null;
+  window._bbqLeagueCache=null; window._scoutLeagueCache=null; window._teamScoutLeagueCache=null;
+  window._defenseDataCache=null; window._lgDefCache=null;
   c.pitcherData = {};
   c.batterData = {};
   c.pitcherCard = {};
@@ -6700,18 +6702,13 @@ function _calcPitcherCardImpl(name){
   const barrelsAgainst=battedPd.filter(d=>+d.ev>=105 && +d.ldeg>=8 && +d.ldeg<=32).length;
   const barrelPctAg=battedPd.length?barrelsAgainst/battedPd.length*100:18.5;
   const barrelSuppress=(15.9-barrelPctAg)*1.2; // V11.1 인플레이 재보정 (구 앵커 13, 델타 +2.9 평행이동)
-  // V11.2: 피배럴+% 억제 (EV125+&LA20~40 — 홈런 96% 발생 치명존 · 리그 p10=0.8/p50=9.6/p90=15.5 실측)
-  // 절대 기준 사용 (상대 타자 키가 섞이므로 공정) · p50 기여 0이라 리그 평균 등급 보존
-  const brlpAgainst=battedPd.filter(d=>_isBarrelPlus(d)).length;
-  const brlpPctAg=battedPd.length?brlpAgainst/battedPd.length*100:9.6;
-  const brlpSuppress=(9.6-brlpPctAg)*1.0;
   // 체이스 유도 (존밖 스윙 유도, 리그 p10=43, p50=55, p90=64): 높을수록 좋음
   const outZone=pd.filter(d=>d.zoneX!=null && (Math.abs(+d.zoneX)>1||Math.abs(+d.zoneY||0)>1));
   const ozSwings=outZone.filter(d=>d.bSwing);
   const ozSwPct=outZone.length?ozSwings.length/outZone.length*100:55;
   const chaseBonus=(ozSwPct-55)*0.4; // -5 ~ +4 범위
-  // 통합 점수 (V11.2: +brlpSuppress)
-  const domScore=(0.48-baAgainst)*120+(7.0-Math.min(7,hrAgainst))*6+evSuppress+zinBonus+barrelSuppress+brlpSuppress+chaseBonus;
+  // 통합 점수
+  const domScore=(0.48-baAgainst)*120+(7.0-Math.min(7,hrAgainst))*6+evSuppress+zinBonus+barrelSuppress+chaseBonus;
   const DOM=pw(domScore,-30,60,1.1);
 
   // 제구 (V7.15 수정): zoneX/Y 둘 다 -1~1 대칭 · 공 반지름 감안 보더 0.85~1.15
@@ -6899,28 +6896,19 @@ function _calcBatterCardImpl(name){
   const hhAdjSum = hhAdjArr.reduce((a,b)=>a+b,0);
   const hhAdjPct = bdQ.length ? hhAdjSum/bdQ.length*100 : hhPct;
   
-  // V11.2: 키보정 HH+% 추가 (EV≥키캡-5) — 순수 타구속도 상위 변별 강화
-  const adjHhpN = bdQ.filter(d=>_isHHPlusAdj(d)).length;
-  const adjHhpPct = bdQ.length ? adjHhpN/bdQ.length*100 : 0;
   const gapScore = (adjAvgEV - 85) * 1.5    // 키 보정 평균 EV
-                 + adjHhpPct * 1.0            // 키 보정 HH+% (V11.2 신규 — 상위 변별)
-                 + hhPct * 0.8;               // HH% (꾸준한 강타 생산)
-  const GAP = pw(gapScore, -10, 120, 0.60);  // V11.2 재보정 (30G 실측 96타자 · 리그 평균 등급 보존: p10 72/p50 89/p90 106)
+                 + hhAdjPct * 1.5;            // 키 보정 HH%
+  const GAP = pw(gapScore, -7.5, 122.5, 0.65);  // V11.1 인플레이 재보정 (+2.5 평행이동, 평균 등급 보존)
   
   // 파워 (POW): 얼마나 강하고 효율 좋은 타구를 보내는가 (HR/장타로 이어지는 능력)
   // HR 결과 중심 — 키 작아서 못 넘기면 진짜 파워 낮은 게 맞음 (보정 X)
   const ldHits=bdQ.filter(d=>+d.ldeg>=10&&+d.ldeg<=30).length;
   const ldPct=bdQ.length?ldHits/bdQ.length*100:0;
   
-  // V11.2: 키보정 배럴+%(홈런 직결 스윙) + ISO(추정 2·3루타 반영) 신규 — HH%는 GAP과 중복이라 제거
-  const adjBrlpN = bdQ.filter(d=>_isBarrelPlusAdj(d)).length;
-  const adjBrlpPct = bdQ.length ? adjBrlpN/bdQ.length*100 : 0;
-  const isoV = Math.max(0, slg - batAvg);
-  const pwrScore = hrPct * 4.5                // HR% 핵심 (결과 — 절대 기준)
-                 + adjBrlpPct * 1.5             // 키보정 배럴+% (홈런 직결 과정 — 상대 기준, V11.2 신규)
-                 + brlPct * 1.0                 // 기존 배럴% (솔리드 장타 생산)
-                 + isoV * 30;                   // ISO — 추정 2·3루타 드디어 반영 (V11.2)
-  const PWR = pw(pwrScore, 0, 80, 0.40);  // V11.2 재보정 (30G 실측 96타자 · 리그 평균 등급 보존: p10 65/p50 89/p90 113)
+  const pwrScore = hrPct * 5.0                // HR% 핵심
+                 + brlPct * 2.0                // 배럴% 보조
+                 + hhPct * 0.5;                // HH% 보조
+  const PWR = pw(pwrScore, -1.5, 108.5, 0.55);  // V11.1 인플레이 재보정 (+8.5 평행이동, 평균 등급 보존)
 
   // 컨택 (V8.5): 타율 50% + 헛스윙 회피 25% + 존내 컨택 15% + 존밖 컨택 10%
   // 타율이 모두가 아닌 "결과 지표"로 50%만, 나머지는 실제 컨택 능력(존별 컨택) 반영
@@ -7021,8 +7009,8 @@ const STAT_INFO={
   '구위':{
     label:'구위 (Dominance / Stuff)',
     icon:'💪',
-    desc:'타자를 압도하는 종합 능력. 피안타율·피홈런·피EV·존내헛스윙·배럴허용·배럴+허용·체이스 유도 통합',
-    formula:'(0.48 − 피안타율)×120 + (7 − min(7, 피홈런%))×6 + (100.2 − 평균피EV)×3 + (존내헛스윙% − 22)×0.6 + (15.9 − 배럴허용%)×1.2 + (9.6 − 배럴+허용%)×1.0 [V11.2 신규: EV125+&LA20~40 치명존 억제] + (존밖스윙% − 55)×0.4 → pw(score, −30, 60, 1.1) + ERA 보너스',
+    desc:'타자를 압도하는 종합 능력. 피안타율·피홈런·피EV·존내헛스윙·배럴허용·체이스 유도 6가지 통합',
+    formula:'(0.48 − 피안타율)×120 + (7 − min(7, 피홈런%))×6 + (100.2 − 평균피EV)×3 + (존내헛스윙% − 22)×0.6 + (15.9 − 배럴허용%)×1.2 + (존밖스윙% − 55)×0.4 → pw(score, −30, 60, 1.1) + ERA 보너스 [백업본: V11.1 방식]',
     detail:'피안타율 0.38이 기준점. 평균 피EV가 100mph 이하·존내 헛스윙 22% 이상·배럴 허용 13% 이하·체이스 유도 55% 이상이면 보너스. ERA ≤3.0이면 +5, ≤4.0이면 +3, ≤5.0이면 +1.'
   },
   '제구':{
@@ -7064,15 +7052,15 @@ const STAT_INFO={
   '파워':{
     label:'파워 (Power)',
     icon:'💥',
-    desc:'순수 장타력. HR%(핵심) + 키보정 배럴+% + 배럴% + ISO(추정 2·3루타 반영)',
-    formula:'HR%×4.5 + 키보정배럴+%×1.5 + 배럴%×1.0 + ISO×30 → pw(score, 0, 80, 0.40) [V11.2 개편]. 배럴+=EV≥키캡−5 & LA20~40°(홈런 직결 과정, 키 상대화), HR%=절대 기준(결과), ISO=추정 2·3루타 반영. 30G 실측 96타자 재보정',
+    desc:'순수 장타력. HR%(핵심) + 배럴% + HH%(EV≥110)',
+    formula:'HR%×5.0 + 배럴%×2.0 + HH%×0.5 → pw(score, −1.5, 108.5, 0.55). 배럴=EV≥105 + 발사각 8~32°. 키 보정 X (못 넘기면 진짜 파워 낮은 것) [백업본: V11.1 방식]',
     detail:'홈런 자체가 가장 큰 비중. 배럴(좋은 발사각의 강타구)·하드힛(EV 110+)이 보조. p50 약 82점.'
   },
   '갭파워':{
     label:'갭파워 (Gap Power)',
     icon:'📈',
-    desc:'타구 강도. 키 보정 평균 EV + 키 보정 HH+% + HH%',
-    formula:'(키보정 평균EV − 85)×1.5 + 키보정 HH+%×1.0 + HH%×0.8 → pw(score, −10, 120, 0.60) [V11.2 개편]. 키보정 HH+=EV≥키캡−5 (상위 변별 강화). 키별 EV 캡: 160cm=120, 165cm=125, 170cm=128, 175cm+=130',
+    desc:'타구 강도. 키 보정 적용된 평균 EV + 키 보정 HH%',
+    formula:'(키보정 평균EV − 85)×1.5 + 키보정 HH%×1.5 → pw(score, −7.5, 122.5, 0.65). 키별 EV 캡: 160cm=120, 165cm=125, 170cm=128, 175cm+=130 [백업본: V11.1 방식]',
     detail:'작은 선수의 110+ 도달 더 어려운 점 보정. 같은 EV라도 키 작으면 약간 가산점. p50 약 79점.'
   },
   '컨택':{
@@ -11643,12 +11631,12 @@ function renderTeamReport(){
 
       // ── 8영역 바 ──
       const areas=[
-        {k:'컨택',v:A.contact,w:W.contact,d:`팀타율 ${t.avg.toFixed(3).replace(/^0/,'')} · K% ${t.kPct.toFixed(1)}%`},
+        {k:'컨택',v:A.contact,w:W.contact,d:`팀타율 ${t.avg.toFixed(3).replace(/^0/,'')} · K% ${t.kPct.toFixed(1)}% · 존내컨택 ${t.zContactPct.toFixed(1)}%`},
         {k:'파워',v:A.power,w:W.power,d:`HR% ${t.hrPct.toFixed(1)}% · 배럴+% ${t.brlpPct.toFixed(1)}% · ISO ${t.iso.toFixed(3).replace(/^0/,'')} · 배럴% ${t.brlPct.toFixed(1)}% · EV ${t.avgEV.toFixed(1)}`},
-        {k:'선구',v:A.eye,w:W.eye,d:`BB% ${t.bbPct.toFixed(1)}% · 체이스 ${t.chasePct.toFixed(1)}%`},
+        {k:'선구',v:A.eye,w:W.eye,d:`BB% ${t.bbPct.toFixed(1)}% · 체이스 ${t.chasePct.toFixed(1)}% · 존내스윙 ${t.zSwingPct.toFixed(1)}%`},
         {k:'투수 구위',v:A.pStuff,w:W.pStuff,d:`피안타율 ${t.oAvg.toFixed(3).replace(/^0/,'')} · 헛스윙 ${t.pWhiffPct.toFixed(1)}% · 피배럴+ ${t.pBrlpPct.toFixed(1)}% · 피EV ${t.pAvgEV.toFixed(1)}`},
         {k:'투수 제구',v:A.pCtrl,w:W.pCtrl,d:`실투 ${t.pMidPct.toFixed(1)}% · 보더라인 ${t.pBorderPct.toFixed(1)}% · BB% ${t.pBBPct.toFixed(1)}%`},
-        {k:'투수 결과',v:A.pResult,w:W.pResult,d:`ERA ${t.era!=null?t.era.toFixed(2):'-'} · FIP ${t.fip!=null?t.fip.toFixed(2):'-'} · WHIP ${t.whip!=null?t.whip.toFixed(2):'-'}`},
+        {k:'투수 결과',v:A.pResult,w:W.pResult,d:`FIP ${t.fip!=null?t.fip.toFixed(2):'-'} · ERA ${t.era!=null?t.era.toFixed(2):'-'} · WHIP ${t.whip!=null?t.whip.toFixed(2):'-'} · K/9 ${t.k9.toFixed(1)}`},
         {k:'수비 (참고)',v:defScore,w:W.def,d:defOAA!=null?`팀 OAA ${defOAA>0?'+':''}${defOAA.toFixed(1)} · 리그 ${defRank}/${defTeams}위`:'데이터 부족',ref:true},
         {k:'클러치',v:clutch,w:W.clutch,d:'득점권 상황 타격'}
       ];
@@ -13811,24 +13799,20 @@ function openThemeModal(){
 //   - title은 한 줄 핵심 요약, changes는 항목별 (icon + text)
 const CHANGELOG = [
   {
-    version: 'V11.3',
+    version: 'V11.4',
     date: '2026-08',
-    title: '⚾ 야수선택(FC) 판정 — 포스아웃 시 안타 제외 + CSV 공식 명세 반영',
-    badge: '#39ff8a',
+    title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화 <b>[백업본: OVR 산정식 V11.1 방식]</b>',
+    badge: '#ff8c44',
     changes: [
-      {icon:'⚾', text:'⭐⭐⭐ <b>야수선택(FC) 판정 신규</b> — 선행주자가 <b>포스아웃</b>되면 타자는 안타가 아님(MLB 공식 기록규칙 10.05(b)(1) "주자가 타구에 의해 포스아웃되면 안타를 인정하지 않는다"). 기존에는 <code>1BSafe=1</code>이면 무조건 안타로 집계돼, <b>1루 주자를 2루에서 포스아웃시키고 타자만 1루에 산 전형적 야수선택이 안타로 잘못 기록</b>되고 있었음. 아웃코드(<code>outNCode</code>)의 방식 비트로 포스아웃을 식별해 제외. <b>타구질·수비 의도·시간과 무관하게 포스아웃이면 무조건 FC</b>(공식 규칙 확인 — 외야 라인드라이브라도, 선택의 여지가 없었어도 FC).'},
-      {icon:'🔻', text:'⭐⭐ <b>병살(GIDP/DP) 기록 신규</b> — 한 인플레이 타구로 2아웃 발생 시 병살로 집계. <b>포스아웃이 1개 이상 포함된 경우만 인정</b>(태그만 2개인 경우는 런다운 꼬임으로 두 명이 따로 죽은 상황과 구별 불가하여 제외 — 보수적 설계). <b>삼중살(TP)은 별도 카운트</b>. GIDP=땅볼 병살(result=2), 뜬공+포스 병살(라인드라이브 병살)은 DP로만 집계하고 GIDP에서 제외. 적용: <b>타자 기록실·팀 로스터·리그전 팀기록·리더보드(병살타 적은순)</b>, <b>투수 기록실·팀기록·리더보드(병살 유도 많은순)</b>. 시나리오 시뮬레이션 + <b>논리 일관성 전수검사</b> 통과 — "안타이면서 병살", "아웃이면서 안타", "DP이면서 TP" 같은 모순 상태가 발생하지 않음을 검증(5-4 병살처럼 타자가 1루에 살고 주자 2명이 포스아웃된 경우는 <b>안타 아님 + 야수선택 + 병살</b>로 정확히 분류).'},
-      {icon:'🔍', text:'<b>태그아웃은 건드리지 않음 (의도적 보수 설계)</b> — 태그아웃은 "야수선택"과 "안타+주루사"가 섞여 있고, 이를 자동 구별하려면 포구 위치·시각·송구 능력 등 다변수 임계값이 필요해 <b>표본 부족 상태에서 오판 위험</b>이 큼. 실측 검증 결과 현재 로직이 이미 98% 정확해, 확실한 포스아웃만 교정하고 애매한 판정은 유지. (타자가 1루 도달 후 오버런·2루 시도로 태그아웃된 경우는 <b>1루까지는 세이프이므로 안타 유지</b>가 규칙상 정확)'},
-      {icon:'📋', text:'<b>구/신 데이터 호환</b> — 아웃코드는 신규 CSV(233컬럼)에만 존재. 구 데이터(118컬럼)는 포스/태그 구분 자체가 기록되지 않아 판별 불가하므로 <b>기존 로직 그대로 유지</b>. 신규 포맷 경기부터 타율·안타·총루타가 정확해짐.'},
-      {icon:'📦', text:'<b>내보내기 schema v13</b> — <code>batters[].season.GIDP</code>(병살타), <code>pitchers[].season.GIDPinduced/DPinduced</code>(병살 유도) 추가. 안타 판정에 야수선택 반영이 H/BA/OBP/SLG/TB 등 전 타격 지표에 적용됨을 명시. codeMaps에 <b>outCode 비트필드 해석</b>(야수/베이스/방식)과 fieldersChoice 규칙 추가. glossary에 GIDP·야수선택 정의 추가. appVersion V11.3.'},
-      {icon:'🎨', text:'⭐⭐ <b>존 히트맵 색상 가독성 대폭 개선</b> — 팔레트 중간값(0.5)이 <b>거의 흰색</b>이라 평균권 타율 셀이 배경과 구분되지 않던 문제 수정. 중앙을 유채색(회보라)으로 바꾸고 양끝 채도를 높여 <b>어떤 값이든 대비 확보</b>. 셀 텍스트에 어두운 외곽선(paint-order)을 넣어 밝은 배경에서도 읽히게 함. <b>표본 부족 셀(AB&lt;5)은 점선 테두리</b>로 구분. 팀 타격 존맵은 상대 정규화 → <b>절대 기준</b>(다른 존맵과 동일)으로 통일, 팀 투수 존맵은 "투구 밀도" → <b>피안타율</b> 기반으로 교체해 색이 실제 의미를 갖도록 변경(빨강=피안타 높음/위험, 파랑=억제).'},
-      {icon:'🏆', text:'⭐⭐ <b>팀 개요 — 종합 등급 카드 신규</b> — 영역별 레이더만으로는 "이 팀이 전체적으로 어느 수준인지" 한눈에 안 들어오던 것 보완. <b>🏏타격 종합</b>(컨택35·파워40·선구25) / <b>⚾투수 종합</b>(구위35·제구25·결과40) / <b>🛡️수비</b>(팀 OAA 백분위) / <b>🏆팀 종합</b>(타격45·투수45·<b>수비10</b>)을 S+~F 등급으로 표시. 수비는 OAA 신뢰도를 감안해 팀 종합에서 <b>10%만</b> 반영하고 그 사실을 화면에 명시.'},
+      {icon:'📐', text:'⭐⭐⭐ <b>평가 지표 재설계 — 316경기 실측 검증 기반</b> — 전체 데이터(중복 제거 후 <b>316경기 58,889투구</b>)로 지표별 편중·변별력을 전수 검증하고 6영역을 재구성. <b>파워</b>: EV125 기준(HH+·배럴+)이 체격에 크게 좌우됨을 확인(≤170cm 대비 ≥185cm 격차 — 배럴+ <b>6.4배</b>, HH+ 3.7배, 반면 HH/배럴은 1.6~1.7배로 완만. 160cm 배럴+는 0.1%로 사실상 0) → 홈런형(배럴+·HH+·HR%)과 장타형(ISO·배럴%·HH%·평균EV)을 균형 배치해 작은 선수 위주 팀의 구조적 불이익 해소. <b>컨택</b>: 팀타율·K%에 <b>존내 컨택%</b>(리그 73.0% — "칠 수 있는 공을 실제로 맞히는 능력") 추가. 스윗스팟(hPos)은 파워와 성격 중복, BABIP는 운·상대수비 영향이 커서 제외. <b>선구</b>: BB%·체이스% 중심에 존내 스윙%(적극성)를 보조(0.10)로 — 존밖 헛스윙은 "쫓아간 뒤 못 맞힌 것"이라 컨택 성격이므로 제외. <b>투수 결과</b>: K/9·피홈런% 추가하고 FIP를 ERA보다 높은 가중치로(수비·운 영향 배제). <b>투수 제구</b>: 존인%는 한복판 몰림도 "제구 좋음"으로 잡는 문제가 있어 <b>실투율(감점)·보더라인%(가점)</b> 중심으로 재편 — 제구는 결과가 아닌 <b>의도한 곳에 넣는 능력</b>으로 평가.'},
+      {icon:'⚡', text:'⭐⭐ <b>성능 최적화 검증 (316경기 규모 실측)</b> — 선수 120명 조회 <b>162.1ms → 0.1ms</b>(인덱스 캐시), 2,000점 인덱스 역참조 <b>21.1ms → 0.8ms</b>(Map). 캐시 구축 비용(1회 24~34ms)은 전 화면이 공유. 리그 비교·팀 프로파일·수비·기록실·폼 등 <b>캐시 11종을 모두 <code>_rebuildCaches</code>에 연결</b>해 데이터 변경 시 정확히 무효화(투구 수가 같아도 경기가 교체되는 경우까지 대응).'},
       {icon:'🩹', text:'⭐⭐⭐ <b>경기 로드 누락 방지 (원인 규명 + 대응)</b> — "36경기인데 35개만 로드" 현상의 원인을 추적. ① <b>네트워크 실패가 조용히 넘어감</b> → 다운로드 실패 시 <b>최대 3회 자동 재시도</b>(지수 백오프, 재시도 시 캐시 무시) + 빈 응답도 실패로 처리. ② <b>중복 판정으로 스킵된 파일이 어디에도 집계되지 않던 문제</b> → 스킵 목록을 별도 추적하고 완료 메시지에 표시. ③ 요청 수와 실제 로드 수가 다르면 <b>📋 로드 결과 리포트</b> 모달을 자동 표시(실패·중복스킵·미확인 항목을 파일명까지 나열). ④ <b>🔍 로드된 경기 점검</b> 도구 신규 — 날짜별 경기 목록, 활성/비활성 표시, 투구수가 동일한 "중복 의심" 경기쌍 자동 탐지.'},
       {icon:'✨', text:'⭐ <b>선수 카드 폼 표현 리디자인</b> — 밋밋한 뱃지 방식을 걷어내고 3중 표현으로 교체: ① 컨디션 최상/상승 시 카드 외곽에 <b>은은한 컬러 글로우</b>(부진은 안쪽 그림자) ② 사진 좌상단 <b>그라디언트 코너 태그</b>(🔥최상·📈상승 등) ③ 능력치 바 아래 <b>FORM 게이지</b> — 부진↔최상 스펙트럼 위에 현재 위치를 점으로 표시(중앙선=시즌 평균). 카드 상세 모달도 게이지 + 글로우 아이콘으로 재구성.'},
       {icon:'📏', text:'⭐⭐ <b>팀 수비 — 리그 평균 대비 지표 추가</b> — OAA는 zero-sum이라 절대값만으론 "잘하는 건지" 알기 어려웠음. 이제 <b>같은 포지션 리그 평균 아웃률과의 차이(%p)</b>를 팀·포지션·선수 단위로 모두 표시. <b>내야/외야 카드</b>에 아웃률과 리그 평균 대비 병기, <b>포지션별 표</b>에 아웃률/리그·리그 대비·리그 순위(같은 포지션 내 백분위) 컬럼 신설, <b>선수별 수비 표</b> 신규(주 포지션 기준 OAA·OAA/10기회·아웃률·리그 대비·순위, 이름 클릭 시 수비수 상세로 이동). 기회 수가 다른 선수끼리 비교할 수 있도록 <b>OAA/10기회</b>를 함께 제공.'},
       {icon:'⚔️', text:'⭐⭐ <b>팀 탭 상대 비교 — 전 탭 확대</b> — 구 진단서에만 있던 상대팀 비교를 <b>신규 6개 탭 전체</b>에 구현. 상단 셀렉트로 상대를 고르면 모든 탭이 비교 모드로 전환(선택 상태는 탭을 옮겨도 유지). <b>개요</b>: 레이더에 상대 프로파일을 점선으로 겹쳐 표시 + 영역별 등급/지표를 나란히 비교(막대에 상대 위치 파란 선). <b>진단서</b>: 영역 승패 카운트와 매치업 총평(우위/박빙 판정). <b>타격·투수</b>: 핵심 지표 9종을 위아래로 비교하고 승패 집계(▲▼). <b>추이·전적</b>: 해당 상대와의 head-to-head 전적·득실을 상단에 강조. <b>수비</b>: 팀 OAA 옆에 상대 OAA 병기.'},
       {icon:'🔬', text:'⭐⭐ <b>팀 개요 — 영역별 근거 지표 공개</b> — 기존엔 레이더에 "컨택 A"처럼 <b>결과 등급만</b> 보이고 왜 그 등급인지 알 수 없었음. 이제 6영역(컨택·파워·선구·투수구위·투수제구·투수결과) 각각을 펼쳐서 <b>구성 지표 · 실제 수치 · 리그 백분위 막대 · 가중치</b>를 모두 표시하고, 그것들의 가중 평균이 영역 점수임을 명시. 예: 파워 = HH+%(×0.30) + 배럴+%(×0.30) + HR%(×0.20) + ISO(×0.20). 영역에 포함되지 않은 참고 지표(OPS·wOBA·평균EV·K/9·피EV 등)는 별도 블록으로 분리해 혼동 방지.'},
       {icon:'📜', text:'⭐⭐ <b>팀 전력 진단서 (신규) — 한 장 요약 탭</b> — 개편으로 분석이 여러 탭에 흩어진 만큼, <b>한 화면에 요약된 진단서</b>를 별도 탭으로 신설(기존 5지표 버전은 "전력 진단서(구)"로 계속 유지). <b>8영역 가중 평가</b>: 파워·투수구위 20%, 컨택·투수결과 15%, 선구·투수제구 10%, 수비·클러치 각 5% → 종합 등급 A+~D. 영역별 리그 백분위 막대(중앙선=리그 평균)와 근거 수치 병기. <b>자동 진단 코멘트</b>: 최강·최약 영역 지목, 공격형/수비형/밸런스형 판정, ERA-FIP 괴리 해석(수비·운의 영향). 핵심 타자·투수 WAR 상위 3인. <b>수비(OAA)는 비중 5%로만 반영</b>하고 화면에 명시 — 추정 지표가 등급을 좌우하지 않도록.'},
+      {icon:'🧪', text:'⭐⭐ <b>6영역 지표 균형 보강 — 컨택·선구·투수결과 세분화</b> — 파워는 7개 지표인데 컨택·선구는 2개뿐이라 평가가 거칠었음. 실측으로 변별력을 확인한 지표만 선별해 추가: <b>컨택</b> ← 존내 컨택%(리그 81.2%, "삼진과 별개로 맞히는 힘")·스윗스팟%(hPos 배트중심)·BABIP 추가로 5개 지표. <b>선구</b> ← 존밖 헛스윙%("쫓아가서 헛쳤나" — 체이스의 "쫓아갔나"와 구분)·존내 스윙%(칠 공은 치는 적극성) 추가로 4개. <b>투수 결과</b> ← K/9·피홈런% 추가하고 <b>FIP를 ERA보다 높은 가중치</b>로(수비·운 영향을 덜 받음) 5개. 파울%는 타자별 편차가 20~257%로 표본 변동이 커서 제외.'},
       {icon:'🎯', text:'⭐⭐⭐ <b>투수 제구 평가 — 존인%에서 위치 세분화로</b> — 기존 제구 지표가 <b>존 안 투구 비율</b>이라, <b>한복판에 몰린 공도 "제구 좋음"으로 잡히는</b> 근본 문제가 있었음. 실제로 존인% 상위 팀이 투수 결과는 하위인 역전 현상 발생. → 기존 제구 정밀도 탭의 분류(<code>_precisionClass</code>)를 팀 평가에 도입해 <b>실투(한복판, 감점 0.32) · 보더라인(존 경계, 가점 0.30) · 볼넷(0.26) · 스트라이크 획득(0.12)</b>으로 재구성. "존에 넣었나"가 아니라 <b>"어디에 넣었나"</b>를 보게 되어 변별력 확보. 팀 투수 탭에는 <b>투구 위치 분포 막대</b>(실투/살짝몰림/굿존/보더라인)를 추가해 한눈에 확인 가능.'},
       {icon:'⚖️', text:'⭐⭐ <b>파워·투수구위 평가 — 체격 편중 완화</b> — EV 125 기준(HH+·배럴+)은 키 큰 타자가 아니면 물리적으로 도달이 어려워, 이것만으로 파워를 재면 <b>작은 선수 위주 팀이 구조적으로 불리</b>했음. 실측(키 5cm 구간): 175cm 배럴+ 1.8% vs 190cm 12.4%로 <b>7배 차이</b>, 반면 HH(110+)는 32%→60%로 격차가 완만. → <b>파워</b>를 홈런형(배럴+ 0.22·HH+ 0.16·HR% 0.18)과 장타형(ISO 0.20·배럴% 0.12·HH% 0.07·평균EV 0.05)으로 재구성해 <b>2루타 이상 장타력과 순수 타구속도</b>가 반영되도록 조정. <b>투수 구위</b>도 대칭적으로 피배럴+ 단일 기준에서 피배럴%·피HH%·평균 피EV를 더한 다층 구조로 변경(상대 타자 체격에 따른 편차 완화).'},
       {icon:'🧭', text:'⭐⭐⭐ <b>타구 방향 표기 — 좌측/중앙/우측으로 통일</b> — 기존엔 <code>sdeg</code> 부호만 보고 당김/밀어침을 판정해 <b>좌타자가 정반대로 표기</b>되는 버그가 있었음. 이를 고치면서 당김/밀어침 개념 자체가 좌우 타석에 따라 뒤집혀 <b>혼동을 유발</b>하므로, 전 화면에서 <b>실제 타구가 어느 쪽으로 갔는지</b>만 표기하도록 통일: <b>좌측(LF·3루) / 중앙(CF) / 우측(RF·1루)</b>. 공통 헬퍼 <code>_fieldSide()</code> 하나로 정리(팀 타격 탭, 타구 분석 탭 요약·팀 프로파일 테이블, 스카우팅 리포트, 투구 상세 모달, 스프레이 통계). 수비 배치·상대 분석에는 타석 기준보다 실제 낙구 방향이 직관적이고, 좌우 타자를 섞어 비교할 때도 일관됨. 내보내기 <code>keyFields</code>의 sdeg 설명도 정정.'},
@@ -13840,6 +13824,21 @@ const CHANGELOG = [
       {icon:'⚡', text:'⭐⭐ <b>성능 최적화 — 선수별 풀스캔 제거 + 인덱스 역참조</b> — ① 선수 이름으로 전체 투구 DB를 훑던 <code>G.filter(d=>d.pName===name)</code> 패턴 <b>29곳</b>을 기존 인덱스 캐시(<code>getPitcherDataByName</code>/<code>getBatterDataByName</code>)로 교체 — 선수 100명 순회 기준 실측 <b>약 3배</b> 개선(100ms→34ms). ② 스프레이·타구질 차트가 점마다 호출하던 <code>G.indexOf(d)</code> 선형탐색 <b>6곳</b>을 Map 역참조로 교체 — 1,000개 점 기준 <b>11.8ms→0.15ms(78배)</b>, 점이 많은 화면의 렌더 지연 해소. ③ 팀 탭의 리그 비교 데이터(인플레이·타구품질·타구방향 분포)와 팀별 투구 인덱스, 팀 프로파일을 <b>캐시화</b>하여 탭 전환·팀 변경 시 재계산 제거. ④ 모든 신규 캐시를 <code>_rebuildCaches</code>에 연결해 데이터 변경 시 정확히 무효화(투구수가 같아도 내용이 바뀌는 경우 대응). <br>※ 문자열 누적(<code>+=</code>) → 배열 join 전환은 실측 결과 오히려 <b>8배 느려서</b> 적용하지 않음 — 감이 아닌 측정 기반으로 판단.'},
       {icon:'🏆', text:'⭐⭐⭐ <b>팀 탭 전면 개편 — 서브탭 7개로 확장</b> — 기존 2탭(팀 통계·전력 진단서)에서 <b>📊개요 / 🏏타격 / ⚾투수 / 🛡️수비 / 📈추이·전적 / 📋로스터 / 🏆전력 진단서(구)</b>로 전면 재구성. 기존 진단서는 "(구)"로 <b>그대로 보존</b>. <br><b>개요</b>: 6영역 레이더(컨택·파워·선구·투수결과·투수구위·투수제구)를 리그 백분위로 S~F 등급화, 강점·약점 자동 추출, 핵심 지표 12종 카드. <br><b>타격</b>: 타구 방향 분포(당김/중앙/밀어침, 리그 대비), 타구 품질 6분류 막대, 팀 스프레이 차트, 존별 타율 5×5 히트맵, 타자별 요약표. <br><b>투수</b>: 구종 운용표(구종별 헛스윙%·피EV·피배럴+%), 피타구 품질(투수 관점 색상 반전), 피타구 스프레이, 투구 분포 5×5, 투수별 요약표. <br><b>수비</b>: 팀 OAA 종합(내야/외야 분리), 리그 팀 순위 막대, 포지션별 OAA — <b>OAA는 참고 지표임을 상단에 명시</b>하여 과대 해석 방지. <br><b>추이·전적</b>: 승률 추이 그래프, 경기별 득실 막대(득점 위/실점 아래), 상대별 전적표, 최근 5경기 폼. <br>신규 <code>_computeTeamProfiles()</code> 엔진은 <b>활성 경기 기준</b>(리그전 팀기록 탭과 범위가 다름을 코드·화면에 명시). 모든 시각화는 공통 함수(<code>_renderSprayField</code>/<code>_renderZoneHeat</code>)를 써서 다른 화면과 모양·로직 통일.'},
       {icon:'🧩', text:'⭐ <b>공통 시각화 함수 도입 (내부 구조 개선)</b> — 화면마다 제각각이던 구장/존맵 그리기 로직을 공통화. <code>FIELD</code> 실측 좌표 상수 + <code>_renderSprayField()</code>(구장·낙구·히트맵) + <code>_zoneCell()</code>/<code>_renderZoneHeat()</code>(5×5 존) 신규. 타구 분석 탭과 투구 상세 모달을 이 함수로 교체 — 구장 좌표 중복 정의 3곳 → 1곳으로 축소. 앞으로 추가되는 화면(팀 타구 프로파일·스카우팅 핫콜드존 등)이 전부 같은 로직·같은 모양을 쓰게 되어 통일성 확보.'},
+    ]
+  },
+  {
+    version: 'V11.3',
+    date: '2026-08',
+    title: '⚾ 야수선택(FC) 판정 — 포스아웃 시 안타 제외 + CSV 공식 명세 반영 [백업본: OVR 산정식 V11.1 방식]',
+    badge: '#39ff8a',
+    changes: [
+      {icon:'⚾', text:'⭐⭐⭐ <b>야수선택(FC) 판정 신규</b> — 선행주자가 <b>포스아웃</b>되면 타자는 안타가 아님(MLB 공식 기록규칙 10.05(b)(1) "주자가 타구에 의해 포스아웃되면 안타를 인정하지 않는다"). 기존에는 <code>1BSafe=1</code>이면 무조건 안타로 집계돼, <b>1루 주자를 2루에서 포스아웃시키고 타자만 1루에 산 전형적 야수선택이 안타로 잘못 기록</b>되고 있었음. 아웃코드(<code>outNCode</code>)의 방식 비트로 포스아웃을 식별해 제외. <b>타구질·수비 의도·시간과 무관하게 포스아웃이면 무조건 FC</b>(공식 규칙 확인 — 외야 라인드라이브라도, 선택의 여지가 없었어도 FC).'},
+      {icon:'🔻', text:'⭐⭐ <b>병살(GIDP/DP) 기록 신규</b> — 한 인플레이 타구로 2아웃 발생 시 병살로 집계. <b>포스아웃이 1개 이상 포함된 경우만 인정</b>(태그만 2개인 경우는 런다운 꼬임으로 두 명이 따로 죽은 상황과 구별 불가하여 제외 — 보수적 설계). <b>삼중살(TP)은 별도 카운트</b>. GIDP=땅볼 병살(result=2), 뜬공+포스 병살(라인드라이브 병살)은 DP로만 집계하고 GIDP에서 제외. 적용: <b>타자 기록실·팀 로스터·리그전 팀기록·리더보드(병살타 적은순)</b>, <b>투수 기록실·팀기록·리더보드(병살 유도 많은순)</b>. 시나리오 시뮬레이션 + <b>논리 일관성 전수검사</b> 통과 — "안타이면서 병살", "아웃이면서 안타", "DP이면서 TP" 같은 모순 상태가 발생하지 않음을 검증(5-4 병살처럼 타자가 1루에 살고 주자 2명이 포스아웃된 경우는 <b>안타 아님 + 야수선택 + 병살</b>로 정확히 분류).'},
+      {icon:'🔍', text:'<b>태그아웃은 건드리지 않음 (의도적 보수 설계)</b> — 태그아웃은 "야수선택"과 "안타+주루사"가 섞여 있고, 이를 자동 구별하려면 포구 위치·시각·송구 능력 등 다변수 임계값이 필요해 <b>표본 부족 상태에서 오판 위험</b>이 큼. 실측 검증 결과 현재 로직이 이미 98% 정확해, 확실한 포스아웃만 교정하고 애매한 판정은 유지. (타자가 1루 도달 후 오버런·2루 시도로 태그아웃된 경우는 <b>1루까지는 세이프이므로 안타 유지</b>가 규칙상 정확)'},
+      {icon:'📋', text:'<b>구/신 데이터 호환</b> — 아웃코드는 신규 CSV(233컬럼)에만 존재. 구 데이터(118컬럼)는 포스/태그 구분 자체가 기록되지 않아 판별 불가하므로 <b>기존 로직 그대로 유지</b>. 신규 포맷 경기부터 타율·안타·총루타가 정확해짐.'},
+      {icon:'📦', text:'<b>내보내기 schema v13</b> — <code>batters[].season.GIDP</code>(병살타), <code>pitchers[].season.GIDPinduced/DPinduced</code>(병살 유도) 추가. 안타 판정에 야수선택 반영이 H/BA/OBP/SLG/TB 등 전 타격 지표에 적용됨을 명시. codeMaps에 <b>outCode 비트필드 해석</b>(야수/베이스/방식)과 fieldersChoice 규칙 추가. glossary에 GIDP·야수선택 정의 추가. appVersion V11.3.'},
+      {icon:'🎨', text:'⭐⭐ <b>존 히트맵 색상 가독성 대폭 개선</b> — 팔레트 중간값(0.5)이 <b>거의 흰색</b>이라 평균권 타율 셀이 배경과 구분되지 않던 문제 수정. 중앙을 유채색(회보라)으로 바꾸고 양끝 채도를 높여 <b>어떤 값이든 대비 확보</b>. 셀 텍스트에 어두운 외곽선(paint-order)을 넣어 밝은 배경에서도 읽히게 함. <b>표본 부족 셀(AB&lt;5)은 점선 테두리</b>로 구분. 팀 타격 존맵은 상대 정규화 → <b>절대 기준</b>(다른 존맵과 동일)으로 통일, 팀 투수 존맵은 "투구 밀도" → <b>피안타율</b> 기반으로 교체해 색이 실제 의미를 갖도록 변경(빨강=피안타 높음/위험, 파랑=억제).'},
+      {icon:'🏆', text:'⭐⭐ <b>팀 개요 — 종합 등급 카드 신규</b> — 영역별 레이더만으로는 "이 팀이 전체적으로 어느 수준인지" 한눈에 안 들어오던 것 보완. <b>🏏타격 종합</b>(컨택35·파워40·선구25) / <b>⚾투수 종합</b>(구위35·제구25·결과40) / <b>🛡️수비</b>(팀 OAA 백분위) / <b>🏆팀 종합</b>(타격45·투수45·<b>수비10</b>)을 S+~F 등급으로 표시. 수비는 OAA 신뢰도를 감안해 팀 종합에서 <b>10%만</b> 반영하고 그 사실을 화면에 명시.'},
       {icon:'🔍', text:'⭐⭐ <b>투구 상세 모달 전면 재작성</b> — 기존 미니 존맵은 ±1 범위만 그려 <b>존 밖 투구가 잘려 안 보이고</b>, 낙구 미니맵은 호(arc) 2개짜리 약식이라 실제 구장과 달랐음. <b>존맵은 투수 존 차트와 동일 좌표계</b>(±2까지 표시, 3분할 보조선, 홈플레이트)로, <b>낙구맵은 타구 분석 탭과 동일한 실측 FIELD_CONFIG</b>(폴 ±74m·중앙 135m·실측 베이스)로 통일. 목표→실제 연결선으로 제구 편차 시각화, 홈→낙구 궤적선과 비거리 표시, 점 색상은 결과 기반(홈런/안타/아웃 등)으로 통일. <b>배트 접촉 위치(hPos) 바 신규</b> — 손잡이~중심~끝 중 어디에 맞았는지, 스윗스팟 구간(0.35~0.65) 대비 위치를 한눈에. 코스·배트속도·방향각(당김/중앙/밀어침)·타구질도 추가.'},
       {icon:'📋', text:'⭐⭐ <b>타격/투구 로그 대폭 보강</b> — <b>타격 로그</b>: 코스(존안/존밖)·<b>배트중심(hPos)</b>·배트속도·발사각·타구품질 컬럼 신규. hPos는 중심(0.5)에서 벗어난 정도에 따라 색상 구분(중심/약간빗나감/빗맞음) — <b>"중심을 잘 맞춰 좋은 타구였나, 빗맞았는데 파워로 커버했나"</b> 판별 가능. <b>투구 로그</b>: 코스·스윙(노스윙/헛스윙/컨택)·<b>피배트중심</b>·발사각·피타구질 추가(투수 관점이라 타자가 빗맞을수록 초록). 두 로그의 판정 필터도 <b>실제 결과 기준</b>(홈런/안타/아웃/헛스윙/루킹S/파울/볼/사구)으로 교체.'},
       {icon:'🎯', text:'⭐⭐⭐ <b>존 차트 판정코드 → 실제 결과 기반 재설계</b> — 기존엔 원시 판정코드(call)만 써서 <b>Hit에 안타·아웃·파울이 뒤섞이고</b>, Swing은 <b>볼에 헛스윙한 것만</b> 잡히고(존 안 헛스윙은 Strike로 분류됨), Strike는 스윙 여부를 알 수 없는 문제가 있었음. <code>_pitchOutcome()</code> 신규 — 홈런/안타/아웃/헛스윙(bSwing 기반·존 무관)/루킹S/파울/볼/사구로 <b>실제 결과 재분류</b>. 존 차트 모양·색상·범례 전면 교체(홈런=별, 안타=삼각, 아웃=원, 헛스윙=사각, 파울/볼=다이아, 사구=X). 필터도 결과 기준 — <b>"홈런 맞은 공은 어디에 던졌나", "헛스윙 유도한 코스", "아웃 잡은 공"</b> 조회 가능. 색상 모드(구종별/결과별) 전환 추가.'},
@@ -13851,7 +13850,7 @@ const CHANGELOG = [
   {
     version: 'V11.2',
     date: '2026-07',
-    title: '🎯 HH+/배럴+ 신규 지표 · 타구 품질 6분류 · 타구 분석 탭 · 능력치 개편',
+    title: '🎯 HH+/배럴+ 신규 지표 · 타구 품질 6분류 · 타구 분석 탭 · 능력치 개편 <b>[이 백업본은 OVR 산정식만 V11.1 기존 방식 유지]</b>',
     badge: '#ff2020',
     changes: [
       {icon:'📊', text:'⭐⭐ <b>구종 관련 화면에 발사각·HH+·배럴+ 확대</b> — (1) 투수 구종 그룹별 핵심지표에 <b>피LA·피HH+%·피배럴+%</b> 추가. (2) 구종 분석 투수별 랭킹에 <b>HH+%·배럴+%·피LA</b> 추가. (3) 타자 구종별 대응 성적에 <b>배럴%·HH+%·배럴+%</b> 추가 (기존 HH%만 있던 것 확대).'},
@@ -13864,7 +13863,7 @@ const CHANGELOG = [
       {icon:'🗺️', text:'⭐⭐ <b>타구 분석 탭 신규</b> — 도구 메뉴. 리그 전체 낙구(lx/lz) 히트맵으로 메타 확인. 필터: <b>팀(공격)·기간(전체/최근20/10/5)·궤적(땅볼/라인드/뜬공/팝업)·품질(HH/HH+/배럴+)·결과(안타/아웃/홈런)·표시(점/히트맵/점+히트맵)</b>. 팀별 타구 프로파일 비교 테이블(당김/중앙/밀어침%·배럴+%). 수비 배치·상대 분석 도구로 활용.'},
       {icon:'⚾', text:'<b>타자/투수 헤더에 HR% 추가</b> — 타구당 홈런 비율(타자)·타구당 홈런 허용(투수). 기록실 4위치(일반/리그 기록실·팀 로스터)에도 HR%·배럴%·HH+%·배럴+% 컬럼 전면 통일.'},
       {icon:'🏟️', text:'<b>구장 좌표 실측 반영</b> — 스프레이/타구 분석 구장을 실측 FIELD_CONFIG로 통일(폴 ±74m, 좌우중간 ±54.74/−117.5, 중앙 135m, 실측 베이스·마운드). 타구 분석은 홈플레이트를 하단에 배치(표준 방향)하고 크기 축소로 한 화면에 정리.'},
-      {icon:'⚡', text:'⭐⭐ <b>투타 능력치 산정식 개편</b> — <b>PWR</b>: HR%×4.5 + 키보정배럴+%×1.5 + 배럴%×1.0 + <b>ISO×30</b>(추정 2·3루타 드디어 반영). <b>GAP</b>: 키보정EV×1.5 + 키보정HH+%×1.0 + HH%×0.8(상위 변별 강화). <b>투수 구위(DOM)</b>: 피배럴+% 억제 항 신규((9.6−피배럴+%)×1.0, 홈런 96% 치명존). 키 상대화 HH+/배럴+(EV≥키캡−5)로 작은 타자 시스템 차별 제거. 30G 96타자 실측으로 pw() 재보정 — 리그 평균 등급 보존(PWR p50 89·GAP p50 89 유지).'},
+      {icon:'⏪', text:'<b>[백업본] OVR 산정식 V11.1 방식 유지</b> — PWR/GAP/투수 구위(DOM)는 개편 이전 식 그대로. 나머지 신규 기능(HH+/배럴+/타구품질/타구분석/구장)은 모두 포함. 능력치 개편판이 안정화되면 정식 승격 예정.'},
     ]
   },
   {
@@ -23862,7 +23861,7 @@ function _computeTeamProfiles(){
   (rec.pitchers||[]).forEach(p=>{PT.pitcher[p.name]=_playerTeam(p.name,'pitcher');});
   const teams={};
   const ini=t=>({team:t,PA:0,AB:0,H:0,h2B:0,h3B:0,HR:0,TB:0,BB:0,HBP:0,K:0,GIDP:0,owar:0,woba_w:0,
-    evSum:0,evN:0,hhN:0,hhpN:0,brlN:0,brlpN:0,laSum:0,laN:0,sw:0,wh:0,ozN:0,ozSw:0,
+    evSum:0,evN:0,hhN:0,hhpN:0,brlN:0,brlpN:0,laSum:0,laN:0,sw:0,wh:0,ozN:0,ozSw:0,ozWh:0,izN:0,izSw:0,izWh:0,hposN:0,sweetN:0,bipN:0,bipH:0,
     IP:0,pK:0,pBB:0,pH:0,pHR:0,pBF:0,pGIDP:0,era_w:0,fip_w:0,pwar:0,
     pEvSum:0,pEvN:0,pHhN:0,pHhpN:0,pBrlN:0,pBrlpN:0,pLaSum:0,pLaN:0,pSw:0,pWh:0,pZin:0,pN:0,pLoc:0,pMid:0,pSlight:0,pGood:0,pBorder:0,
     batters:[],pitchers:[]});
@@ -23891,9 +23890,27 @@ function _computeTeamProfiles(){
     const bt=bTeamOf[d.bName], pt=pTeamOf[d.pName];
     if(bt&&teams[bt]){
       const T=teams[bt];
-      if(_isSwing(d))T.sw++;
-      if(_isWhiff(d))T.wh++;
-      if(_isOutZone(d)){T.ozN++; if(_isSwing(d))T.ozSw++;}
+      const _sw=_isSwing(d), _wh=_isWhiff(d);
+      if(_sw)T.sw++;
+      if(_wh)T.wh++;
+      if(_isOutZone(d)){
+        T.ozN++;
+        if(_sw){ T.ozSw++; if(_wh)T.ozWh++; }        // 존밖 스윙 중 헛스윙
+      } else if(_isInZone(d)){
+        T.izN++;
+        if(_sw){ T.izSw++; if(_wh)T.izWh++; }        // 존안 스윙 중 헛스윙
+      }
+      // 스윗스팟 (배트 중심 타격)
+      if(_isInPlay(d)&&!_isBunt(d)&&d.hPos!=null){
+        T.hposN++;
+        const _h=+d.hPos;
+        if(_h>=0.35&&_h<=0.65)T.sweetN++;
+      }
+      // BABIP용 (인플레이 안타 / 인플레이 타구, 홈런 제외)
+      if(_isInPlay(d)&&!_isBunt(d)&&+d.result!==4){
+        T.bipN++;
+        if(_isHit(d))T.bipH++;
+      }
     }
     if(pt&&teams[pt]){
       const T=teams[pt];
@@ -23926,10 +23943,16 @@ function _computeTeamProfiles(){
       hhPct:t.evN>0?t.hhN/t.evN*100:0, hhpPct:t.evN>0?t.hhpN/t.evN*100:0,
       brlPct:t.evN>0?t.brlN/t.evN*100:0, brlpPct:t.evN>0?t.brlpN/t.evN*100:0,
       whiffPct:t.sw>0?t.wh/t.sw*100:0, chasePct:t.ozN>0?t.ozSw/t.ozN*100:0,
+      zContactPct:t.izSw>0?(t.izSw-t.izWh)/t.izSw*100:0,      // 존내 컨택률
+      ozWhiffPct:t.ozSw>0?t.ozWh/t.ozSw*100:0,                // 존밖 스윙 중 헛스윙률
+      zSwingPct:t.izN>0?t.izSw/t.izN*100:0,                   // 존내 스윙률 (칠 공은 치는가)
+      sweetPct:t.hposN>0?t.sweetN/t.hposN*100:0,              // 스윗스팟 (배트 중심)
+      babip:t.bipN>0?t.bipH/t.bipN:0,
       era:t.IP>0?t.era_w/t.IP:null, fip:t.IP>0?t.fip_w/t.IP:null,
       whip:t.IP>0?(t.pH+t.pBB)/t.IP:null,
       k9:t.IP>0?t.pK/t.IP*9:0, pKPct:t.pBF>0?t.pK/t.pBF*100:0, pBBPct:t.pBF>0?t.pBB/t.pBF*100:0,
       pKBB:t.pBB>0?t.pK/t.pBB:(t.pK>0?99:0),
+      pHRPct:t.pBF>0?t.pHR/t.pBF*100:0,
       oAvg:(t.pBF-t.pBB)>0?t.pH/(t.pBF-t.pBB):0,
       pAvgEV:t.pEvN>0?t.pEvSum/t.pEvN:0, pAvgLA:t.pLaN>0?t.pLaSum/t.pLaN:null,
       pHhPct:t.pEvN>0?t.pHhN/t.pEvN*100:0, pHhpPct:t.pEvN>0?t.pHhpN/t.pEvN*100:0,
@@ -23969,9 +23992,12 @@ function _teamAreaScores(prof, t){
     return c>0?s/c:0.5;
   };
   const B={};
+  // V11.4: 컨택 = 결과(타율) + 과정(맞히는 능력)
+  //   스윗스팟(hPos)은 파워로도 이어져 성격이 중복, BABIP는 운·상대수비 영향이 커서 제외
   B.contact=[
-    mk('팀 타율', t.avg, f3(t.avg), P(t.avg,'avg',true), 0.6),
-    mk('삼진률 K%', t.kPct, f1(t.kPct,'%'), P(t.kPct,'kPct',false), 0.4)
+    mk('팀 타율', t.avg, f3(t.avg), P(t.avg,'avg',true), 0.42),
+    mk('삼진률 K%', t.kPct, f1(t.kPct,'%'), P(t.kPct,'kPct',false), 0.32),
+    mk('존내 컨택%', t.zContactPct, f1(t.zContactPct,'%'), P(t.zContactPct,'zContactPct',true), 0.26)
   ];
   // V11.3: 파워 = 홈런형(배럴+·HH+·HR%) + 장타형(ISO·HH·평균EV) 균형
   //   EV125 기준은 키 큰 타자에 유리(실측: 175cm 배럴+ 1.8% vs 190cm 12.4%)
@@ -23985,9 +24011,13 @@ function _teamAreaScores(prof, t){
     mk('HH% (EV110+)', t.hhPct, f1(t.hhPct,'%'), P(t.hhPct,'hhPct',true), 0.07),
     mk('평균 EV', t.avgEV, f1(t.avgEV), P(t.avgEV,'avgEV',true), 0.05)
   ];
+  // V11.4: 선구 = 볼을 골라내는 능력이 핵심
+  //   존밖 헛스윙은 "쫓아간 뒤 못 맞힌 것"이라 컨택 영역 성격 → 제외
+  //   존내 스윙은 유형(자기 존을 기다리는 타자)에 따라 갈려서 보조 비중만
   B.eye=[
-    mk('볼넷률 BB%', t.bbPct, f1(t.bbPct,'%'), P(t.bbPct,'bbPct',true), 0.6),
-    mk('체이스% (존밖 스윙)', t.chasePct, f1(t.chasePct,'%'), P(t.chasePct,'chasePct',false), 0.4)
+    mk('볼넷률 BB%', t.bbPct, f1(t.bbPct,'%'), P(t.bbPct,'bbPct',true), 0.45),
+    mk('체이스% (존밖 스윙)', t.chasePct, f1(t.chasePct,'%'), P(t.chasePct,'chasePct',false), 0.45),
+    mk('존내 스윙% (적극성)', t.zSwingPct, f1(t.zSwingPct,'%'), P(t.zSwingPct,'zSwingPct',true), 0.10)
   ];
   // V11.3: 강타 억제도 EV125 단일 기준이 아닌 다층으로 (상대 타자 체격에 따른 편차 완화)
   B.pStuff=[
@@ -24008,9 +24038,12 @@ function _teamAreaScores(prof, t){
     mk('스트라이크 획득%', t.pZinPct, f1(t.pZinPct,'%'), P(t.pZinPct,'pZinPct',true), 0.12)
   ];
   B.pResult=[
-    mk('ERA', t.era, f2(t.era), t.era!=null?P(t.era,'era',false):0.5, 0.35),
-    mk('FIP', t.fip, f2(t.fip), t.fip!=null?P(t.fip,'fip',false):0.5, 0.35),
-    mk('WHIP', t.whip, f2(t.whip), t.whip!=null?P(t.whip,'whip',false):0.5, 0.30)
+    mk('FIP (수비무관)', t.fip, f2(t.fip), t.fip!=null?P(t.fip,'fip',false):0.5, 0.28),
+    mk('ERA', t.era, f2(t.era), t.era!=null?P(t.era,'era',false):0.5, 0.24),
+    mk('WHIP', t.whip, f2(t.whip), t.whip!=null?P(t.whip,'whip',false):0.5, 0.22),
+    mk('K/9 (탈삼진)', t.k9, f1(t.k9), P(t.k9,'k9',true), 0.14),
+    mk('피홈런 HR%', t.pHR!=null&&t.pBF>0?(t.pHR/t.pBF*100):null, t.pBF>0?f1(t.pHR/t.pBF*100,'%'):'-',
+       t.pBF>0?P(t.pHR/t.pBF*100,'pHRPct',false):0.5, 0.12)
   ];
   return {
     contact:wavg(B.contact), power:wavg(B.power), eye:wavg(B.eye),
@@ -28879,7 +28912,7 @@ function exportAnalyticsBundle(opts){
   // 1) 메타 정보
   const meta={
     generatedAt:new Date().toISOString(),
-    appVersion:'V11.3',
+    appVersion:'V11.4',
     schemaVersion:13,
     schemaChanges:{
       v13_changes:[
@@ -29616,7 +29649,7 @@ function exportFullBackup(){
   // 풀 분석 데이터
   const data={
     generatedAt:new Date().toISOString(),
-    appVersion:'V11.3',
+    appVersion:'V11.4',
     schemaVersion:2,
     
     // 메타 정보
