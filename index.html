@@ -6702,13 +6702,18 @@ function _calcPitcherCardImpl(name){
   const barrelsAgainst=battedPd.filter(d=>+d.ev>=105 && +d.ldeg>=8 && +d.ldeg<=32).length;
   const barrelPctAg=battedPd.length?barrelsAgainst/battedPd.length*100:18.5;
   const barrelSuppress=(15.9-barrelPctAg)*1.2; // V11.1 인플레이 재보정 (구 앵커 13, 델타 +2.9 평행이동)
+  // V11.2: 피배럴+% 억제 (EV125+&LA20~40 — 홈런 96% 발생 치명존 · 리그 p10=0.8/p50=9.6/p90=15.5 실측)
+  // 절대 기준 사용 (상대 타자 키가 섞이므로 공정) · p50 기여 0이라 리그 평균 등급 보존
+  const brlpAgainst=battedPd.filter(d=>_isBarrelPlus(d)).length;
+  const brlpPctAg=battedPd.length?brlpAgainst/battedPd.length*100:9.6;
+  const brlpSuppress=(9.6-brlpPctAg)*1.0;
   // 체이스 유도 (존밖 스윙 유도, 리그 p10=43, p50=55, p90=64): 높을수록 좋음
   const outZone=pd.filter(d=>d.zoneX!=null && (Math.abs(+d.zoneX)>1||Math.abs(+d.zoneY||0)>1));
   const ozSwings=outZone.filter(d=>d.bSwing);
   const ozSwPct=outZone.length?ozSwings.length/outZone.length*100:55;
   const chaseBonus=(ozSwPct-55)*0.4; // -5 ~ +4 범위
-  // 통합 점수
-  const domScore=(0.48-baAgainst)*120+(7.0-Math.min(7,hrAgainst))*6+evSuppress+zinBonus+barrelSuppress+chaseBonus;
+  // 통합 점수 (V11.2: +brlpSuppress)
+  const domScore=(0.48-baAgainst)*120+(7.0-Math.min(7,hrAgainst))*6+evSuppress+zinBonus+barrelSuppress+brlpSuppress+chaseBonus;
   const DOM=pw(domScore,-30,60,1.1);
 
   // 제구 (V7.15 수정): zoneX/Y 둘 다 -1~1 대칭 · 공 반지름 감안 보더 0.85~1.15
@@ -6896,19 +6901,28 @@ function _calcBatterCardImpl(name){
   const hhAdjSum = hhAdjArr.reduce((a,b)=>a+b,0);
   const hhAdjPct = bdQ.length ? hhAdjSum/bdQ.length*100 : hhPct;
   
+  // V11.2: 키보정 HH+% 추가 (EV≥키캡-5) — 순수 타구속도 상위 변별 강화
+  const adjHhpN = bdQ.filter(d=>_isHHPlusAdj(d)).length;
+  const adjHhpPct = bdQ.length ? adjHhpN/bdQ.length*100 : 0;
   const gapScore = (adjAvgEV - 85) * 1.5    // 키 보정 평균 EV
-                 + hhAdjPct * 1.5;            // 키 보정 HH%
-  const GAP = pw(gapScore, -7.5, 122.5, 0.65);  // V11.1 인플레이 재보정 (+2.5 평행이동, 평균 등급 보존)
+                 + adjHhpPct * 1.0            // 키 보정 HH+% (V11.2 신규 — 상위 변별)
+                 + hhPct * 0.8;               // HH% (꾸준한 강타 생산)
+  const GAP = pw(gapScore, -10, 120, 0.60);  // V11.2 재보정 (30G 실측 96타자 · 리그 평균 등급 보존: p10 72/p50 89/p90 106)
   
   // 파워 (POW): 얼마나 강하고 효율 좋은 타구를 보내는가 (HR/장타로 이어지는 능력)
   // HR 결과 중심 — 키 작아서 못 넘기면 진짜 파워 낮은 게 맞음 (보정 X)
   const ldHits=bdQ.filter(d=>+d.ldeg>=10&&+d.ldeg<=30).length;
   const ldPct=bdQ.length?ldHits/bdQ.length*100:0;
   
-  const pwrScore = hrPct * 5.0                // HR% 핵심
-                 + brlPct * 2.0                // 배럴% 보조
-                 + hhPct * 0.5;                // HH% 보조
-  const PWR = pw(pwrScore, -1.5, 108.5, 0.55);  // V11.1 인플레이 재보정 (+8.5 평행이동, 평균 등급 보존)
+  // V11.2: 키보정 배럴+%(홈런 직결 스윙) + ISO(추정 2·3루타 반영) 신규 — HH%는 GAP과 중복이라 제거
+  const adjBrlpN = bdQ.filter(d=>_isBarrelPlusAdj(d)).length;
+  const adjBrlpPct = bdQ.length ? adjBrlpN/bdQ.length*100 : 0;
+  const isoV = Math.max(0, slg - batAvg);
+  const pwrScore = hrPct * 4.5                // HR% 핵심 (결과 — 절대 기준)
+                 + adjBrlpPct * 1.5             // 키보정 배럴+% (홈런 직결 과정 — 상대 기준, V11.2 신규)
+                 + brlPct * 1.0                 // 기존 배럴% (솔리드 장타 생산)
+                 + isoV * 30;                   // ISO — 추정 2·3루타 드디어 반영 (V11.2)
+  const PWR = pw(pwrScore, 0, 80, 0.40);  // V11.2 재보정 (30G 실측 96타자 · 리그 평균 등급 보존: p10 65/p50 89/p90 113)
 
   // 컨택 (V8.5): 타율 50% + 헛스윙 회피 25% + 존내 컨택 15% + 존밖 컨택 10%
   // 타율이 모두가 아닌 "결과 지표"로 50%만, 나머지는 실제 컨택 능력(존별 컨택) 반영
@@ -7009,8 +7023,8 @@ const STAT_INFO={
   '구위':{
     label:'구위 (Dominance / Stuff)',
     icon:'💪',
-    desc:'타자를 압도하는 종합 능력. 피안타율·피홈런·피EV·존내헛스윙·배럴허용·체이스 유도 6가지 통합',
-    formula:'(0.48 − 피안타율)×120 + (7 − min(7, 피홈런%))×6 + (100.2 − 평균피EV)×3 + (존내헛스윙% − 22)×0.6 + (15.9 − 배럴허용%)×1.2 + (존밖스윙% − 55)×0.4 → pw(score, −30, 60, 1.1) + ERA 보너스 [백업본: V11.1 방식]',
+    desc:'타자를 압도하는 종합 능력. 피안타율·피홈런·피EV·존내헛스윙·배럴허용·배럴+허용·체이스 유도 통합',
+    formula:'(0.48 − 피안타율)×120 + (7 − min(7, 피홈런%))×6 + (100.2 − 평균피EV)×3 + (존내헛스윙% − 22)×0.6 + (15.9 − 배럴허용%)×1.2 + (9.6 − 배럴+허용%)×1.0 [V11.2 신규: EV125+&LA20~40 치명존 억제] + (존밖스윙% − 55)×0.4 → pw(score, −30, 60, 1.1) + ERA 보너스',
     detail:'피안타율 0.38이 기준점. 평균 피EV가 100mph 이하·존내 헛스윙 22% 이상·배럴 허용 13% 이하·체이스 유도 55% 이상이면 보너스. ERA ≤3.0이면 +5, ≤4.0이면 +3, ≤5.0이면 +1.'
   },
   '제구':{
@@ -7052,15 +7066,15 @@ const STAT_INFO={
   '파워':{
     label:'파워 (Power)',
     icon:'💥',
-    desc:'순수 장타력. HR%(핵심) + 배럴% + HH%(EV≥110)',
-    formula:'HR%×5.0 + 배럴%×2.0 + HH%×0.5 → pw(score, −1.5, 108.5, 0.55). 배럴=EV≥105 + 발사각 8~32°. 키 보정 X (못 넘기면 진짜 파워 낮은 것) [백업본: V11.1 방식]',
+    desc:'순수 장타력. HR%(핵심) + 키보정 배럴+% + 배럴% + ISO(추정 2·3루타 반영)',
+    formula:'HR%×4.5 + 키보정배럴+%×1.5 + 배럴%×1.0 + ISO×30 → pw(score, 0, 80, 0.40) [V11.2 개편]. 배럴+=EV≥키캡−5 & LA20~40°(홈런 직결 과정, 키 상대화), HR%=절대 기준(결과), ISO=추정 2·3루타 반영. 30G 실측 96타자 재보정',
     detail:'홈런 자체가 가장 큰 비중. 배럴(좋은 발사각의 강타구)·하드힛(EV 110+)이 보조. p50 약 82점.'
   },
   '갭파워':{
     label:'갭파워 (Gap Power)',
     icon:'📈',
-    desc:'타구 강도. 키 보정 적용된 평균 EV + 키 보정 HH%',
-    formula:'(키보정 평균EV − 85)×1.5 + 키보정 HH%×1.5 → pw(score, −7.5, 122.5, 0.65). 키별 EV 캡: 160cm=120, 165cm=125, 170cm=128, 175cm+=130 [백업본: V11.1 방식]',
+    desc:'타구 강도. 키 보정 평균 EV + 키 보정 HH+% + HH%',
+    formula:'(키보정 평균EV − 85)×1.5 + 키보정 HH+%×1.0 + HH%×0.8 → pw(score, −10, 120, 0.60) [V11.2 개편]. 키보정 HH+=EV≥키캡−5 (상위 변별 강화). 키별 EV 캡: 160cm=120, 165cm=125, 170cm=128, 175cm+=130',
     detail:'작은 선수의 110+ 도달 더 어려운 점 보정. 같은 EV라도 키 작으면 약간 가산점. p50 약 79점.'
   },
   '컨택':{
@@ -13801,9 +13815,10 @@ const CHANGELOG = [
   {
     version: 'V11.4',
     date: '2026-08',
-    title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화 <b>[백업본: OVR 산정식 V11.1 방식]</b>',
+    title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화',
     badge: '#ff8c44',
     changes: [
+      {icon:'📋', text:'⭐⭐ <b>업데이트 내역 정리 — 카테고리 분류 + 필터</b> — 22개 버전 273개 항목이 한 줄로 나열돼 찾아보기 어렵던 것을 <b>6개 카테고리</b>로 자동 분류: <b>✨신규 기능(89) · 🎨UI·시각화(69) · 📐지표·분석(61) · 🐛버그 수정(29) · 📦데이터·내보내기(15) · ⚡성능·안정성(10)</b>. 상단 필터로 원하는 유형만 볼 수 있고, 각 버전 안에서도 카테고리별로 묶여 표시됨. <b>최신 버전만 펼쳐지고 나머지는 접힘</b>(제목 클릭으로 열기, 전체 펼치기/접기 버튼 제공)이라 스크롤이 대폭 짧아짐. 버전 헤더에 카테고리 분포 칩(예: ✨5 📐3 🐛2)을 표시해 어떤 성격의 업데이트였는지 한눈에 파악.'},
       {icon:'📐', text:'⭐⭐⭐ <b>평가 지표 재설계 — 316경기 실측 검증 기반</b> — 전체 데이터(중복 제거 후 <b>316경기 58,889투구</b>)로 지표별 편중·변별력을 전수 검증하고 6영역을 재구성. <b>파워</b>: EV125 기준(HH+·배럴+)이 체격에 크게 좌우됨을 확인(≤170cm 대비 ≥185cm 격차 — 배럴+ <b>6.4배</b>, HH+ 3.7배, 반면 HH/배럴은 1.6~1.7배로 완만. 160cm 배럴+는 0.1%로 사실상 0) → 홈런형(배럴+·HH+·HR%)과 장타형(ISO·배럴%·HH%·평균EV)을 균형 배치해 작은 선수 위주 팀의 구조적 불이익 해소. <b>컨택</b>: 팀타율·K%에 <b>존내 컨택%</b>(리그 73.0% — "칠 수 있는 공을 실제로 맞히는 능력") 추가. 스윗스팟(hPos)은 파워와 성격 중복, BABIP는 운·상대수비 영향이 커서 제외. <b>선구</b>: BB%·체이스% 중심에 존내 스윙%(적극성)를 보조(0.10)로 — 존밖 헛스윙은 "쫓아간 뒤 못 맞힌 것"이라 컨택 성격이므로 제외. <b>투수 결과</b>: K/9·피홈런% 추가하고 FIP를 ERA보다 높은 가중치로(수비·운 영향 배제). <b>투수 제구</b>: 존인%는 한복판 몰림도 "제구 좋음"으로 잡는 문제가 있어 <b>실투율(감점)·보더라인%(가점)</b> 중심으로 재편 — 제구는 결과가 아닌 <b>의도한 곳에 넣는 능력</b>으로 평가.'},
       {icon:'⚡', text:'⭐⭐ <b>성능 최적화 검증 (316경기 규모 실측)</b> — 선수 120명 조회 <b>162.1ms → 0.1ms</b>(인덱스 캐시), 2,000점 인덱스 역참조 <b>21.1ms → 0.8ms</b>(Map). 캐시 구축 비용(1회 24~34ms)은 전 화면이 공유. 리그 비교·팀 프로파일·수비·기록실·폼 등 <b>캐시 11종을 모두 <code>_rebuildCaches</code>에 연결</b>해 데이터 변경 시 정확히 무효화(투구 수가 같아도 경기가 교체되는 경우까지 대응).'},
       {icon:'🩹', text:'⭐⭐⭐ <b>경기 로드 누락 방지 (원인 규명 + 대응)</b> — "36경기인데 35개만 로드" 현상의 원인을 추적. ① <b>네트워크 실패가 조용히 넘어감</b> → 다운로드 실패 시 <b>최대 3회 자동 재시도</b>(지수 백오프, 재시도 시 캐시 무시) + 빈 응답도 실패로 처리. ② <b>중복 판정으로 스킵된 파일이 어디에도 집계되지 않던 문제</b> → 스킵 목록을 별도 추적하고 완료 메시지에 표시. ③ 요청 수와 실제 로드 수가 다르면 <b>📋 로드 결과 리포트</b> 모달을 자동 표시(실패·중복스킵·미확인 항목을 파일명까지 나열). ④ <b>🔍 로드된 경기 점검</b> 도구 신규 — 날짜별 경기 목록, 활성/비활성 표시, 투구수가 동일한 "중복 의심" 경기쌍 자동 탐지.'},
@@ -13829,7 +13844,7 @@ const CHANGELOG = [
   {
     version: 'V11.3',
     date: '2026-08',
-    title: '⚾ 야수선택(FC) 판정 — 포스아웃 시 안타 제외 + CSV 공식 명세 반영 [백업본: OVR 산정식 V11.1 방식]',
+    title: '⚾ 야수선택(FC) 판정 — 포스아웃 시 안타 제외 + CSV 공식 명세 반영',
     badge: '#39ff8a',
     changes: [
       {icon:'⚾', text:'⭐⭐⭐ <b>야수선택(FC) 판정 신규</b> — 선행주자가 <b>포스아웃</b>되면 타자는 안타가 아님(MLB 공식 기록규칙 10.05(b)(1) "주자가 타구에 의해 포스아웃되면 안타를 인정하지 않는다"). 기존에는 <code>1BSafe=1</code>이면 무조건 안타로 집계돼, <b>1루 주자를 2루에서 포스아웃시키고 타자만 1루에 산 전형적 야수선택이 안타로 잘못 기록</b>되고 있었음. 아웃코드(<code>outNCode</code>)의 방식 비트로 포스아웃을 식별해 제외. <b>타구질·수비 의도·시간과 무관하게 포스아웃이면 무조건 FC</b>(공식 규칙 확인 — 외야 라인드라이브라도, 선택의 여지가 없었어도 FC).'},
@@ -13850,7 +13865,7 @@ const CHANGELOG = [
   {
     version: 'V11.2',
     date: '2026-07',
-    title: '🎯 HH+/배럴+ 신규 지표 · 타구 품질 6분류 · 타구 분석 탭 · 능력치 개편 <b>[이 백업본은 OVR 산정식만 V11.1 기존 방식 유지]</b>',
+    title: '🎯 HH+/배럴+ 신규 지표 · 타구 품질 6분류 · 타구 분석 탭 · 능력치 개편',
     badge: '#ff2020',
     changes: [
       {icon:'📊', text:'⭐⭐ <b>구종 관련 화면에 발사각·HH+·배럴+ 확대</b> — (1) 투수 구종 그룹별 핵심지표에 <b>피LA·피HH+%·피배럴+%</b> 추가. (2) 구종 분석 투수별 랭킹에 <b>HH+%·배럴+%·피LA</b> 추가. (3) 타자 구종별 대응 성적에 <b>배럴%·HH+%·배럴+%</b> 추가 (기존 HH%만 있던 것 확대).'},
@@ -13863,7 +13878,7 @@ const CHANGELOG = [
       {icon:'🗺️', text:'⭐⭐ <b>타구 분석 탭 신규</b> — 도구 메뉴. 리그 전체 낙구(lx/lz) 히트맵으로 메타 확인. 필터: <b>팀(공격)·기간(전체/최근20/10/5)·궤적(땅볼/라인드/뜬공/팝업)·품질(HH/HH+/배럴+)·결과(안타/아웃/홈런)·표시(점/히트맵/점+히트맵)</b>. 팀별 타구 프로파일 비교 테이블(당김/중앙/밀어침%·배럴+%). 수비 배치·상대 분석 도구로 활용.'},
       {icon:'⚾', text:'<b>타자/투수 헤더에 HR% 추가</b> — 타구당 홈런 비율(타자)·타구당 홈런 허용(투수). 기록실 4위치(일반/리그 기록실·팀 로스터)에도 HR%·배럴%·HH+%·배럴+% 컬럼 전면 통일.'},
       {icon:'🏟️', text:'<b>구장 좌표 실측 반영</b> — 스프레이/타구 분석 구장을 실측 FIELD_CONFIG로 통일(폴 ±74m, 좌우중간 ±54.74/−117.5, 중앙 135m, 실측 베이스·마운드). 타구 분석은 홈플레이트를 하단에 배치(표준 방향)하고 크기 축소로 한 화면에 정리.'},
-      {icon:'⏪', text:'<b>[백업본] OVR 산정식 V11.1 방식 유지</b> — PWR/GAP/투수 구위(DOM)는 개편 이전 식 그대로. 나머지 신규 기능(HH+/배럴+/타구품질/타구분석/구장)은 모두 포함. 능력치 개편판이 안정화되면 정식 승격 예정.'},
+      {icon:'⚡', text:'⭐⭐ <b>투타 능력치 산정식 개편</b> — <b>PWR</b>: HR%×4.5 + 키보정배럴+%×1.5 + 배럴%×1.0 + <b>ISO×30</b>(추정 2·3루타 드디어 반영). <b>GAP</b>: 키보정EV×1.5 + 키보정HH+%×1.0 + HH%×0.8(상위 변별 강화). <b>투수 구위(DOM)</b>: 피배럴+% 억제 항 신규((9.6−피배럴+%)×1.0, 홈런 96% 치명존). 키 상대화 HH+/배럴+(EV≥키캡−5)로 작은 타자 시스템 차별 제거. 30G 96타자 실측으로 pw() 재보정 — 리그 평균 등급 보존(PWR p50 89·GAP p50 89 유지).'},
     ]
   },
   {
@@ -14260,37 +14275,114 @@ const CHANGELOG = [
   }
 ];
 
-function openChangelogModal(){
-  let html='<div style="margin-bottom:18px;text-align:center">';
+// ═══ V11.4: 업데이트 내역 — 카테고리 분류 + 필터 + 접기 ═══
+const _CL_CATS={
+  feat:  {label:'신규 기능', icon:'✨', color:'#39ff8a'},
+  metric:{label:'지표·분석', icon:'📐', color:'#88ccff'},
+  ui:    {label:'UI·시각화', icon:'🎨', color:'#cc88ff'},
+  fix:   {label:'버그 수정', icon:'🐛', color:'#ff4560'},
+  perf:  {label:'성능·안정성', icon:'⚡', color:'#ffd700'},
+  data:  {label:'데이터·내보내기', icon:'📦', color:'#ff8c44'}
+};
+// 항목을 아이콘·본문 키워드로 자동 분류
+function _clCategory(item){
+  const ic=item.icon||'', tx=(item.text||'');
+  const plain=tx.replace(/<[^>]+>/g,'');
+  if(/🐛|버그|오류|픽스|수정됨|잘못/.test(ic+plain.slice(0,40))) return 'fix';
+  if(/⚡|🩹|성능|최적화|속도|렉|프리즈|캐시|누락 방지|재시도/.test(ic+plain.slice(0,40))) return 'perf';
+  if(/📦|내보내기|schema|스키마|codeMaps|glossary/.test(ic+plain.slice(0,40))) return 'data';
+  if(/📐|📏|🧪|⚖️|🔬|지표|산정식|보정|백분위|가중치|계산식|OAA|WAR|세이버/.test(ic+plain.slice(0,50))) return 'metric';
+  if(/🎨|✨|🗺️|📊|🔍|🎯|차트|히트맵|시각화|디자인|맵|그래프|레이더|카드|모달|탭 추가|화면/.test(ic+plain.slice(0,50))) return 'ui';
+  return 'feat';
+}
+window._clFilter='all';
+window._clExpanded=null;   // 펼친 버전 (null=최신만)
+function _clSetFilter(v){ window._clFilter=v; openChangelogModal(true); }
+function _clToggle(v){ window._clExpanded = (window._clExpanded===v)?null:v; openChangelogModal(true); }
+function _clExpandAll(){ window._clExpanded='__all__'; openChangelogModal(true); }
+
+function openChangelogModal(keepScroll){
+  if(!keepScroll){ window._clFilter='all'; window._clExpanded=null; }   // 새로 열면 초기화
+  const F=window._clFilter||'all';
+  // 카테고리별 전체 집계
+  const counts={};
+  CHANGELOG.forEach(r=>r.changes.forEach(ch=>{
+    const k=_clCategory(ch); counts[k]=(counts[k]||0)+1;
+  }));
+  const total=Object.values(counts).reduce((a,b)=>a+b,0);
+
+  let html='<div style="margin-bottom:14px;text-align:center">';
   html+='<div style="font-size:22px;font-weight:700;margin-bottom:4px">📋 업데이트 내역</div>';
-  html+='<div style="font-size:11px;color:var(--muted)">버전별 변경사항 기록</div>';
+  html+=`<div style="font-size:11px;color:var(--muted)">${CHANGELOG.length}개 버전 · ${total}개 변경사항</div>`;
   html+='</div>';
-  
+
+  // 카테고리 필터
+  const btn=(k,lbl,n,col)=>`<button onclick="_clSetFilter('${k}')" style="padding:5px 11px;font-size:11px;font-weight:600;border:1px solid ${F===k?(col||'var(--amber)'):'var(--border)'};background:${F===k?(col||'var(--amber)')+'22':'transparent'};color:${F===k?(col||'var(--amber)'):'var(--muted)'};border-radius:14px;cursor:pointer;white-space:nowrap">${lbl}${n!=null?` <span style="opacity:0.7">${n}</span>`:''}</button>`;
+  html+='<div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-bottom:14px">';
+  html+=btn('all','전체',total,'var(--amber)');
+  Object.entries(_CL_CATS).forEach(([k,m])=>{
+    if(counts[k]) html+=btn(k, m.icon+' '+m.label, counts[k], m.color);
+  });
+  html+='</div>';
+
+  // 펼치기 컨트롤
+  html+=`<div style="display:flex;gap:6px;justify-content:center;margin-bottom:12px">
+    <button onclick="_clExpandAll()" style="padding:4px 10px;font-size:10px;border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:4px;cursor:pointer">전체 펼치기</button>
+    <button onclick="window._clExpanded=null;openChangelogModal(true)" style="padding:4px 10px;font-size:10px;border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:4px;cursor:pointer">모두 접기</button>
+  </div>`;
+
   CHANGELOG.forEach((release,i)=>{
     const isLatest=i===0;
-    html+=`<div style="margin-bottom:18px;padding:14px;background:${isLatest?'#1a1a30':'var(--card2)'};border:1px solid ${isLatest?release.badge:'var(--border)'};border-radius:8px${isLatest?';box-shadow:0 0 12px '+release.badge+'33':''}">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-        <span style="font-size:20px;font-weight:900;color:${release.badge};letter-spacing:1px">${release.version}</span>
+    const items=release.changes.filter(ch=>F==='all'||_clCategory(ch)===F);
+    if(!items.length) return;
+    const expanded = isLatest || window._clExpanded==='__all__' || window._clExpanded===release.version;
+    // 이 버전의 카테고리 분포
+    const dist={};
+    release.changes.forEach(ch=>{const k=_clCategory(ch); dist[k]=(dist[k]||0)+1;});
+    const chips=Object.entries(dist).sort((a,b)=>b[1]-a[1]).map(([k,n])=>{
+      const m=_CL_CATS[k];
+      return `<span style="font-size:9px;color:${m.color};background:${m.color}18;padding:1px 6px;border-radius:8px">${m.icon}${n}</span>`;
+    }).join(' ');
+
+    html+=`<div style="margin-bottom:14px;padding:13px;background:${isLatest?'#1a1a30':'var(--card2)'};border:1px solid ${isLatest?release.badge:'var(--border)'};border-radius:8px${isLatest?';box-shadow:0 0 12px '+release.badge+'33':''}">
+      <div onclick="_clToggle('${release.version}')" style="cursor:pointer;display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:${expanded?'9px':'0'}">
+        <span style="font-size:19px;font-weight:900;color:${release.badge};letter-spacing:1px">${release.version}</span>
         ${isLatest?`<span style="background:${release.badge};color:#000;font-size:9px;padding:2px 6px;border-radius:3px;font-weight:700;letter-spacing:1px">LATEST</span>`:''}
-        <span style="font-size:11px;color:var(--muted);font-family:var(--mono)">${release.date}</span>
-      </div>
-      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px">${release.title}</div>
-      <div style="display:flex;flex-direction:column;gap:6px">`;
-    release.changes.forEach(c=>{
-      html+=`<div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;padding:4px 0">
-        <span style="font-size:14px;flex-shrink:0;width:20px">${c.icon}</span>
-        <span style="color:var(--text);line-height:1.5">${c.text}</span>
+        <span style="font-size:10.5px;color:var(--muted);font-family:var(--mono)">${release.date}</span>
+        <span style="margin-left:auto;display:flex;gap:3px;align-items:center">${chips}
+          <span style="font-size:11px;color:var(--muted);margin-left:4px">${expanded?'▲':'▼'}</span></span>
       </div>`;
-    });
-    html+='</div></div>';
+    if(expanded){
+      html+=`<div style="font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:9px;line-height:1.5">${release.title}</div>`;
+      // 카테고리별 그룹핑
+      const grouped={};
+      items.forEach(ch=>{const k=_clCategory(ch); (grouped[k]||(grouped[k]=[])).push(ch);});
+      const order=['feat','metric','ui','fix','perf','data'];
+      order.filter(k=>grouped[k]).forEach(k=>{
+        const m=_CL_CATS[k];
+        html+=`<div style="margin-bottom:8px">
+          <div style="font-size:10px;font-weight:700;color:${m.color};letter-spacing:0.5px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid ${m.color}33">${m.icon} ${m.label}</div>
+          <div style="display:flex;flex-direction:column;gap:5px">`;
+        grouped[k].forEach(ch=>{
+          html+=`<div style="display:flex;align-items:flex-start;gap:7px;font-size:12px;padding:2px 0">
+            <span style="font-size:13px;flex-shrink:0;width:18px">${ch.icon}</span>
+            <span style="color:var(--text);line-height:1.55">${ch.text}</span>
+          </div>`;
+        });
+        html+='</div></div>';
+      });
+    } else {
+      html+=`<div style="font-size:12px;color:var(--muted);line-height:1.4;margin-top:6px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical">${release.title}</div>`;
+    }
+    html+='</div>';
   });
-  
+
   html+='<div style="text-align:center;color:var(--muted);font-size:11px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">';
-  html+='⚾ WBD Baseball Analyzer · 데이터 분석 도구';
+  html+='⚾ WBD Baseball Analyzer · 버전 제목을 클릭하면 상세가 열립니다';
   html+='</div>';
-  
   openModal(html);
 }
+
 function getFavorites(){return LS.get('favorites',{pitcher:[],batter:[]});}
 function isFavorite(name,type){return getFavorites()[type].includes(name);}
 function toggleFavorite(name,type){
