@@ -13798,6 +13798,7 @@ const CHANGELOG = [
     title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화',
     badge: '#ff8c44',
     changes: [
+      {icon:'📦', text:'⭐⭐ <b>내보내기 schema v15 — 순위표·수비 세부 추가</b> — 외부 분석 시 원시 로그를 재계산해야 했던 항목들을 내보내기에 포함. <b>standings</b>: 활성 경기 기준 승패·승률·득실차·경기당 득실·<b>피타고리안 기대승률</b>(실제 승률과 비교하면 운/클러치 영향 파악 가능)·경기별 로그. <b>teamDefense</b>: 팀 OAA 합계만으론 알 수 없던 <b>내야/외야 분리</b>(각각 리그 평균 대비 %p), 포지션별 OAA·아웃률, 선수별 처리수·아웃률·OAA/10기회·리그대비·동일포지션 백분위(약한 순 정렬). 리그 포지션별 기준 아웃률도 함께 제공해 비교 기준선 확보.'},
       {icon:'📦', text:'⭐⭐ <b>내보내기 schema v14 — 팀 분석 블록 신규</b> — 개편된 팀 탭 데이터가 내보내기에 <b>전혀 반영되지 않던 것</b>을 확인하고 <code>teams</code> 블록 추가. 팀 탭(개요·전력 진단서)과 <b>완전히 동일한 기준</b>으로 산출: <b>grade</b>(종합/타격/투수/수비 등급+점수, 가중치 명시) · <b>areas</b>(6영역 리그 백분위) · <b>batting</b>(전통 지표 + HH/HH+/배럴/배럴+ · 존내컨택 · 체이스 · BABIP · oWAR) · <b>pitching</b>(ERA/FIP/WHIP + 제구 세분화(실투율·보더라인%) + 피타구질 4종 + pWAR) · <b>defense</b>(팀 OAA·리그 순위) · <b>clutch</b>(득점권 OPS 타격/투수). glossary에도 존내컨택%·체이스%·실투율·보더라인%·팀 등급·클러치 정의 추가 — AI 분석 시 신규 지표를 정확히 해석 가능.'},
       {icon:'🐛', text:'⭐⭐ <b>스프레이 존 오버레이 버그픽스</b> — 팀 탭·스카우팅의 5등분 존 필터에서 ① <b>부채꼴이 SVG 밖으로 넘쳐 위쪽 카드를 덮고 버튼 클릭까지 막던 문제</b> → clipPath + overflow 제한으로 영역 고정(전역 <code>makeSVG</code>의 <code>overflow:visible</code>이 원인이었음) ② <b>내야/외야 필터가 부채꼴 집계에만 적용되고 점에는 적용 안 되던 문제</b> → 필터에 맞는 타구만 표시하도록 통일 ③ <b>내야 모드에서 라벨 5개가 홈플레이트에 뭉쳐 겹치던 문제</b> → 타자 스프레이 차트와 동일하게 <b>내야 영역으로 줌인</b>(±32m)하고 라벨 반지름 조정. 세 모드(전체/내야/외야) 모두 라벨 간격 50px 이상 확보 검증.'},
       {icon:'💥', text:'⭐⭐ <b>클러치 지표 신규 — 타격·투수 양쪽, OPS 기반</b> — 득점권(2·3루 주자) 상황 성적을 리그 평균과 비교해 등급화. <b>피안타율 대신 OPS 사용</b> — 안타와 홈런의 실점 영향이 다르고 볼넷도 득점권에선 위험하기 때문(실측 316경기: 득점권 피안타율은 리그 대비 +39인데 <b>피OPS는 +78</b>로 격차가 두 배). 장타율은 <code>_hitBase</code> 기반 정확한 총루타로 계산. <b>클러치 타격</b>(득점권 OPS↑ 좋음)과 <b>클러치 투수</b>(득점권 피OPS↓ 좋음) 두 지표를 <b>전력 진단서</b>에 표시(헤더 요약 + 영역별 상세). 개요는 종합·타격·투수·수비 4개 등급으로 간결하게 유지. <b>종합 등급에는 미반영</b>하고 점선 테두리 + "참고" 라벨로 구분(표본 변동이 크기 때문). 10타수 미만이면 자동 미표시.'},
@@ -29080,8 +29081,18 @@ function exportAnalyticsBundle(opts){
   const meta={
     generatedAt:new Date().toISOString(),
     appVersion:'V11.4',
-    schemaVersion:14,
+    schemaVersion:15,
     schemaChanges:{
+      v15_changes:[
+        '🆕 standings 블록 — 활성 경기 기준 순위표: G/W/L/T, 승률, 득점·실점·득실차, 경기당 득실, 피타고리안 기대승률(지수 1.83), gameLog(경기별 상대·스코어·승패)',
+        '   · 스코어는 이닝별 득점 집계 기반 (끝내기·수비미스 보정 포함)',
+        '🆕 teamDefense 블록 — 팀 수비 세부 분석',
+        '   · infield/outfield: 내야·외야 분리 OAA·아웃률 + 리그 동일 구역 평균 대비(%p)',
+        '   · byPos: 포지션별 OAA·아웃률·리그대비 + 해당 포지션 선수 목록',
+        '   · players: 선수별 처리수·아웃률·OAA·OAA/10기회·리그대비(%p)·동일포지션 백분위 (약한 순 정렬)',
+        '   · leagueByPos: 포지션별 리그 기준 아웃률 (비교 기준선)',
+        '📌 팀 OAA 합계만으론 "내야가 좋은지 외야가 나쁜지" 판별이 불가능했던 문제 해소'
+      ],
       v14_changes:[
         '🆕 teams 블록 신규 — 팀 탭(개요·전력 진단서)과 동일 기준의 팀 분석 데이터',
         '   · grade: overall/batting/pitching/defense 등급 + 점수 (타격45%+투수45%+수비10%)',
@@ -29748,6 +29759,130 @@ function exportAnalyticsBundle(opts){
         });
       }catch(e){ return []; }
     })(),
+    // V11.5: 리그 순위표 — 활성 경기 기준 승패·득실 (이닝별 득점 집계, 끝내기 보정 포함)
+    standings:(()=>{
+      try{
+        const rec={};
+        const ini=t=>({team:t,G:0,W:0,L:0,T:0,RF:0,RA:0,games:[]});
+        GAMES.filter(g=>activeGameIds.has(g.id)).forEach(g=>{
+          const i=_parseGameName(g.name);
+          const tA=_normalizeTeam(i.teamA), tB=_normalizeTeam(i.teamB);
+          if(!tA||!tB) return;
+          const sc=_computeInningScores(g.pitches||[]);
+          if(!rec[tA])rec[tA]=ini(tA);
+          if(!rec[tB])rec[tB]=ini(tB);
+          const A=rec[tA], B=rec[tB];
+          A.G++; B.G++;
+          A.RF+=sc.totalA; A.RA+=sc.totalB;
+          B.RF+=sc.totalB; B.RA+=sc.totalA;
+          let resA;
+          if(sc.totalA>sc.totalB){A.W++;B.L++;resA='W';}
+          else if(sc.totalB>sc.totalA){B.W++;A.L++;resA='L';}
+          else {A.T++;B.T++;resA='T';}
+          A.games.push({date:i.date||'', opp:tB, rf:sc.totalA, ra:sc.totalB, result:resA});
+          B.games.push({date:i.date||'', opp:tA, rf:sc.totalB, ra:sc.totalA, result:resA==='W'?'L':(resA==='L'?'W':'T')});
+        });
+        return Object.values(rec).map(r=>({
+          team:r.team, G:r.G, W:r.W, L:r.L, T:r.T,
+          winPct:+((r.W+r.L)>0?r.W/(r.W+r.L):0).toFixed(3),
+          RF:r.RF, RA:r.RA, diff:r.RF-r.RA,
+          rpg:+(r.G>0?r.RF/r.G:0).toFixed(2), rapg:+(r.G>0?r.RA/r.G:0).toFixed(2),
+          // 피타고리안 기대승률 (WBD 지수 1.83)
+          pythWinPct:+((r.RF>0||r.RA>0)?Math.pow(r.RF,1.83)/(Math.pow(r.RF,1.83)+Math.pow(r.RA,1.83)):0).toFixed(3),
+          gameLog:r.games
+        })).sort((a,b)=>b.winPct-a.winPct||b.diff-a.diff);
+      }catch(e){ return []; }
+    })(),
+    // V11.5: 팀 수비 세부 — 내야/외야 분리 + 포지션별 + 선수별 (리그 동일 포지션 대비)
+    teamDefense:(()=>{
+      try{
+        const dd=_computeDefenseData();
+        if(!dd||!dd.byPlayer) return [];
+        const IF=new Set(['P','C','1B','2B','3B','SS']);
+        // 리그 포지션별 기준
+        const lgPos={};
+        Object.values(dd.byPlayer).forEach(p=>{
+          Object.entries(p.byPos||{}).forEach(([pos,ps])=>{
+            if(!lgPos[pos])lgPos[pos]={oaa:0,ch:0,outs:0,per10:[]};
+            lgPos[pos].oaa+=ps.oaaWeighted||0;
+            lgPos[pos].ch+=ps.chances||0;
+            lgPos[pos].outs+=ps.outs||0;
+            if((ps.chances||0)>=3) lgPos[pos].per10.push((ps.oaaWeighted||0)/(ps.chances||1)*10);
+          });
+        });
+        Object.values(lgPos).forEach(v=>{
+          v.outRate=v.ch>0?v.outs/v.ch:0;
+          v.per10.sort((a,b)=>a-b);
+        });
+        const pctileOf=(pos,p10)=>{
+          const arr=lgPos[pos]&&lgPos[pos].per10;
+          if(!arr||arr.length<3) return null;
+          return +(arr.filter(v=>v<=p10).length/arr.length).toFixed(2);
+        };
+        // 팀별 집계
+        const teams={};
+        Object.values(dd.byPlayer).forEach(p=>{
+          const tm=_playerTeam(p.name,'batter');
+          if(!tm||tm==='—') return;
+          if(!teams[tm])teams[tm]={team:tm, oaa:0, chances:0, outs:0,
+            infield:{oaa:0,chances:0,outs:0}, outfield:{oaa:0,chances:0,outs:0},
+            byPos:{}, players:[]};
+          const T=teams[tm];
+          Object.entries(p.byPos||{}).forEach(([pos,ps])=>{
+            const o=ps.oaaWeighted||0, ch=ps.chances||0, out=ps.outs||0;
+            if(ch<1) return;
+            T.oaa+=o; T.chances+=ch; T.outs+=out;
+            const zone = IF.has(pos) ? T.infield : T.outfield;
+            zone.oaa+=o; zone.chances+=ch; zone.outs+=out;
+            if(!T.byPos[pos])T.byPos[pos]={oaa:0,chances:0,outs:0,players:[]};
+            T.byPos[pos].oaa+=o; T.byPos[pos].chances+=ch; T.byPos[pos].outs+=out;
+            const p10=ch>0?o/ch*10:0;
+            const entry={name:p.name, pos, chances:ch, outs:out,
+              outRate:+(ch>0?out/ch:0).toFixed(3),
+              oaa:+o.toFixed(1), oaaPer10:+p10.toFixed(2),
+              lgOutRate:+(lgPos[pos]?lgPos[pos].outRate:0).toFixed(3),
+              vsLeague:+(((ch>0?out/ch:0)-(lgPos[pos]?lgPos[pos].outRate:0))*100).toFixed(1),
+              leaguePctile:pctileOf(pos,p10)};
+            T.byPos[pos].players.push(entry);
+            T.players.push(entry);
+          });
+        });
+        // 리그 내야/외야 기준
+        let lgIf={ch:0,outs:0}, lgOf={ch:0,outs:0};
+        Object.entries(lgPos).forEach(([pos,v])=>{
+          const z=IF.has(pos)?lgIf:lgOf; z.ch+=v.ch; z.outs+=v.outs;
+        });
+        const zoneStat=(z,lgz)=>({
+          oaa:+z.oaa.toFixed(1), chances:z.chances,
+          outRate:+(z.chances>0?z.outs/z.chances:0).toFixed(3),
+          lgOutRate:+(lgz.ch>0?lgz.outs/lgz.ch:0).toFixed(3),
+          vsLeague:+(((z.chances>0?z.outs/z.chances:0)-(lgz.ch>0?lgz.outs/lgz.ch:0))*100).toFixed(1)
+        });
+        const arr=Object.values(teams).map(T=>({
+          team:T.team,
+          oaa:+T.oaa.toFixed(1), chances:T.chances,
+          outRate:+(T.chances>0?T.outs/T.chances:0).toFixed(3),
+          infield:zoneStat(T.infield,lgIf),
+          outfield:zoneStat(T.outfield,lgOf),
+          byPos:Object.fromEntries(Object.entries(T.byPos).map(([pos,v])=>[pos,{
+            oaa:+v.oaa.toFixed(1), chances:v.chances,
+            outRate:+(v.chances>0?v.outs/v.chances:0).toFixed(3),
+            lgOutRate:+(lgPos[pos]?lgPos[pos].outRate:0).toFixed(3),
+            vsLeague:+(((v.chances>0?v.outs/v.chances:0)-(lgPos[pos]?lgPos[pos].outRate:0))*100).toFixed(1),
+            players:v.players.sort((a,b)=>b.chances-a.chances)
+          }])),
+          players:T.players.sort((a,b)=>a.vsLeague-b.vsLeague)
+        })).sort((a,b)=>b.oaa-a.oaa);
+        arr.forEach((t,i)=>{t.leagueRank=i+1;});
+        return {
+          note:'OAA는 추정 지표 · vsLeague는 같은 포지션 리그 평균 아웃률과의 차이(%p) · leaguePctile은 동일 포지션 내 백분위(0~1)',
+          leagueByPos:Object.fromEntries(Object.entries(lgPos).map(([pos,v])=>[pos,{
+            chances:v.ch, outRate:+v.outRate.toFixed(3), totalOAA:+v.oaa.toFixed(1)
+          }])),
+          teams:arr
+        };
+      }catch(e){ return []; }
+    })(),
     codeMaps:{
       _desc:'CSV/JSON 원시 코드값 → 의미 매핑. 원시 투구로그(pitches) 해석용. 이거 없이 result/call/pType를 추론하지 말 것',
       result:{'0':'None(타석 진행중/무결과)','1':'FlyOut(뜬공 아웃)','2':'GroundBall(땅볼 아웃)','3':'Foul(파울)','4':'HomeRun','5':'Walk(볼넷)','6':'HBP(몸에 맞는 공)'},
@@ -29777,6 +29912,10 @@ function exportAnalyticsBundle(opts){
       HRpct:'타자=홈런/타석%, 투수=피홈런/상대타자%',
       GIDP:'땅볼 병살타 — 한 인플레이 땅볼로 2아웃 발생(포스아웃 1개 이상 포함). 타자는 낮을수록/투수(GIDPinduced)는 높을수록 좋음. 신규 CSV 아웃코드 기반이라 구 데이터는 0',
       fieldersChoice:'야수선택 — 선행주자가 포스아웃되어 타자가 1루에 산 경우. 안타로 집계하지 않음(MLB 규칙 10.05(b)(1)). 타수(AB)에는 포함',
+      pythWinPct:'피타고리안 기대승률 — 득점^1.83/(득점^1.83+실점^1.83). 실제 승률과 크게 다르면 운·클러치 영향이 컸다는 뜻(높으면 저평가, 낮으면 초과달성)',
+      vsLeague:'리그 대비 — 같은 포지션(또는 구역) 리그 평균 아웃률과의 차이(%p). +면 평균보다 잘 잡음',
+      oaaPer10:'10기회당 OAA — 기회 수가 다른 선수끼리 비교할 때 사용',
+      leaguePctile:'동일 포지션 내 백분위(0~1) — 1에 가까울수록 그 포지션 최상위',
       zContactPct:'존내 컨택% — 스트라이크존 안 스윙 중 배트에 맞힌 비율. 리그 73.0%. 삼진과 별개로 "칠 수 있는 공을 실제로 맞히는 능력". 높을수록 좋음',
       chasePct:'체이스% — 존 밖 투구에 스윙한 비율. 리그 54.4%. 낮을수록 선구안 좋음',
       zSwingPct:'존내 스윙% — 스트라이크존 안 투구에 스윙한 비율. 리그 61.4%. 적극성 지표(유형에 따라 갈려 보조 비중만 사용)',
