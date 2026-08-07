@@ -8641,8 +8641,10 @@ function _renderSprayField(dots, opts){
   opts=opts||{};
   const W=opts.w||520, H=opts.h||440, PAD=opts.pad||12;
   const F=FIELD;
-  const lxMin=(opts.lxMin!=null?opts.lxMin:-80), lxMax=(opts.lxMax!=null?opts.lxMax:80);
-  const lzMin=(opts.lzMin!=null?opts.lzMin:-142), lzMax=(opts.lzMax!=null?opts.lzMax:-14);
+  // V11.4: 내야 모드는 내야 영역만 줌인 (타자 스프레이와 동일 — 라벨 겹침 방지)
+  const _zoomIn = opts.zoneOverlay==='infield';
+  const lxMin=(opts.lxMin!=null?opts.lxMin:(_zoomIn?-32:-80)), lxMax=(opts.lxMax!=null?opts.lxMax:(_zoomIn?32:80));
+  const lzMin=(opts.lzMin!=null?opts.lzMin:(_zoomIn?-50:-142)), lzMax=(opts.lzMax!=null?opts.lzMax:-14);
   const mPerPx=Math.max((lzMax-lzMin)/(H-PAD*2),(lxMax-lxMin)/(W-PAD*2));
   const fx=lx=>PAD+(lxMax-lx)/mPerPx;   // lx+ → 화면 왼쪽(3루/LF)
   const fy=lz=>PAD+(lz-lzMin)/mPerPx;   // 외야 위, 홈플레이트 아래
@@ -8678,10 +8680,18 @@ function _renderSprayField(dots, opts){
       s+=`<rect x="${Math.min(x1,x2).toFixed(1)}" y="${Math.min(y1,y2).toFixed(1)}" width="${Math.abs(x2-x1).toFixed(1)}" height="${Math.abs(y2-y1).toFixed(1)}" fill="${col}" class="sf-cell" data-cnt="${c}"/>`;
     });
   }
-  // 점
+  // 점 (존 필터가 걸린 경우 해당 영역 타구만 표시)
   if(opts.dots!==false){
     const dimDots = !!opts.zoneOverlay;
+    const _zf=opts.zoneOverlay;
+    const _IR=30;
     dots.forEach((d,i)=>{
+      if(_zf==='infield'||_zf==='outfield'){
+        const _dz=-((+d.lz||0)+20);
+        const _dist=Math.sqrt((+d.lx||0)**2+_dz*_dz);
+        if(_zf==='infield' && (_dz<=0||_dist>_IR))return;
+        if(_zf==='outfield' && (_dz>0&&_dist<=_IR))return;
+      }
       const x=fx(d.lx), y=fy(d.lz);
       if(x<-15||x>W+15||y<-15||y>H+15)return;
       if(opts.showTrail) s+=`<line x1="${hp.x.toFixed(1)}" y1="${hp.y.toFixed(1)}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${d.color||'#888'}" stroke-width="0.8" opacity="0.35" stroke-dasharray="3,2"/>`;
@@ -8689,8 +8699,12 @@ function _renderSprayField(dots, opts){
     });
   }
   // V11.3: 5등분 방향 존 오버레이 (opts.zoneOverlay: 'all'|'infield'|'outfield')
+  // V11.4 fix: 부채꼴이 SVG 밖으로 넘쳐 상단 카드를 덮고 클릭까지 막던 문제 → clipPath로 영역 제한
   if(opts.zoneOverlay){
     const mode=opts.zoneOverlay;
+    const _clipId='sfclip_'+Math.random().toString(36).slice(2,9);
+    s+=`<defs><clipPath id="${_clipId}"><rect x="0" y="0" width="${W}" height="${H}" rx="4"/></clipPath></defs>`;
+    s+=`<g clip-path="url(#${_clipId})">`;
     const ZN=['우익','우중','중견','좌중','좌익'];
     const ZC=['#ff8c44','#ffb368','#ffd700','#a8d8a8','#88ddaa'];
     const cnt=[0,0,0,0,0]; let tot=0;
@@ -8707,10 +8721,13 @@ function _renderSprayField(dots, opts){
       let zi = ang<=-27?0 : ang<=-9?1 : ang<=9?2 : ang<=27?3 : 4;
       cnt[zi]++; tot++;
     });
+    // 타자 스프레이 차트와 동일 방식: 고정 반지름 + 모드별 도넛
+    //   (SVG는 clip-path로 잘리므로 넘쳐도 안전, 라벨은 outerR*0.65에 배치해 겹침 없음)
     let outerR, innerR;
-    if(mode==='all'){ outerR=Math.max(W,H); innerR=0; }
-    else if(mode==='infield'){ outerR=Math.min(IR/mPerPx, Math.max(W,H)); innerR=0; }
-    else { innerR=Math.min(IR/mPerPx, Math.max(W,H)*0.4); outerR=Math.max(W,H); }
+    const _R = Math.max(W,H) * 0.58;      // 기준 반지름 (타자 차트의 210에 대응)
+    if(mode==='all'){ outerR=_R; innerR=0; }
+    else if(mode==='infield'){ outerR=Math.min(IR/mPerPx, _R); innerR=0; }
+    else { innerR=Math.min(IR/mPerPx, _R*0.38); outerR=_R; }
     const toRad=deg=>(-90-deg)*Math.PI/180;
     [[-45,-27,0],[-27,-9,1],[-9,9,2],[9,27,3],[27,45,4]].forEach(([a1,a2,zi])=>{
       const r1=toRad(a2), r2=toRad(a1);
@@ -8727,18 +8744,21 @@ function _renderSprayField(dots, opts){
       const pct=tot>0?cnt[zi]/tot*100:0;
       s+=`<path d="${path}" fill="${ZC[zi]}" opacity="${0.10+Math.min(0.30,pct/100*0.9)}" stroke="${ZC[zi]}" stroke-width="0.8" stroke-opacity="0.5"/>`;
       // 라벨
-      const midR=innerR>0?(innerR+outerR)/2*0.55:outerR*0.42;
+      // 라벨 위치 (타자 스프레이와 동일): 도넛이면 중간, 아니면 65% 지점
+      const midR = innerR>0 ? (innerR+outerR)/2 : outerR*(mode==='infield'?0.90:0.65);
       const midA=toRad((a1+a2)/2);
       const lx2=hp.x+midR*Math.cos(midA), ly2=hp.y+midR*Math.sin(midA);
-      if(lx2>4&&lx2<W-4&&ly2>10&&ly2<H-4){
-        s+=`<text x="${lx2.toFixed(1)}" y="${ly2.toFixed(1)}" fill="#fff" font-size="10" font-weight="700" text-anchor="middle" style="paint-order:stroke;stroke:#000;stroke-width:2.5">${pct.toFixed(0)}%</text>`;
-        s+=`<text x="${lx2.toFixed(1)}" y="${(ly2+11).toFixed(1)}" fill="${ZC[zi]}" font-size="8.5" text-anchor="middle" style="paint-order:stroke;stroke:#000;stroke-width:2">${ZN[zi]}</text>`;
+      if(lx2>4&&lx2<W-4&&ly2>12&&ly2<H-6){
+        s+=`<text x="${lx2.toFixed(1)}" y="${(ly2-3).toFixed(1)}" fill="#fff" font-size="12" font-weight="800" text-anchor="middle" style="paint-order:stroke;stroke:rgba(0,0,0,0.8);stroke-width:3">${pct.toFixed(1)}%</text>`;
+        s+=`<text x="${lx2.toFixed(1)}" y="${(ly2+9).toFixed(1)}" fill="#fff" font-size="8" text-anchor="middle" style="paint-order:stroke;stroke:rgba(0,0,0,0.8);stroke-width:2.5">${ZN[zi]}</text>`;
       }
     });
+    s+='</g>';
     s+=sEl('text',{x:8,y:14,fill:'#cdd6e0','font-size':'9'},
       (mode==='all'?'전체':mode==='infield'?'내야(30m 이내)':'외야(30m 밖)')+` · ${tot}타구`);
   }
-  return makeSVG(W,H,s);
+  // V11.4 fix: 구장 SVG는 overflow를 숨겨 오버레이가 바깥 카드를 덮지 않도록 (전역 makeSVG는 visible)
+  return makeSVG(W,H,s).replace('style="overflow:visible;display:block"','style="overflow:hidden;display:block"');
 }
 // 공통 5×5 존 셀 계산 (타자/투수/스카우팅 공용)
 function _zoneCell(zx,zy){
@@ -13778,6 +13798,7 @@ const CHANGELOG = [
     title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화',
     badge: '#ff8c44',
     changes: [
+      {icon:'🐛', text:'⭐⭐ <b>스프레이 존 오버레이 버그픽스</b> — 팀 탭·스카우팅의 5등분 존 필터에서 ① <b>부채꼴이 SVG 밖으로 넘쳐 위쪽 카드를 덮고 버튼 클릭까지 막던 문제</b> → clipPath + overflow 제한으로 영역 고정(전역 <code>makeSVG</code>의 <code>overflow:visible</code>이 원인이었음) ② <b>내야/외야 필터가 부채꼴 집계에만 적용되고 점에는 적용 안 되던 문제</b> → 필터에 맞는 타구만 표시하도록 통일 ③ <b>내야 모드에서 라벨 5개가 홈플레이트에 뭉쳐 겹치던 문제</b> → 타자 스프레이 차트와 동일하게 <b>내야 영역으로 줌인</b>(±32m)하고 라벨 반지름 조정. 세 모드(전체/내야/외야) 모두 라벨 간격 50px 이상 확보 검증.'},
       {icon:'💥', text:'⭐⭐ <b>클러치 지표 신규 — 타격·투수 양쪽, OPS 기반</b> — 득점권(2·3루 주자) 상황 성적을 리그 평균과 비교해 등급화. <b>피안타율 대신 OPS 사용</b> — 안타와 홈런의 실점 영향이 다르고 볼넷도 득점권에선 위험하기 때문(실측 316경기: 득점권 피안타율은 리그 대비 +39인데 <b>피OPS는 +78</b>로 격차가 두 배). 장타율은 <code>_hitBase</code> 기반 정확한 총루타로 계산. <b>클러치 타격</b>(득점권 OPS↑ 좋음)과 <b>클러치 투수</b>(득점권 피OPS↓ 좋음) 두 지표를 <b>전력 진단서</b>에 표시(헤더 요약 + 영역별 상세). 개요는 종합·타격·투수·수비 4개 등급으로 간결하게 유지. <b>종합 등급에는 미반영</b>하고 점선 테두리 + "참고" 라벨로 구분(표본 변동이 크기 때문). 10타수 미만이면 자동 미표시.'},
       {icon:'🔗', text:'⭐⭐⭐ <b>개요·진단서 평가 기준 통일 (불일치 수정)</b> — 두 화면이 <b>서로 다른 가중치로 같은 팀을 다르게 평가</b>하던 문제를 발견해 수정. 개요는 "타격 45%(컨택35·파워40·선구25) + 투수 45%(구위35·제구25·결과40) + 수비 10%", 진단서는 "컨택15·파워20·선구10·구위20·제구10·결과15·수비5·클러치5"로 <b>내부 배분과 수비 비중(10% vs 5%)이 달랐음</b>. 공통 상수 <code>TEAM_W</code>와 <code>_teamScores()</code>·<code>_teamGrade()</code>로 일원화 — 이제 어느 화면에서 봐도 같은 등급. 표본이 적은 클러치(득점권) 항목은 제거. <b>진단서에 타격·투수·수비 종합 등급</b>을 별도 박스로 추가(각 영역 배분도 함께 표기)해 종합만 보이던 것을 세분화.'},
       {icon:'📋', text:'⭐⭐ <b>업데이트 내역 정리 — 카테고리 분류 + 필터</b> — 22개 버전 273개 항목이 한 줄로 나열돼 찾아보기 어렵던 것을 <b>6개 카테고리</b>로 자동 분류: <b>✨신규 기능(89) · 🎨UI·시각화(69) · 📐지표·분석(61) · 🐛버그 수정(29) · 📦데이터·내보내기(15) · ⚡성능·안정성(10)</b>. 상단 필터로 원하는 유형만 볼 수 있고, 각 버전 안에서도 카테고리별로 묶여 표시됨. <b>최신 버전만 펼쳐지고 나머지는 접힘</b>(제목 클릭으로 열기, 전체 펼치기/접기 버튼 제공)이라 스크롤이 대폭 짧아짐. 버전 헤더에 카테고리 분포 칩(예: ✨5 📐3 🐛2)을 표시해 어떤 성격의 업데이트였는지 한눈에 파악.'},
