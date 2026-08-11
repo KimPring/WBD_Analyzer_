@@ -25843,8 +25843,7 @@ function _renderLeagueLeaders(season, games){
   html += grid(
     card('ERA+','규정',top(pQ.filter(p=>p.eraPlus!=null),'eraPlus'),[{label:'ERA+',fmt:r=>r.eraPlus!=null?r.eraPlus.toFixed(0):'-',hl:1},{label:'ERA',fmt:r=>r.era!=null?r.era.toFixed(2):'-'},{label:'이닝',fmt:r=>_fmtIP(r.IP)}])+
     card('ERA','규정',top(pQ,'era',N,false),[{label:'ERA',fmt:r=>r.era!=null?r.era.toFixed(2):'-',hl:1},{label:'이닝',fmt:r=>_fmtIP(r.IP)},{label:'WHIP',fmt:r=>(r.whip!=null?r.whip.toFixed(2):'-')}])+
-    card('FIP','규정',top(pQ,'fip',N,false),[{label:'FIP',fmt:r=>r.fip!=null?r.fip.toFixed(2):'-',hl:1},{label:'ERA',fmt:r=>r.era!=null?r.era.toFixed(2):'-'},{label:'이닝',fmt:r=>_fmtIP(r.IP)}])+
-    card('WHIP','규정',top(pQ,'whip',N,false),[{label:'WHIP',fmt:r=>r.whip!=null?r.whip.toFixed(2):'-',hl:1},{label:'ERA',fmt:r=>r.era!=null?r.era.toFixed(2):'-'},{label:'이닝',fmt:r=>_fmtIP(r.IP)}])
+    card('FIP','규정',top(pQ,'fip',N,false),[{label:'FIP',fmt:r=>r.fip!=null?r.fip.toFixed(2):'-',hl:1},{label:'ERA',fmt:r=>r.era!=null?r.era.toFixed(2):'-'},{label:'이닝',fmt:r=>_fmtIP(r.IP)}])
   );
   html += grid(
     card('K/9','규정',top(pQ,'k9'),[{label:'K/9',fmt:r=>(r.k9||0).toFixed(1),hl:1},{label:'탈삼진',fmt:r=>r.K},{label:'이닝',fmt:r=>_fmtIP(r.IP)}])+
@@ -25852,6 +25851,7 @@ function _renderLeagueLeaders(season, games){
     card('K/BB','규정',top(pQ,'kbb'),[{label:'K/BB',fmt:r=>(r.kbb||0).toFixed(2),hl:1},{label:'탈삼진',fmt:r=>r.K},{label:'볼넷',fmt:r=>r.BB}])
   );
   html += grid(
+    card('WHIP','규정',top(pQ,'whip',N,false),[{label:'WHIP',fmt:r=>r.whip!=null?r.whip.toFixed(2):'-',hl:1},{label:'ERA',fmt:r=>r.era!=null?r.era.toFixed(2):'-'},{label:'이닝',fmt:r=>_fmtIP(r.IP)}])+
     card('pWAR','누적',top(pAll,'pwar'),[{label:'pWAR',fmt:r=>r.pwar!=null?r.pwar.toFixed(2):'-',hl:1},{label:'ERA',fmt:r=>r.era!=null?r.era.toFixed(2):'-'},{label:'이닝',fmt:r=>_fmtIP(r.IP)}])
   );
 
