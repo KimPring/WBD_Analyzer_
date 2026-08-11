@@ -1193,9 +1193,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       <optgroup label="⚾ 투수 - 결과 지표">
         <option value="p-ovr">⭐ 투수 OVR</option>
         <option value="p-era">🛡️ ERA (방어율, 낮은순)</option>
+        <option value="p-eraplus">🏅 ERA+ (리그평균 대비, 높은순)</option>
         <option value="p-whip">🔒 WHIP (낮은순)</option>
         <option value="p-ip">⏱️ 이닝 (IP, 많은순)</option>
         <option value="p-runs">🔥 실점 (적은순)</option>
+        <option value="p-ra9">📉 RA9 (9이닝당 실점, 낮은순)</option>
         <option value="p-ba">🎯 피안타율 (낮은순)</option>
         <option value="p-hr">💪 피홈런 (적은순)</option>
         <option value="p-hrrate">💣 피홈런% (낮은순)</option>
@@ -4535,8 +4537,25 @@ function renderPitcherHeader(pitcherName,pd){
           ${(function(){try{const _pr=_computeRecordsData().pitchers.find(x=>x.name===pitcherName); if(!_pr)return ''; return `<div class="ph-stat" title="승-패"><div class="ph-stat-label" style="color:#ffd700">승-패</div><div class="ph-stat-val" style="font-size:16px;color:#ffd700;font-weight:700">${_pr.W||0}-${_pr.L||0}</div></div>`+((_pr.SV||0)>0?`<div class="ph-stat" title="세이브"><div class="ph-stat-label" style="color:#60a5fa">SV</div><div class="ph-stat-val" style="font-size:16px;color:#60a5fa">${_pr.SV}</div></div>`:'')+((_pr.HLD||0)>0?`<div class="ph-stat" title="홀드"><div class="ph-stat-label" style="color:#a78bfa">HLD</div><div class="ph-stat-val" style="font-size:16px;color:#a78bfa">${_pr.HLD}</div></div>`:'')+((_pr.QS||0)>0?`<div class="ph-stat" title="퀄리티스타트 (6이닝+ 3실점↓)"><div class="ph-stat-label" style="color:#fbbf24">QS</div><div class="ph-stat-val" style="font-size:16px;color:#fbbf24">${_pr.QS}${(_pr.QSP||0)>0?` (QS+ ${_pr.QSP})`:''}</div></div>`:'');}catch(e){return '';}})()}
           <div class="ph-stat" title="이닝 (3아웃 = 1이닝)"><div class="ph-stat-label" style="color:#39ff8a">IP</div><div class="ph-stat-val" style="font-size:16px;color:#39ff8a">${ipDisp}</div></div>
           <div class="ph-stat" title="평균자책점 = 실점 / 이닝 × 9 (낮을수록 좋음)"><div class="ph-stat-label" style="color:#ff4560">ERA</div><div class="ph-stat-val" style="font-size:16px;color:#ff4560">${eraVal}</div></div>
+          ${(()=>{ // V11.5: ERA+ (리그평균 대비, 100=평균 · 높을수록 좋음)
+            try{
+              const _L=(_computeRecordsData()||{}).lg;
+              const _lg=(_L&&_L.lgRA9>0)?_L.lgRA9:0;
+              const _e=parseFloat(eraVal);
+              if(!_lg||!isFinite(_e)||_e<=0) return '';
+              const _ep=_lg/_e*100;
+              const _c=_ep>=130?'#39ff8a':_ep>=110?'#88cc44':_ep>=90?'var(--text)':_ep>=70?'#ff8800':'#ff4560';
+              return `<div class="ph-stat" title="ERA+ = 리그평균 RA9 ${_lg.toFixed(2)} / 본인 ERA × 100 (100=리그평균, 높을수록 좋음)"><div class="ph-stat-label" style="color:#ffaa66">ERA+</div><div class="ph-stat-val" style="font-size:16px;color:${_c};font-weight:700">${_ep.toFixed(0)}</div></div>`;
+            }catch(_){ return ''; }
+          })()}
           <div class="ph-stat" title="WHIP = (피안타+볼넷) / 이닝 (낮을수록 좋음, 우수 1.20 미만)"><div class="ph-stat-label" style="color:#ff8800">WHIP</div><div class="ph-stat-val" style="font-size:16px;color:#ff8800">${whipVal}</div></div>
           <div class="ph-stat" title="실점"><div class="ph-stat-label" style="color:var(--muted)">실점</div><div class="ph-stat-val" style="font-size:16px">${totalRuns}</div></div>
+          ${(()=>{ // V11.5: RA9 (9이닝당 실점 — pWAR 산출 기반)
+            const _ip=totalOuts/3;
+            if(!(_ip>0)) return '';
+            const _r9=totalRuns/_ip*9;
+            return `<div class="ph-stat" title="RA9 = 9이닝당 실점 (pWAR 산출 기반 · 낮을수록 좋음)"><div class="ph-stat-label" style="color:#ff9966">RA9</div><div class="ph-stat-val" style="font-size:16px;color:#ff9966">${_r9.toFixed(2)}</div></div>`;
+          })()}
           <div class="ph-stat" title="탈삼진 (카운트 2에서 3번째 strike, 루킹+헛스윙 모두)"><div class="ph-stat-label" style="color:#ff8800">K</div><div class="ph-stat-val" style="font-size:16px;color:#ff8800;font-weight:700">${ks}</div></div>
           <div class="ph-stat"><div class="ph-stat-label">K%</div><div class="ph-stat-val" style="font-size:16px">${pd.length>0?(ks/pd.length*100).toFixed(1):0}%</div></div>
           <div class="ph-stat" title="볼넷"><div class="ph-stat-label" style="color:#88cc44">BB</div><div class="ph-stat-val" style="font-size:16px;color:#88cc44">${bb}</div></div>
@@ -8219,8 +8238,20 @@ function buildCardBack(name,type,card){
       <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">등판</div><div style="font-family:var(--mono);font-size:16px;font-weight:700">${games}</div></div>
       <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">IP</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:#39ff8a">${ipDisp}</div></div>
       <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">ERA</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:#ff4560">${era}</div></div>
+      ${(()=>{ // V11.5: ERA+ (100=리그평균, 높을수록 좋음)
+        try{
+          const _L=(_computeRecordsData()||{}).lg;
+          const _lg=(_L&&_L.lgRA9>0)?_L.lgRA9:0;
+          const _e=parseFloat(era);
+          if(!_lg||!isFinite(_e)||_e<=0) return '';
+          const _ep=_lg/_e*100;
+          const _c=_ep>=130?'#39ff8a':_ep>=110?'#88cc44':_ep>=90?'var(--text)':_ep>=70?'#ff8800':'#ff4560';
+          return `<div title="리그평균 RA9 ${_lg.toFixed(2)} 대비"><div style="font-size:9px;color:var(--muted);text-transform:uppercase">ERA+</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:${_c}">${_ep.toFixed(0)}</div></div>`;
+        }catch(_){ return ''; }
+      })()}
       <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">WHIP</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:#ff8800">${whip}</div></div>
       <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">실점</div><div style="font-family:var(--mono);font-size:16px;font-weight:700">${totalRuns}</div></div>
+      ${totalIp>0?`<div title="9이닝당 실점 — pWAR 산출 기반"><div style="font-size:9px;color:var(--muted);text-transform:uppercase">RA9</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:#ff9966">${(totalRuns/totalIp*9).toFixed(2)}</div></div>`:''}
       <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">K</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:#ff8800">${totalK}</div></div>
       <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">BB</div><div style="font-family:var(--mono);font-size:16px;font-weight:700">${totalBB}</div></div>
       <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">K/BB</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:#88cc44">${kbb}</div></div>
@@ -10832,6 +10863,12 @@ function renderLeaderboard(){
       else if(cat==='p-whip'){v=totalIp>=3?-whipVal:-999;display=totalIp>=3?whipVal.toFixed(2):'-';}
       else if(cat==='p-ip'){v=totalIp;display=ipDispLB;}
       else if(cat==='p-runs'){v=-totalRuns;display=totalRuns+'점';}
+      else if(cat==='p-ra9'){const _r9=totalIp>0?totalRuns/totalIp*9:null; v=(totalIp>=3&&_r9!=null)?-_r9:-999; display=(totalIp>=3&&_r9!=null)?_r9.toFixed(2):'-';}
+      else if(cat==='p-eraplus'){
+        let _lg=5.6; try{ const _L=(_computeRecordsData()||{}).lg; if(_L&&_L.lgRA9>0)_lg=_L.lgRA9; }catch(_){}
+        const _ep=(totalIp>=3&&eraVal>0&&eraVal<99)?_lg/eraVal*100:null;
+        v=_ep!=null?_ep:-999; display=_ep!=null?_ep.toFixed(0):'-';
+      }
       rows.push({name,type,v,display,card,n:pd.length,team:_playerTeam(name,'pitcher')});
     } else {
       const bd=getBatterDataByName(name).filter(_isInPlay);
@@ -10967,7 +11004,7 @@ function renderLeaderboard(){
     'p-spd':'평균 직구 구속','p-pow':'평균 원본 구력','p-maxpow':'최고 원본 구력',
     'p-uncapped':'무제한 직구 구속 (캡 풀렸을 때)','p-uncappedmax':'무제한 최고 구속',
     'p-k':'K%','p-kbb':'K/BB',
-    'p-era':'ERA (방어율)','p-whip':'WHIP','p-ip':'이닝 (IP)','p-runs':'실점',
+    'p-era':'ERA (방어율)','p-eraplus':'ERA+ (리그평균 대비)','p-whip':'WHIP','p-ip':'이닝 (IP)','p-runs':'실점','p-ra9':'RA9 (9이닝당 실점)',
     'p-ba':'피안타율','p-bb':'BB%','p-hr':'피홈런','p-hrrate':'피홈런%',
     'p-whiff':'헛스윙%','p-ev':'평균 피EV','p-hh':'피하드히트%','p-hhp':'피HH+%(≥125)','p-barrel':'피배럴%','p-brlp':'피배럴+%(≥125&LA20~40)',
     'p-zwhiff':'존내 헛스윙%','p-ozwhiff':'존밖 헛스윙%','p-mistake':'실투율','p-border':'보더라인%','p-safe':'안전존%',
@@ -13798,6 +13835,7 @@ const CHANGELOG = [
     title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화',
     badge: '#ff8c44',
     changes: [
+      {icon:'📊', text:'⭐⭐ <b>RA9 · ERA+ 지표 신규 (전 화면 적용)</b> — <b>RA9</b>(9이닝당 실점)는 pWAR 산출의 기반 지표인데 정작 어디에도 표시되지 않던 것을 추가. <b>ERA+</b>(리그평균 RA9 / 본인 ERA × 100, 100=평균)를 신규 도입 — 기존 FIP-와 짝을 이루되 <b>높을수록 좋은</b> 방향이라 직관적. 적용 범위: <b>투수 분석 헤더</b>·<b>선수 카드 상세</b>(ERA 옆 ERA+, 실점 옆 RA9 — ERA+는 130↑ 초록, 70↓ 빨강으로 색상 구분), <b>일반 기록실·리그전 기록실</b>(고정 컬럼으로 승격해 그룹과 무관하게 항상 표시), <b>일반 리더보드</b>(RA9 낮은순·ERA+ 높은순), <b>리그전 리더보드</b>(ERA+ 카드), <b>리그전 팀기록 투수탭</b>(팀 단위 RA9·ERA+), <b>내보내기</b>(개별 투수 advanced + 팀 pitching, schema v16), glossary 정의 포함. 팀 ERA+는 리그 전체 RA9를 기준선으로 산출.'},
       {icon:'🐛', text:'⭐⭐ <b>기록실 투수 실점 컬럼 표시 안 되던 문제 수정</b> — 컬럼 정의(<code>{k:\'runs\', l:\'실점\'}</code>)는 있었으나 <b>컬럼 그룹(기본/피안타/피타구질/전체) 어디에도 <code>runs</code>가 포함되지 않아</b> 필터에서 걸러져 화면에 나오지 않던 상태. <b>일반 기록실·리그전 기록실 양쪽 모두</b> 실점을 고정 컬럼(피안타 뒤·ERA 앞)으로 승격 — ERA 산출 근거이자 기본 기록이므로 그룹과 무관하게 항상 표시. <br>또한 리그전 리더보드 "투수 누적" 섹션이 카드 5개로 4+1 줄바꿈되어 마지막 줄에 가로 스크롤이 생기던 것을 <b>3+2 배치</b>로 분리 — 둘째 줄(실점 적은순·RA9)은 flex가 자동으로 절반씩 나눠 쓰도록.'},
       {icon:'📋', text:'⭐⭐ <b>리그전 팀 기록 — 3탭 구조 개편</b> — 기존 타격/투수 2탭에 <b>📋 일반</b> 탭 신설. 일반 탭에는 <b>경기·승·패·승률·득점·실점·득실차·경기당 득실</b>과 핵심 지표(타율·OPS·홈런·ERA·WHIP·oWAR·pWAR·총WAR)를 모아 순위표 역할을 겸하도록 구성. <b>투수 탭</b>에는 팀 단위 <b>승·패·세이브·홀드·QS·QS+</b>를 추가(개별 투수 결과기록을 팀 합산). 탭 전환 시 현재 탭에 없는 정렬 키면 기본값(일반=승률·타격=OPS·투수=ERA)으로 자동 폴백. <br>※ 타자 개인 득점(R)·타점(RBI)은 원시 데이터로 정확한 산출이 어려워 보류.'},
       {icon:'🐛', text:'<b>리그전 리더보드 "타점권 득점(R)" 카드 삭제</b> — 이름은 득점인데 실제로는 <b>총루타(TB)를 표시</b>하고 있어 바로 위 "총루타(TB)" 카드와 완전히 중복되던 오류. 정확한 득점 집계가 불가능하므로 카드 자체를 제거.'},
@@ -25335,6 +25373,8 @@ function _computeRecordsData(){
   pitchers.forEach(p => {
     p.fip = p.IP>0 ? (13*p.HR+3*(p.BB+p.HBP)-2*p.K)/p.IP + cFIP : null;
     p.fipMinus = (p.fip!=null && lgRA9>0) ? p.fip/lgRA9*100 : null;
+    // V11.5: 리그 평균 대비 지표 — 기준선 lgRA9 (WBD는 자책 구분이 없어 실점=자책)
+    p._lgRA9 = lgRA9;
     // WHIP, K/BB
     p.whip = p.IP>0 ? (p.BB+p.H)/p.IP : null;
     p.kbb = p.BB>0 ? p.K/p.BB : (p.K>0 ? 99 : null);
@@ -25381,7 +25421,14 @@ function _computeRecordsData(){
       p.era = _s && _s.ip>0 ? _s.era : null;
       p.ipDisp = _s ? _s.ipDisp : null;
       p.runs = _s ? _s.runs : null;
-    } catch(e){ p.era=null; p.ipDisp=null; p.runs=null; }
+      // V11.5: RA9 (9이닝당 실점) — pWAR 산출 기반 지표
+      p.ra9 = (_s && _s.ip>0 && _s.runs!=null) ? _s.runs/_s.ip*9 : null;
+      // V11.5: ERA+ / RA9- — 리그 평균 대비 (100=평균)
+      //   ERA+ = 리그평균 / 본인 ERA × 100 → 높을수록 좋음 (150 = 평균보다 50% 우수)
+      //   RA9- = 본인 RA9 / 리그평균 × 100 → 낮을수록 좋음 (FIP-와 같은 방향)
+      p.eraPlus = (p.era!=null && p.era>0 && lgRA9>0) ? lgRA9/p.era*100 : null;
+      p.ra9Minus = (p.ra9!=null && lgRA9>0) ? p.ra9/lgRA9*100 : null;
+    } catch(e){ p.era=null; p.ipDisp=null; p.runs=null; p.ra9=null; p.eraPlus=null; p.ra9Minus=null; }
     // V10.2: pWAR을 FIP 기반 → RA9(실점) 기반으로 교체 (bWAR 방식).
     // 근거: WBD 실데이터 검증 — BB%≈1.5%로 FIP의 BB항이 사실상 죽고 K 분포도 좁아
     // FIP가 HR 1~2개 노이즈로 결정됨 (ERA 9점대 투수가 2점대 투수보다 높게 평가되는 역전 발생).
@@ -25794,6 +25841,7 @@ function _renderLeagueLeaders(season, games){
   // 투수 — 비율 (규정이닝)
   html += sec(`⚾ 투수 비율 (규정이닝 ${_fmtIP(Q.qIP)}↑)`);
   html += grid(
+    card('ERA+','규정',top(pQ.filter(p=>p.eraPlus!=null),'eraPlus'),[{label:'ERA+',fmt:r=>r.eraPlus!=null?r.eraPlus.toFixed(0):'-',hl:1},{label:'ERA',fmt:r=>r.era!=null?r.era.toFixed(2):'-'},{label:'이닝',fmt:r=>_fmtIP(r.IP)}])+
     card('ERA','규정',top(pQ,'era',N,false),[{label:'ERA',fmt:r=>r.era!=null?r.era.toFixed(2):'-',hl:1},{label:'이닝',fmt:r=>_fmtIP(r.IP)},{label:'WHIP',fmt:r=>(r.whip!=null?r.whip.toFixed(2):'-')}])+
     card('FIP','규정',top(pQ,'fip',N,false),[{label:'FIP',fmt:r=>r.fip!=null?r.fip.toFixed(2):'-',hl:1},{label:'ERA',fmt:r=>r.era!=null?r.era.toFixed(2):'-'},{label:'이닝',fmt:r=>_fmtIP(r.IP)}])+
     card('WHIP','규정',top(pQ,'whip',N,false),[{label:'WHIP',fmt:r=>r.whip!=null?r.whip.toFixed(2):'-',hl:1},{label:'ERA',fmt:r=>r.era!=null?r.era.toFixed(2):'-'},{label:'이닝',fmt:r=>_fmtIP(r.IP)}])
@@ -25911,7 +25959,9 @@ function _renderLeagueRecords(season, games){
     {k:'_QS',l:'QS',f:p=>_d(p.name,'QS'),get:p=>_d(p.name,'QS'),cum:1},{k:'_QSP',l:'QS+',f:p=>_d(p.name,'QSP'),get:p=>_d(p.name,'QSP'),cum:1},
     {k:'IP',l:'이닝',f:p=>_fmtIP(p.IP),cum:1},{k:'n',l:'투구',f:p=>p.n||0,cum:1},
     {k:'K',l:'탈삼진',f:p=>p.K||0,cum:1},{k:'BB',l:'볼넷',f:p=>p.BB||0,cum:1},{k:'H',l:'피안타',f:p=>p.H||0,cum:1},{k:'HR',l:'피홈런',f:p=>p.HR||0,cum:1},{k:'runs',l:'실점',f:p=>p.runs!=null?p.runs:'-',cum:1,asc:1,t:'총 실점 (ERA 산출 기준)'},
-    {k:'era',l:'ERA',f:p=>p.era!=null?p.era.toFixed(2):'-',hl:1,asc:1},{k:'fip',l:'FIP',f:p=>p.fip!=null?p.fip.toFixed(2):'-',asc:1},
+    {k:'ra9',l:'RA9',f:p=>p.ra9!=null?p.ra9.toFixed(2):'-',asc:1,t:'9이닝당 실점 — pWAR 산출 기반. 낮을수록 좋음'},
+    {k:'era',l:'ERA',f:p=>p.era!=null?p.era.toFixed(2):'-',hl:1,asc:1},
+    {k:'eraPlus',l:'ERA+',f:p=>p.eraPlus!=null?p.eraPlus.toFixed(0):'-',t:'리그 평균 대비 ERA — 100=평균, 높을수록 좋음'},{k:'fip',l:'FIP',f:p=>p.fip!=null?p.fip.toFixed(2):'-',asc:1},
     {k:'whip',l:'WHIP',f:p=>p.IP>0?((p.H+p.BB)/p.IP).toFixed(2):'-',asc:1},
     {k:'oAvg',l:'피안타율',f:p=>p.oAvg!=null?(p.oAvg).toFixed(3).replace(/^0/,''):'-',asc:1},{k:'oObp',l:'피출루',f:p=>p.oObp!=null?(p.oObp).toFixed(3).replace(/^0/,''):'-',asc:1},{k:'oSlg',l:'피장타',f:p=>p.oSlg!=null?(p.oSlg).toFixed(3).replace(/^0/,''):'-',asc:1},{k:'oOps',l:'피OPS',f:p=>p.oOps!=null?(p.oOps).toFixed(3).replace(/^0/,''):'-',asc:1,hl:1},
     {k:'hrPct',l:'피HR%',f:p=>(p.hrPct||0).toFixed(1),asc:1,t:'피홈런/상대타자'},{k:'GIDP',l:'병살',f:p=>p.GIDP||0,cum:1,t:'유도한 땅볼 병살 수'},
@@ -25920,7 +25970,7 @@ function _renderLeagueRecords(season, games){
     {k:'avgEV',l:'피EV',f:p=>p.avgEV>0?p.avgEV.toFixed(1):'-',asc:1},{k:'hhPct',l:'피HH%',f:p=>p.evN>0?(p.hhPct||0).toFixed(1):'-',asc:1},{k:'brlPct',l:'피배럴%',f:p=>p.evN>0?(p.brlPct||0).toFixed(1):'-',asc:1},{k:'hhpPct',l:'피HH+%',f:p=>p.evN>0?(p.hhpPct||0).toFixed(1):'-',asc:1},{k:'brlpPct',l:'피배럴+%',f:p=>p.evN>0?(p.brlpPct||0).toFixed(1):'-',asc:1},{k:'avgLA',l:'피LA',f:p=>p.avgLA!=null?p.avgLA.toFixed(1)+'°':'-',asc:1},{k:'pwar',l:'pWAR',f:p=>p.pwar!=null?p.pwar.toFixed(2):'-',amber:1,cum:1}
   ];
   // V11.4: 투수 컬럼 그룹 (타자와 동일 구조)
-  const PIT_FIXED = ['name','team','G','IP','_W','_L','K','BB','H','runs','era','fip','whip','k9','pwar'];
+  const PIT_FIXED = ['name','team','G','IP','_W','_L','K','BB','H','runs','ra9','era','eraPlus','fip','whip','k9','pwar'];
   const PIT_GROUPS = {
     basic:  {label:'📋 기본',     cols:['_S','_H','_QS','_QSP','n','HR','kPct','bbPct','kbb','GIDP']},
     against:{label:'🎯 피안타',   cols:['HR','hrPct','oAvg','oObp','oSlg','oOps','GIDP']},
@@ -26047,6 +26097,8 @@ function _renderLeagueTeamRecords(season, games){
     bbPct:t.PA>0?t.BB/t.PA*100:0, kPct:t.PA>0?t.K/t.PA*100:0,
     woba:t.PA>0?t.woba_w/t.PA:0, wrcPlus:t.PA>0?t.wrc_w/t.PA:0,
     era:t.IP>0?t.era_w/t.IP:null, fip:t.IP>0?t.fip_w/t.IP:null, whip:t.IP>0?(t.pH+t.pBB)/t.IP:null,
+    ra9:(t.IP>0&&t.pRuns!=null)?t.pRuns/t.IP*9:null,
+    eraPlus:null,   // 아래에서 리그 평균 확정 후 계산
     k9:t.IP>0?t.pK/t.IP*9:0, bb9:t.IP>0?t.pBB/t.IP*9:0, kbb:t.pBB>0?t.pK/t.pBB:(t.pK>0?99:0),
     avgEV:t.evN>0?t.evSum/t.evN:0, hhPct:t.evN>0?t.hhN/t.evN*100:0, hhpPct:t.evN>0?t.hhpN/t.evN*100:0, brlPct:t.evN>0?t.brlN/t.evN*100:0, brlpPct:t.evN>0?t.brlpN/t.evN*100:0, avgLA:t.laN>0?t.laSum/t.laN:null,
     pAvgEV:t.pEvN>0?t.pEvSum/t.pEvN:0, pHhPct:t.pEvN>0?t.pHhN/t.pEvN*100:0, pHhpPct:t.pEvN>0?t.pHhpN/t.pEvN*100:0, pBrlPct:t.pEvN>0?t.pBrlN/t.pEvN*100:0, pBrlpPct:t.pEvN>0?t.pBrlpN/t.pEvN*100:0, pAvgLA:t.pLaN>0?t.pLaSum/t.pLaN:null,
@@ -26077,7 +26129,12 @@ function _renderLeagueTeamRecords(season, games){
       _decTeam[tm].QS+=dv.QS||0; _decTeam[tm].QSP+=dv.QSP||0;
     });
   }catch(e){}
+  // 리그 평균 RA9 (팀 ERA+ 기준선)
+  const _lgIP=arr.reduce((s,t)=>s+(t.IP||0),0);
+  const _lgRuns=arr.reduce((s,t)=>s+(t.pRuns||0),0);
+  const _lgRA9=_lgIP>0?_lgRuns/_lgIP*9:0;
   arr.forEach(t=>{
+    t.eraPlus=(t.era!=null&&t.era>0&&_lgRA9>0)?_lgRA9/t.era*100:null;
     const r=_recMap[t.team]||{W:0,L:0,T:0,RF:0,RA:0,G:0};
     t.W=r.W; t.L=r.L; t.Tie=r.T; t.RF=r.RF; t.RA=r.RA; t.G=r.G;
     t.rdiff=r.RF-r.RA;
@@ -26123,7 +26180,9 @@ function _renderLeagueTeamRecords(season, games){
     {k:'QS',l:'QS',f:t=>t.QS||0},{k:'QSP',l:'QS+',f:t=>t.QSP||0},
     {k:'IP',l:'이닝',f:t=>_fmtIP(t.IP)},{k:'pK',l:'탈삼진',f:t=>t.pK},{k:'pBB',l:'볼넷',f:t=>t.pBB},
     {k:'pH',l:'피안타',f:t=>t.pH},{k:'pHR',l:'피홈런',f:t=>t.pHR},{k:'pRuns',l:'실점',f:t=>t.pRuns!=null?t.pRuns:'-',asc:1},
-    {k:'era',l:'ERA',f:t=>t.era!=null?t.era.toFixed(2):'-',asc:1,hl:1},{k:'fip',l:'FIP',f:t=>t.fip!=null?t.fip.toFixed(2):'-',asc:1},
+    {k:'ra9',l:'RA9',f:t=>t.ra9!=null?t.ra9.toFixed(2):'-',asc:1},
+    {k:'era',l:'ERA',f:t=>t.era!=null?t.era.toFixed(2):'-',asc:1,hl:1},
+    {k:'eraPlus',l:'ERA+',f:t=>t.eraPlus!=null?t.eraPlus.toFixed(0):'-'},{k:'fip',l:'FIP',f:t=>t.fip!=null?t.fip.toFixed(2):'-',asc:1},
     {k:'whip',l:'WHIP',f:t=>t.whip!=null?t.whip.toFixed(2):'-',asc:1},
     {k:'k9',l:'K/9',f:t=>t.k9.toFixed(2)},{k:'bb9',l:'BB/9',f:t=>t.bb9.toFixed(2),asc:1},{k:'kbb',l:'K/BB',f:t=>t.kbb>=99?'∞':t.kbb.toFixed(2)},
     {k:'avgEV',l:'피EV',f:t=>t.pAvgEV>0?t.pAvgEV.toFixed(1):'-',asc:1},{k:'pHhPct',l:'피HH%',f:t=>t.pEvN>0?t.pHhPct.toFixed(1):'-',asc:1},{k:'pGIDP',l:'병살',f:t=>t.pGIDP||0},{k:'pBrlPct',l:'피배럴%',f:t=>t.pEvN>0?t.pBrlPct.toFixed(1):'-',asc:1},{k:'pHhpPct',l:'피HH+%',f:t=>t.pEvN>0?t.pHhpPct.toFixed(1):'-',asc:1},{k:'pBrlpPct',l:'피배럴+%',f:t=>t.pEvN>0?t.pBrlpPct.toFixed(1):'-',asc:1},{k:'pAvgLA',l:'피LA',f:t=>t.pAvgLA!=null?t.pAvgLA.toFixed(1)+'°':'-',asc:1},
@@ -26477,10 +26536,12 @@ function renderRecordsPage(){
     {k:'QS', l:'QS', fmt:v=>v||0, hl:'#fbbf24', t:'퀄리티스타트 (선발 6이닝+ 3실점 이하)'},
     {k:'QSP', l:'QS+', fmt:v=>v||0, hl:'#fcd34d', t:'QS+ (선발 7이닝+ 3실점 이하)'},
     {k:'era', l:'ERA', fmt:v=>v==null?'-':v.toFixed(2), hl:'#ff8866', t:'평균자책점 (실점=자책 단순화 — WBD엔 자책 구분 데이터 없음)'},
+    {k:'eraPlus', l:'ERA+', fmt:v=>v==null?'-':v.toFixed(0), hl:'#ffaa66', t:'리그 평균 대비 ERA — 100=평균, 높을수록 좋음. 150 = 평균보다 50% 우수'},
     {k:'BF', l:'타자', fmt:v=>v, t:'상대 타자 수'},
     {k:'H', l:'피안타', fmt:v=>v},
     {k:'HR', l:'피홈런', fmt:v=>v},
     {k:'runs', l:'실점', fmt:v=>v!=null?v:'-', t:'총 실점 (ERA 산출 기준)'},
+    {k:'ra9', l:'RA9', fmt:v=>v==null?'-':v.toFixed(2), hl:'#ff9966', t:'9이닝당 실점 — pWAR 산출 기반. ERA와 동일 개념이나 이닝이 다른 투수 비교용. 낮을수록 좋음'},
     {k:'BB', l:'볼넷', fmt:v=>v},
     {k:'HBP', l:'사구', fmt:v=>v},
     {k:'K', l:'탈삼진', fmt:v=>v},
@@ -26514,7 +26575,7 @@ function renderRecordsPage(){
     batted: {label:'💥 타구질', cols:['BB','GIDP','hrPct','iso','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct','dOaa','dWar','war144','war']},
     all:    {label:'📚 전체',   cols:['h1B','h2B','h3B','TB','BB','HBP','GIDP','iso','babip','kPct','bbPct','hrPct','woba','wraa','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct','war144','dOaa','dWar','war']}
   };
-  const R_PIT_FIXED = ['name','team','G','IP','W','L','K','BB','H','runs','era','fip','whip','k9','pwar'];
+  const R_PIT_FIXED = ['name','team','G','IP','W','L','K','BB','H','runs','ra9','era','eraPlus','fip','whip','k9','pwar'];
   const R_PIT_GROUPS = {
     basic:  {label:'📋 기본',     cols:['n','SV','HLD','QS','QSP','BF','HR','HBP','fipMinus','kPct','bbPct','kbb','hrPct','whiffPct','GIDP','war144']},
     against:{label:'🎯 피안타',   cols:['BF','HR','HBP','oAvg','oObp','oSlg','oOps','whiffPct','GIDP']},
@@ -29137,8 +29198,15 @@ function exportAnalyticsBundle(opts){
   const meta={
     generatedAt:new Date().toISOString(),
     appVersion:'V11.4',
-    schemaVersion:15,
+    schemaVersion:16,
     schemaChanges:{
+      v16_changes:[
+        '🆕 pitchers[i].season.advanced에 RA9 / ERAplus 추가',
+        '   · RA9 = 실점/이닝×9 (pWAR 산출 기반). WBD는 자책 구분이 없어 ERA와 동일값이나 비교 기준으로 명시',
+        '   · ERAplus = 리그평균 RA9 / 본인 ERA × 100 (100=평균, 높을수록 좋음)',
+        '🆕 teams[i].pitching에 runs / ra9 / eraPlus 추가 (팀 단위 실점 지표)',
+        '📌 FIP-는 낮을수록 좋고 ERA+는 높을수록 좋음 — 방향이 반대이므로 해석 시 주의'
+      ],
       v15_changes:[
         '🆕 standings 블록 — 활성 경기 기준 순위표: G/W/L/T, 승률, 득점·실점·득실차, 경기당 득실, 피타고리안 기대승률(지수 1.83), gameLog(경기별 상대·스코어·승패)',
         '   · 스코어는 이닝별 득점 집계 기반 (끝내기·수비미스 보정 포함)',
@@ -29286,6 +29354,7 @@ function exportAnalyticsBundle(opts){
             WHIP:_r.whip!=null?+_r.whip.toFixed(2):null,KBB:_r.kbb!=null?+Math.min(_r.kbb,99).toFixed(1):null,
             pWAR:_r.pwar!=null?+_r.pwar.toFixed(2):null,WAR144:_r.war144!=null?+_r.war144.toFixed(1):null,
             ERA:_r.era!=null?+_r.era.toFixed(2):null,estIP:+_r.IP.toFixed(1),
+            RA9:_r.ra9!=null?+_r.ra9.toFixed(2):null,ERAplus:_r.eraPlus!=null?+_r.eraPlus.toFixed(0):null,
             HRpct:_r.hrPct!=null?+_r.hrPct.toFixed(2):null,
             W:_r.W||0,L:_r.L||0,SV:_r.SV||0,HLD:_r.HLD||0,QS:_r.QS||0,QSplus:_r.QSP||0}:null;
         }catch(_){return null}})(),
@@ -29762,6 +29831,13 @@ function exportAnalyticsBundle(opts){
     teams:(()=>{
       try{
         const prof=_computeTeamProfiles();
+        // 팀 ERA+ 기준선 (리그 전체 RA9)
+        let _lgRA9Ref=0;
+        try{
+          const _ti=(prof.teams||[]).reduce((a,x)=>a+(x.IP||0),0);
+          const _tr=(prof.teams||[]).reduce((a,x)=>a+(x.pRuns||0),0);
+          _lgRA9Ref=_ti>0?_tr/_ti*9:0;
+        }catch(_){}
         return (prof.teams||[]).map(t=>{
           const S=_teamScores(prof,t);
           const A=S.A, P=prof.pctOf;
@@ -29795,6 +29871,8 @@ function exportAnalyticsBundle(opts){
             },
             pitching:{
               era:r2(t.era), fip:r2(t.fip), whip:r2(t.whip), k9:r1(t.k9),
+              runs:t.pRuns!=null?t.pRuns:null, ra9:r2(t.IP>0&&t.pRuns!=null?t.pRuns/t.IP*9:null),
+              eraPlus:t.era!=null&&t.era>0?Math.round((_lgRA9Ref||0)>0?(_lgRA9Ref/t.era*100):0)||null:null,
               oppAVG:r3(t.oAvg), kPct:r1(t.pKPct), bbPct:r1(t.pBBPct), kbb:r2(t.pKBB),
               hrPct:r1(t.pHRPct), whiffPct:r1(t.pWhiffPct), zonePct:r1(t.pZinPct),
               middlePct:r1(t.pMidPct), borderPct:r1(t.pBorderPct),
@@ -29968,6 +30046,8 @@ function exportAnalyticsBundle(opts){
       HRpct:'타자=홈런/타석%, 투수=피홈런/상대타자%',
       GIDP:'땅볼 병살타 — 한 인플레이 땅볼로 2아웃 발생(포스아웃 1개 이상 포함). 타자는 낮을수록/투수(GIDPinduced)는 높을수록 좋음. 신규 CSV 아웃코드 기반이라 구 데이터는 0',
       fieldersChoice:'야수선택 — 선행주자가 포스아웃되어 타자가 1루에 산 경우. 안타로 집계하지 않음(MLB 규칙 10.05(b)(1)). 타수(AB)에는 포함',
+      ra9:'9이닝당 실점 — 실점/이닝×9. pWAR 산출 기반 지표. WBD는 자책 구분이 없어 ERA와 값이 같으나, 이닝이 다른 투수 비교 시 명확한 기준. 낮을수록 좋음',
+      eraPlus:'ERA+ — 리그 평균 RA9 / 본인 ERA × 100. 100=리그 평균, 높을수록 좋음(150 = 평균보다 50% 우수). FIP-와 방향이 반대이므로 주의',
       pythWinPct:'피타고리안 기대승률 — 득점^1.83/(득점^1.83+실점^1.83). 실제 승률과 크게 다르면 운·클러치 영향이 컸다는 뜻(높으면 저평가, 낮으면 초과달성)',
       vsLeague:'리그 대비 — 같은 포지션(또는 구역) 리그 평균 아웃률과의 차이(%p). +면 평균보다 잘 잡음',
       oaaPer10:'10기회당 OAA — 기회 수가 다른 선수끼리 비교할 때 사용',
