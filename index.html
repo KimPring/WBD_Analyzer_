@@ -13798,6 +13798,7 @@ const CHANGELOG = [
     title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화',
     badge: '#ff8c44',
     changes: [
+      {icon:'🐛', text:'⭐⭐ <b>기록실 투수 실점 컬럼 표시 안 되던 문제 수정</b> — 컬럼 정의(<code>{k:\'runs\', l:\'실점\'}</code>)는 있었으나 <b>컬럼 그룹(기본/피안타/피타구질/전체) 어디에도 <code>runs</code>가 포함되지 않아</b> 필터에서 걸러져 화면에 나오지 않던 상태. <b>일반 기록실·리그전 기록실 양쪽 모두</b> 실점을 고정 컬럼(피안타 뒤·ERA 앞)으로 승격 — ERA 산출 근거이자 기본 기록이므로 그룹과 무관하게 항상 표시. <br>또한 리그전 리더보드 "투수 누적" 섹션이 카드 5개로 4+1 줄바꿈되어 가로 스크롤이 생기던 것을 <b>3+3 배치</b>로 재구성(피안타 적은순 카드 추가).'},
       {icon:'📋', text:'⭐⭐ <b>리그전 팀 기록 — 3탭 구조 개편</b> — 기존 타격/투수 2탭에 <b>📋 일반</b> 탭 신설. 일반 탭에는 <b>경기·승·패·승률·득점·실점·득실차·경기당 득실</b>과 핵심 지표(타율·OPS·홈런·ERA·WHIP·oWAR·pWAR·총WAR)를 모아 순위표 역할을 겸하도록 구성. <b>투수 탭</b>에는 팀 단위 <b>승·패·세이브·홀드·QS·QS+</b>를 추가(개별 투수 결과기록을 팀 합산). 탭 전환 시 현재 탭에 없는 정렬 키면 기본값(일반=승률·타격=OPS·투수=ERA)으로 자동 폴백. <br>※ 타자 개인 득점(R)·타점(RBI)은 원시 데이터로 정확한 산출이 어려워 보류.'},
       {icon:'🐛', text:'<b>리그전 리더보드 "타점권 득점(R)" 카드 삭제</b> — 이름은 득점인데 실제로는 <b>총루타(TB)를 표시</b>하고 있어 바로 위 "총루타(TB)" 카드와 완전히 중복되던 오류. 정확한 득점 집계가 불가능하므로 카드 자체를 제거.'},
       {icon:'🔥', text:'⭐⭐ <b>실점 기록 누락 보완 + 리그전 팀기록 순위 정보 추가</b> — 실점 관련 표시를 전수 점검해 빠진 곳을 보완. <b>리그전 리더보드</b>에 투수 지표가 ERA·FIP·WHIP·K/9·탈삼진·이닝·볼넷·다승·세이브·홀드·QS까지 있으면서 <b>실점만 빠져 있던 것</b>을 발견 → <b>실점 적은순</b>(규정이닝)과 <b>9이닝당 실점(RA9)</b> 카드 신규 추가. <b>리그전 팀기록 요약 테이블</b>에는 팀 성적의 기본인 <b>승·패·승률·득점·실점·득실차</b>가 통째로 없어 순위표 역할을 못 하던 것을 보완 — 경기 결과(이닝별 득점 집계, 끝내기 보정 포함)에서 산출해 6개 컬럼 추가, 정렬도 지원. 점검 결과 기록실 투수 개인·일반 리더보드·리그전 팀기록 투수 상세·팀 로스터·내보내기는 이미 정상.'},
@@ -25811,9 +25812,12 @@ function _renderLeagueLeaders(season, games){
   html += grid(
     card('탈삼진','전체',top(pAll,'K'),[{label:'탈삼진',fmt:r=>r.K,hl:1},{label:'이닝',fmt:r=>_fmtIP(r.IP)},{label:'K/9',fmt:r=>(r.k9||0).toFixed(1)}])+
     card('이닝','전체',top(pAll,'IP'),[{label:'이닝',fmt:r=>_fmtIP(r.IP),hl:1},{label:'탈삼진',fmt:r=>r.K},{label:'ERA',fmt:r=>r.era!=null?r.era.toFixed(2):'-'}])+
-    card('볼넷 적은순','전체',top(pAll.filter(p=>p.IP>=Q.qIP*0.5),'BB',N,false),[{label:'볼넷',fmt:r=>r.BB,hl:1},{label:'이닝',fmt:r=>_fmtIP(r.IP)},{label:'K/BB',fmt:r=>(r.kbb||0).toFixed(2)}])+
+    card('볼넷 적은순','전체',top(pAll.filter(p=>p.IP>=Q.qIP*0.5),'BB',N,false),[{label:'볼넷',fmt:r=>r.BB,hl:1},{label:'이닝',fmt:r=>_fmtIP(r.IP)},{label:'K/BB',fmt:r=>(r.kbb||0).toFixed(2)}])
+  );
+  html += grid(
     card('실점 적은순','규정이닝',top(pQ.filter(p=>p.runs!=null),'runs',N,false),[{label:'실점',fmt:r=>r.runs!=null?r.runs:'-',hl:1},{label:'이닝',fmt:r=>_fmtIP(r.IP)},{label:'ERA',fmt:r=>r.era!=null?r.era.toFixed(2):'-'}])+
-    card('9이닝당 실점 (RA9)','규정이닝',top(pQ.filter(p=>p.runs!=null&&p.IP>0).map(p=>({...p,ra9:p.runs/p.IP*9})),'ra9',N,false),[{label:'RA9',fmt:r=>r.ra9!=null?r.ra9.toFixed(2):'-',hl:1},{label:'실점',fmt:r=>r.runs},{label:'이닝',fmt:r=>_fmtIP(r.IP)}])
+    card('9이닝당 실점 (RA9)','규정이닝',top(pQ.filter(p=>p.runs!=null&&p.IP>0).map(p=>({...p,ra9:p.runs/p.IP*9})),'ra9',N,false),[{label:'RA9',fmt:r=>r.ra9!=null?r.ra9.toFixed(2):'-',hl:1},{label:'실점',fmt:r=>r.runs},{label:'이닝',fmt:r=>_fmtIP(r.IP)}])+
+    card('피안타 적은순','규정이닝',top(pQ,'H',N,false),[{label:'피안타',fmt:r=>r.H,hl:1},{label:'이닝',fmt:r=>_fmtIP(r.IP)},{label:'피안타율',fmt:r=>r.oAvg!=null?f3(r.oAvg):'-'}])
   );
 
   // ── 투수 결과기록 (승/세이브/홀드/QS) ──
@@ -25917,7 +25921,7 @@ function _renderLeagueRecords(season, games){
     {k:'avgEV',l:'피EV',f:p=>p.avgEV>0?p.avgEV.toFixed(1):'-',asc:1},{k:'hhPct',l:'피HH%',f:p=>p.evN>0?(p.hhPct||0).toFixed(1):'-',asc:1},{k:'brlPct',l:'피배럴%',f:p=>p.evN>0?(p.brlPct||0).toFixed(1):'-',asc:1},{k:'hhpPct',l:'피HH+%',f:p=>p.evN>0?(p.hhpPct||0).toFixed(1):'-',asc:1},{k:'brlpPct',l:'피배럴+%',f:p=>p.evN>0?(p.brlpPct||0).toFixed(1):'-',asc:1},{k:'avgLA',l:'피LA',f:p=>p.avgLA!=null?p.avgLA.toFixed(1)+'°':'-',asc:1},{k:'pwar',l:'pWAR',f:p=>p.pwar!=null?p.pwar.toFixed(2):'-',amber:1,cum:1}
   ];
   // V11.4: 투수 컬럼 그룹 (타자와 동일 구조)
-  const PIT_FIXED = ['name','team','G','IP','_W','_L','K','BB','H','era','fip','whip','k9','pwar'];
+  const PIT_FIXED = ['name','team','G','IP','_W','_L','K','BB','H','runs','era','fip','whip','k9','pwar'];
   const PIT_GROUPS = {
     basic:  {label:'📋 기본',     cols:['_S','_H','_QS','_QSP','n','HR','kPct','bbPct','kbb','GIDP']},
     against:{label:'🎯 피안타',   cols:['HR','hrPct','oAvg','oObp','oSlg','oOps','GIDP']},
@@ -26511,7 +26515,7 @@ function renderRecordsPage(){
     batted: {label:'💥 타구질', cols:['BB','GIDP','hrPct','iso','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct','dOaa','dWar','war144','war']},
     all:    {label:'📚 전체',   cols:['h1B','h2B','h3B','TB','BB','HBP','GIDP','iso','babip','kPct','bbPct','hrPct','woba','wraa','avgEV','avgLA','hhPct','brlPct','hhpPct','brlpPct','war144','dOaa','dWar','war']}
   };
-  const R_PIT_FIXED = ['name','team','G','IP','W','L','K','BB','H','era','fip','whip','k9','pwar'];
+  const R_PIT_FIXED = ['name','team','G','IP','W','L','K','BB','H','runs','era','fip','whip','k9','pwar'];
   const R_PIT_GROUPS = {
     basic:  {label:'📋 기본',     cols:['n','SV','HLD','QS','QSP','BF','HR','HBP','fipMinus','kPct','bbPct','kbb','hrPct','whiffPct','GIDP','war144']},
     against:{label:'🎯 피안타',   cols:['BF','HR','HBP','oAvg','oObp','oSlg','oOps','whiffPct','GIDP']},
