@@ -2124,7 +2124,7 @@ function _rebuildCaches(){
   window._lgInPlayCache=null; window._lgBBQCache=null; window._lgDirCache=null;
   window._teamPitchCache=null; window._teamProfCache=null; window._gIdxMap=null; window._formCache=null;
   window._bbqLeagueCache=null; window._scoutLeagueCache=null; window._teamScoutLeagueCache=null;
-  window._defenseDataCache=null; window._lgDefCache=null; window._lgClutchCache=null; window._ifPassCache=null; window._lgDefStatsCache=null;
+  window._defenseDataCache=null; window._lgDefCache=null; window._lgClutchCache=null; window._ifPassCache=null; window._lgDefStatsCacheMap=null;
   c.pitcherData = {};
   c.batterData = {};
   c.pitcherCard = {};
@@ -11940,7 +11940,7 @@ function renderTeamBat(){
       <div class="card section">
         <div class="card-title">타자별 요약 (${bs.length}명)</div>
         <div class="tbl-wrap"><table class="data-table"><thead><tr>
-          <th>선수</th><th>타석</th><th>타율</th><th>OPS</th><th>홈런</th><th>평균EV</th><th>배럴+%</th><th>평균LA</th><th>oWAR</th>
+          ${_sortTh('선수')}${_sortTh('타석')}${_sortTh('타율')}${_sortTh('OPS')}${_sortTh('홈런')}${_sortTh('평균EV')}${_sortTh('배럴+%')}${_sortTh('평균LA')}${_sortTh('oWAR')}
         </tr></thead><tbody>${rows}</tbody></table></div>
       </div>`;
     }catch(e){
@@ -12066,7 +12066,7 @@ function renderTeamPit(){
         <div class="card">
           <div class="card-title">구종 운용</div>
           <div class="tbl-wrap"><table class="data-table"><thead><tr>
-            <th>구종</th><th>투구</th><th>비율</th><th>헛스윙%</th><th>피EV</th><th>피배럴+%</th>
+            ${_sortTh('구종')}${_sortTh('투구')}${_sortTh('비율')}${_sortTh('헛스윙%')}${_sortTh('피EV')}${_sortTh('피배럴+%')}
           </tr></thead><tbody>${gRows}</tbody></table></div>
           <div style="margin-top:10px;padding:8px;background:var(--card2);border-radius:4px;font-size:11px;color:var(--muted)">
             총 ${pitches.length}구 · 헛스윙 <b style="color:var(--text)">${t.pWhiffPct.toFixed(1)}%</b> ·
@@ -12111,7 +12111,7 @@ function renderTeamPit(){
       <div class="card section">
         <div class="card-title">투수별 요약 (${ps.length}명)</div>
         <div class="tbl-wrap"><table class="data-table"><thead><tr>
-          <th>선수</th><th>이닝</th><th>ERA</th><th>FIP</th><th>WHIP</th><th>K</th><th>BB</th><th>피배럴+%</th><th>pWAR</th>
+          ${_sortTh('선수')}${_sortTh('이닝')}${_sortTh('ERA')}${_sortTh('FIP')}${_sortTh('WHIP')}${_sortTh('K')}${_sortTh('BB')}${_sortTh('피배럴+%')}${_sortTh('pWAR')}
         </tr></thead><tbody>${rows}</tbody></table></div>
       </div>`;
     }catch(e){
@@ -12364,10 +12364,10 @@ function renderTeamDef(){
       <div class="card section">
         <div class="card-title">포지션별 수비 <span style="font-size:10px;color:var(--muted);font-weight:400">(리그 = 같은 포지션 전체 평균)</span></div>
         <div class="tbl-wrap"><table class="data-table"><thead><tr>
-          <th>포지션</th><th>기회</th><th>OAA</th><th title="10기회당 OAA">OAA/10</th>
-          <th title="우리 아웃률 / 리그 평균 아웃률">아웃률 / 리그</th>
-          <th title="리그 평균 대비 아웃률 차이">리그 대비</th>
-          <th title="같은 포지션 선수들 중 위치">리그 순위</th><th>선수</th>
+          ${_sortTh('포지션')}${_sortTh('기회')}${_sortTh('OAA')}${_sortTh('OAA/10','10기회당 OAA')}
+          ${_sortTh('아웃률 / 리그','우리 아웃률 / 리그 평균 아웃률')}
+          ${_sortTh('리그 대비','리그 평균 대비 아웃률 차이')}
+          ${_sortTh('리그 순위','같은 포지션 선수들 중 위치')}<th>선수</th>
         </tr></thead><tbody>${posRows}</tbody></table></div>
       </div>
       ${(()=>{ // V11.5: 팀 × 포지션 매트릭스 + 포지션별 선수 상세
@@ -12384,8 +12384,8 @@ function renderTeamDef(){
       <div class="card section">
         <div class="card-title">선수별 수비 (요약) <span style="font-size:10px;color:var(--muted);font-weight:400">(주 포지션 기준 · 이름 클릭 = 수비수 상세)</span></div>
         <div class="tbl-wrap"><table class="data-table"><thead><tr>
-          <th>선수</th><th>포지션</th><th>기회</th><th>OAA</th><th>OAA/10</th>
-          <th>아웃률 / 리그</th><th>리그 대비</th><th>리그 순위</th>
+          ${_sortTh('선수')}${_sortTh('포지션')}${_sortTh('기회')}${_sortTh('OAA')}${_sortTh('OAA/10')}
+          ${_sortTh('아웃률 / 리그')}${_sortTh('리그 대비')}${_sortTh('리그 순위')}
         </tr></thead><tbody>${playerRows||'<tr><td colspan="8" style="text-align:center;color:var(--muted)">데이터 없음</td></tr>'}</tbody></table></div>
         <div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.6">
           <b>리그 대비</b>: 같은 포지션 리그 평균 아웃률과의 차이(%p). <span style="color:#39ff8a">+</span>면 평균보다 잘 잡음, <span style="color:#ff4560">−</span>면 못 잡음.<br>
@@ -12561,7 +12561,7 @@ function renderTeamTrend(){
       <div class="card section">
         <div class="card-title">상대별 전적</div>
         <div class="tbl-wrap"><table class="data-table"><thead><tr>
-          <th>상대</th><th>경기</th><th>전적</th><th>승률</th><th>득점</th><th>실점</th><th>득실</th>
+          ${_sortTh('상대')}${_sortTh('경기')}<th>전적</th>${_sortTh('승률')}${_sortTh('득점')}${_sortTh('실점')}${_sortTh('득실')}
         </tr></thead><tbody>${vsRows}</tbody></table></div>
       </div>
       <div style="font-size:10px;color:var(--muted);text-align:center;padding:8px">
@@ -13897,6 +13897,8 @@ const CHANGELOG = [
     title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화',
     badge: '#ff8c44',
     changes: [
+      {icon:'🐛', text:'⭐⭐ <b>리그전 수비 탭 — 리그전 외 팀이 섞이던 문제 수정</b> — 리그전 수비 순위에 <b>해당 시즌 리그전이 아닌 팀(TWP·Dt·GE 등)이 함께 표시</b>되던 오류. 원인은 <b>캐시 키가 경기 수만 반영</b>해, 다른 화면(팀 탭·수비 분석)에서 먼저 계산한 전체 범위 결과를 리그전 탭이 재사용한 것. → 캐시 키에 <b>경기 ID 내용까지 포함</b>하도록 수정. 리그전 탭이 이미 시즌·페이즈로 걸러 넘기는 경기 목록을 그대로 쓰므로 별도 팀 필터는 불필요.'},
+      {icon:'↕️', text:'⭐⭐ <b>표 정렬 기능 추가 (9개 표)</b> — 범용 정렬 헬퍼 <code>_sortTable()</code> 신규 — 헤더 클릭으로 오름/내림 전환, 재렌더 없이 즉시 정렬되고 순번(#)도 자동 재부여. <code>+16.4</code>·<code>81.0%</code>·<code>+3.3%p</code>·<code>.346</code> 같은 표기를 자동 파싱(15종 검증 완료). 적용: <b>리그전 수비</b>(팀 순위·포지션별 선수·개인 랭킹), <b>팀 수비</b>(포지션별·선수별), <b>팀 타격</b>(타자별 요약), <b>팀 투수</b>(투수별 요약·구종 운용), <b>팀 추이</b>(상대별 전적).'},
       {icon:'🔍', text:'⭐⭐⭐ <b>수비 분석 3화면 대폭 확장 — 리그 대비 상세 비교</b> — 기존엔 팀 OAA 합계나 개인 순위만 볼 수 있어 <b>"어느 팀 어느 포지션이 강한가"</b>를 판단할 수 없었음. 공통 엔진 <code>_leagueDefenseStats()</code> 신규(포지션별 리그 기준·선수×포지션·팀×포지션 일괄 산출) 후 3개 화면에 적용. <br><b>① 리그전 탭에 🛡️수비 서브탭 신설</b> — 팀 수비 순위(OAA·내야/외야 아웃률·리그대비·통과율), 팀×포지션 매트릭스, 포지션별 선수 리더보드(7개 포지션 각각), 개인 OAA 상하위 15명. <br><b>② 팀 탭 수비</b> — 팀×포지션 매트릭스(자기 팀 강조)와 소속 선수의 포지션별 상세(리그 평균 대비 %p·OAA/10기회·통과 수·등급) 추가. <br><b>③ 수비 분석 페이지</b> — 하단에 "리그 대비 상세" 토글 추가(팀×포지션 / 포지션별 선수). <br>모든 표에서 선수 이름 클릭 시 수비수 상세 페이지로 이동, 매트릭스 셀 호버 시 아웃률·기회·OAA 표시.'},
       {icon:'🧤', text:'⭐⭐⭐ <b>OAA에 수비 범위(range) 반영 — 내야 통과 타구 귀속</b> — 기존 OAA는 <code>cPlr</code>(실제 포구자) 기준이라 <b>내야를 뚫고 나간 땅볼이 외야수 플레이로만 잡히고 내야수 평가에서 빠졌음</b>. 즉 "닿은 공을 처리했나"만 보고 <b>"닿을 수 있느냐"(수비 범위)는 전혀 평가하지 못했음 — 따라가서 잡았다가 세이프면 감점되는데, 아예 손도 못 대고 빠뜨리면 기록조차 안 남는 역설</b>. 실측(36경기): 땅볼 994건 중 <b>166건(16.7%)이 내야 통과</b>, 이들 아웃률 5.9%. → 통과 타구를 <b>타구 방향각(sdeg) 직선 기준 최근접 내야수(12m 이내)</b>에게 귀속(158건, 95.2% 귀속 성공). 결과: 평균 xOut 0.898→0.776, 범위 0.82~0.98→<b>0.66~0.98</b>로 확대되어 "잘해도 +0.05, 놓치면 -0.95"인 비대칭이 완화되고 <b>선수 변별력 1.36→2.20(+62%)</b>. <br>귀속 기준은 실험으로 결정 — 외야 포구지점 직선보다 <b>방향각이 정확</b>(땅볼은 바운드하며 휘므로, 편차 0.019 vs 0.014), 반경은 12m가 최적(15m 이상은 결과 동일, 8m는 미귀속 과다).'},
       {icon:'📐', text:'⭐⭐ <b>팀 내야 통과율 지표 신규</b> — 땅볼 중 내야를 뚫고 나간 비율. <b>추정이 전혀 없는 직접 집계</b>라 OAA보다 신뢰도가 높음. 팀 수비 탭에 리그 평균 대비·순위와 함께 표시하고 내보내기(<code>teamDefense.infieldPass</code>, schema v17)에도 포함. 실측 리그 평균 16.7%.'},
@@ -20536,9 +20538,14 @@ function _renderBallMapField(balls){
 // ═══ V11.5: 리그 수비 통계 (포지션별 리그 기준 + 선수/팀 집계) ═══
 // 여러 화면(리그전 수비탭·수비 분석·팀 수비탭)에서 공용. gameFilter로 대상 경기 제한 가능.
 function _leagueDefenseStats(gameIdSet){
-  const key = gameIdSet ? ('lg_'+gameIdSet.size) : 'all';
-  if(window._lgDefStatsCache && window._lgDefStatsCache._k===G.length && window._lgDefStatsCache._f===key)
-    return window._lgDefStatsCache.v;
+  // 캐시 키: 경기 ID 집합의 내용까지 반영 (크기만 같고 내용이 다른 경우 오염 방지)
+  const key = gameIdSet
+    ? ('g:'+gameIdSet.size+':'+[...gameIdSet].sort().slice(0,40).join(','))
+    : 'all';
+  if(!window._lgDefStatsCacheMap || window._lgDefStatsCacheMap._k!==G.length)
+    window._lgDefStatsCacheMap={_k:G.length, m:{}};
+  const cached = window._lgDefStatsCacheMap.m[key];
+  if(cached) return cached;
   const data=_computeDefenseData();
   if(!data||!data.enriched) return null;
   const IFA=new Set(['P','C','1B','2B','3B','SS']);
@@ -20559,8 +20566,10 @@ function _leagueDefenseStats(gameIdSet){
   // 선수 × 포지션
   const pp={};
   rows.forEach(p=>{
-    const k=p._cplr+'\u0000'+p._pos;
-    if(!pp[k]) pp[k]={name:p._cplr,pos:p._pos,n:0,outs:0,oaa:0,assigned:0,team:null};
+    const _nm = p._cplr || p.cPlr;
+    if(!_nm) return;
+    const k=_nm+'\u0000'+p._pos;
+    if(!pp[k]) pp[k]={name:_nm,pos:p._pos,n:0,outs:0,oaa:0,assigned:0,team:null};
     const s=pp[k];
     s.n++; if(p._isOut)s.outs++;
     s.oaa += (p._isOut?1:0) - (p._xOut||0);
@@ -20624,8 +20633,54 @@ function _leagueDefenseStats(gameIdSet){
   teamArr.forEach((t,i)=>t.rank=i+1);
   const v={lgPos, players, byPos, teamPos, teams:teamArr,
            lgIfRate, lgOfRate, totalPlays:rows.length};
-  window._lgDefStatsCache={_k:G.length,_f:key,v};
+  window._lgDefStatsCacheMap.m[key]=v;
   return v;
+}
+
+// ═══ V11.5: 범용 테이블 정렬 (클라이언트 사이드, 재렌더 불필요) ═══
+// data-sort 속성이 있는 th를 클릭하면 tbody 행을 정렬. 숫자/문자 자동 판별.
+function _sortTable(th){
+  const table=th.closest('table'); if(!table) return;
+  const tbody=table.querySelector('tbody'); if(!tbody) return;
+  const idx=Array.from(th.parentNode.children).indexOf(th);
+  const cur=table.getAttribute('data-sort-col');
+  const curDir=table.getAttribute('data-sort-dir')||'desc';
+  const dir = (String(cur)===String(idx) && curDir==='desc') ? 'asc' : 'desc';
+  table.setAttribute('data-sort-col',idx);
+  table.setAttribute('data-sort-dir',dir);
+  const parse=(td)=>{
+    const raw=(td.getAttribute('data-v') != null) ? td.getAttribute('data-v') : td.textContent;
+    const s=String(raw).replace(/[,%p\s]/g,'').replace(/[^\d.+-eE]/g,'');
+    const n=parseFloat(s);
+    return isNaN(n) ? null : n;
+  };
+  const rows=Array.from(tbody.querySelectorAll('tr'));
+  rows.sort((a,b)=>{
+    const ta=a.children[idx], tb=b.children[idx];
+    if(!ta||!tb) return 0;
+    const na=parse(ta), nb=parse(tb);
+    if(na!=null && nb!=null) return dir==='desc' ? nb-na : na-nb;
+    const sa=(ta.textContent||'').trim(), sb=(tb.textContent||'').trim();
+    return dir==='desc' ? sb.localeCompare(sa) : sa.localeCompare(sb);
+  });
+  rows.forEach(r=>tbody.appendChild(r));
+  // 헤더 화살표 갱신
+  th.parentNode.querySelectorAll('th').forEach(h=>{
+    const b=h.getAttribute('data-label');
+    if(b!=null) h.innerHTML=b;
+  });
+  const lbl=th.getAttribute('data-label')||th.textContent;
+  th.innerHTML=lbl+`<span style="color:var(--amber);margin-left:2px">${dir==='desc'?'▼':'▲'}</span>`;
+  // 순번 열(#) 재부여
+  rows.forEach((r,i)=>{
+    const c0=r.children[0];
+    if(c0 && c0.getAttribute('data-rank')!=null) c0.textContent=i+1;
+  });
+}
+// 정렬 가능한 th 생성기
+function _sortTh(label, title){
+  const t=title?` title="${title}"`:'';
+  return `<th data-label="${label}" onclick="_sortTable(this)" style="cursor:pointer;user-select:none"${t}>${label}</th>`;
 }
 
 // ═══ V11.5: 수비 공통 렌더 헬퍼 ═══
@@ -20665,10 +20720,10 @@ function _renderDefPosLeaderboard(S, opts){
       <div class="card-title">${(_computeDefenseData().posNameKor||{})[pos]||pos}
         <span style="font-size:10px;color:var(--muted);font-weight:400">리그 아웃률 ${(lg.outRate*100).toFixed(1)}% · ${lg.n}기회 · ${minCh}기회 이상</span></div>
       <div class="tbl-wrap"><table class="data-table compact"><thead><tr>
-        <th>#</th><th>선수</th><th>팀</th><th>기회</th><th>아웃률</th><th title="리그 동일 포지션 평균 대비">리그대비</th>
-        <th>OAA</th><th title="10기회당 OAA — 기회 수가 다른 선수 비교용">OAA/10</th>
-        ${opts.showAssigned!==false?'<th title="내야를 통과당한 땅볼 수 (수비 범위 지표)">통과</th>':''}
-        <th title="같은 포지션 내 등급">등급</th>
+        <th>#</th>${_sortTh('선수')}${_sortTh('팀')}${_sortTh('기회')}${_sortTh('아웃률')}${_sortTh('리그대비','리그 동일 포지션 평균 대비')}
+        ${_sortTh('OAA')}${_sortTh('OAA/10','10기회당 OAA — 기회 수가 다른 선수 비교용')}
+        ${opts.showAssigned!==false?_sortTh('통과','내야를 통과당한 땅볼 수 (수비 범위 지표)'):''}
+        ${_sortTh('등급','같은 포지션 내 등급')}
       </tr></thead><tbody>${rows}</tbody></table></div>
     </div>`;
   });
@@ -20701,6 +20756,7 @@ function _renderDefMatrix(S, highlightTeam){
 // ═══ V11.5: 리그전 수비 탭 ═══
 function _renderLeagueDefense(season, games){
   try{
+    // 리그전 탭이 이미 시즌·페이즈로 걸러 넘긴 games의 ID만 사용
     const ids=new Set(games.map(g=>g.id));
     const S=_leagueDefenseStats(ids);
     if(!S||!S.players.length) return '<div style="padding:40px;text-align:center;color:var(--muted)">수비 데이터가 없습니다</div>';
@@ -20736,10 +20792,10 @@ function _renderLeagueDefense(season, games){
       html+=`<div class="card section">
         <div class="card-title">팀 수비 순위 <span style="font-size:10px;color:var(--muted);font-weight:400">(리그 내야 ${(S.lgIfRate*100).toFixed(1)}% · 외야 ${(S.lgOfRate*100).toFixed(1)}%)</span></div>
         <div class="tbl-wrap"><table class="data-table"><thead><tr>
-          <th>#</th><th>팀</th><th>OAA</th><th>기회</th>
-          <th>내야</th><th>아웃률</th><th>리그대비</th>
-          <th>외야</th><th>아웃률</th><th>리그대비</th>
-          <th title="땅볼 중 내야를 통과한 비율 — 낮을수록 범위 넓음">통과율</th>
+          <th>#</th>${_sortTh('팀')}${_sortTh('OAA')}${_sortTh('기회')}
+          ${_sortTh('내야','내야 OAA')}${_sortTh('아웃률','내야 아웃률')}${_sortTh('리그대비','내야 리그 평균 대비')}
+          ${_sortTh('외야','외야 OAA')}${_sortTh('아웃률','외야 아웃률')}${_sortTh('리그대비','외야 리그 평균 대비')}
+          ${_sortTh('통과율','땅볼 중 내야를 통과한 비율 — 낮을수록 범위 넓음')}
         </tr></thead><tbody>${rows}</tbody></table></div>
       </div>`;
       html+=_renderDefMatrix(S);
@@ -20761,7 +20817,7 @@ function _renderLeagueDefense(season, games){
             <td style="font-family:var(--mono);color:${c}">${s.oaaPer10>=0?'+':''}${s.oaaPer10.toFixed(2)}</td></tr>`;
         }).join('');
         return `<div class="card section"><div class="card-title">${title} <span style="font-size:10px;color:var(--muted);font-weight:400">8기회 이상</span></div>
-          <div class="tbl-wrap"><table class="data-table compact"><thead><tr><th>#</th><th>선수</th><th>팀</th><th>POS</th><th>기회</th><th>아웃률</th><th>리그대비</th><th>OAA</th><th>OAA/10</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+          <div class="tbl-wrap"><table class="data-table compact"><thead><tr><th>#</th>${_sortTh('선수')}${_sortTh('팀')}${_sortTh('POS')}${_sortTh('기회')}${_sortTh('아웃률')}${_sortTh('리그대비')}${_sortTh('OAA')}${_sortTh('OAA/10')}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
       };
       html+=mk(qual.slice().sort((a,b)=>b.oaa-a.oaa).slice(0,15),'⭐ OAA 상위 15');
       html+=mk(qual.slice().sort((a,b)=>a.oaa-b.oaa).slice(0,15),'🔻 OAA 하위 15');
