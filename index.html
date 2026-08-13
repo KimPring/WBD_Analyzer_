@@ -11928,7 +11928,7 @@ function renderTeamBat(){
         <div class="card">
           <div class="card-title">팀 스프레이 차트</div>
           ${_teamSprayZoneBtns('bat')}
-          <div style="text-align:center">${sprayHTML}</div>
+          <div style="max-width:420px;width:100%;margin:0 auto">${sprayHTML}</div>
           <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:4px">🟡 홈런 · 🟢 안타 · ⚪ 아웃</div>
         </div>
         <div class="card">
@@ -12099,7 +12099,7 @@ function renderTeamPit(){
         <div class="card">
           <div class="card-title">피타구 스프레이</div>
           ${_teamSprayZoneBtns('pit')}
-          <div style="text-align:center">${sprayHTML}</div>
+          <div style="max-width:420px;width:100%;margin:0 auto">${sprayHTML}</div>
           <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:4px">🟡 피홈런 · 🔴 피안타 · 🟢 아웃</div>
         </div>
         <div class="card">
@@ -19507,7 +19507,8 @@ function _renderDefenseHeatmap(plays, W=460, H=460){
     r: (p._ev >= 105 ? 4 : 3),
     op: 0.75
   }));
-  return _renderSprayField(dots, {w:W, h:H, pad:12});
+  // 구버전과 동일한 표시 크기 유지 (makeSVG는 width:100%라 컨테이너 폭만큼 커지므로 상한 지정)
+  return `<div style="max-width:${W}px;width:100%;margin:0 auto">${_renderSprayField(dots, {w:W, h:H, pad:12})}</div>`;
 }
 
 function renderDefenderPage(){
@@ -21267,7 +21268,7 @@ function renderScoutingPage(){
             return `<button onclick="window._scoutSprayZone=(window._scoutSprayZone==='${v}'?'off':'${v}');renderScoutingPage()" style="padding:3px 9px;font-size:10px;border:1px solid ${on?'var(--amber)':'var(--border)'};background:${on?'rgba(245,166,35,0.15)':'transparent'};color:${on?'var(--amber)':'var(--muted)'};border-radius:4px;cursor:pointer">${l}</button>`;
           }).join('')}
         </div>
-        <div style="text-align:center;margin-top:8px">${spray}</div>
+        <div style="max-width:380px;width:100%;margin:8px auto 0">${spray}</div>
         <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:4px">
           🟡 홈런 · ${state.mode==='pitcher'?'🔴 피안타':'🟢 안타'} · ⚪ 아웃
         </div>
