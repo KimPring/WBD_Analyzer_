@@ -13897,8 +13897,9 @@ const CHANGELOG = [
     title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화',
     badge: '#ff8c44',
     changes: [
+      {icon:'🗺️', text:'<b>수비 히트맵 구장 최신화</b> — 수비수 상세 페이지의 포구 위치 히트맵이 <b>구버전 근사 좌표</b>(폴 ±69m·중앙 -138m·베이스 27.4 근사)를 쓰고 있던 것을 공통 실측 <code>FIELD</code> 상수 기반 <code>_renderSprayField()</code>로 교체 — 타자 스프레이·타구 분석·팀 탭과 구장 모양이 완전히 통일됨(폴 ±74m·좌우중간 ±54.74/-117.5·중앙 135m·실측 베이스). 전수 점검 결과 구버전 좌표를 쓰던 곳은 이곳 하나였음.'},
       {icon:'🔗', text:'⭐⭐⭐ <b>OAA 값 불일치 수정 — 전 화면 통일</b> — 같은 선수의 OAA가 <b>화면마다 다르게 표시</b>되던 문제. 수비 분석·수비수 상세·팀 탭·내보내기는 <code>oaaWeighted</code>(난이도 가중 1.0~1.5배)를, 리그전 수비 탭은 순수 OAA를 써서 최대 50% 차이가 났음. → <b>가중치를 제거하고 순수 OAA로 통일</b>. 근거: ① 난이도는 <b>xOut에 이미 반영</b>되어 있어(어려운 타구는 xOut이 낮아 잡으면 큰 플러스) 가중치는 이중 계산 ② 무엇보다 <b>가중을 곱하면 zero-sum이 깨짐</b>(시뮬 2000플레이: 순수합 +0.5 vs 가중합 −51.0) — 구역별·포지션별 캘리브레이션으로 잡아둔 편향이 무의미해짐. 이제 어느 화면에서 봐도 동일한 값이며 리그 합계 0이 유지됨.'},
-      {icon:'🐛', text:'⭐⭐ <b>리그전 수비 탭 — 리그전 외 팀이 섞이던 문제 수정</b> — 리그전 수비 순위에 <b>해당 시즌 리그전이 아닌 팀(TWP·Dt·GE 등)이 함께 표시</b>되던 오류. 원인은 <b>캐시 키가 경기 수만 반영</b>해, 다른 화면(팀 탭·수비 분석)에서 먼저 계산한 전체 범위 결과를 리그전 탭이 재사용한 것. → 캐시 키에 <b>경기 ID 내용까지 포함</b>하도록 수정. 리그전 탭이 이미 시즌·페이즈로 걸러 넘기는 경기 목록을 그대로 쓰므로 별도 팀 필터는 불필요.'},
+      {icon:'🐛', text:'⭐⭐ <b>리그전 수비 탭 — 리그전 외 팀이 섞이던 문제 수정</b> — 리그전 수비 순위에 <b>해당 시즌 리그전이 아닌 팀(TWP·Dt·GE 등)이 표시</b>되던 오류. 원인 두 가지: ① <b>선수 소속팀을 전체 활성 경기 기준으로 판정</b>해, 연습경기 출전이 더 많은 선수가 그 팀으로 분류됨(예: 리그전 SS 50타석 + 연습 TWP 80타석 → TWP로 집계) ② 캐시 키가 경기 수만 반영해 다른 화면의 전체 범위 결과를 재사용. → <b>리그전 팀기록과 동일한 로직 적용</b> — <code>_leaguePlayerTeams(games)</code>로 해당 리그전 경기 기준 소속팀을 재판정하고 리그전 출전팀 화이트리스트로 필터링, 캐시 키에도 경기 ID 내용 반영.'},
       {icon:'↕️', text:'⭐⭐ <b>표 정렬 기능 추가 (9개 표)</b> — 범용 정렬 헬퍼 <code>_sortTable()</code> 신규 — 헤더 클릭으로 오름/내림 전환, 재렌더 없이 즉시 정렬되고 순번(#)도 자동 재부여. <code>+16.4</code>·<code>81.0%</code>·<code>+3.3%p</code>·<code>.346</code> 같은 표기를 자동 파싱(15종 검증 완료). 적용: <b>리그전 수비</b>(팀 순위·포지션별 선수·개인 랭킹), <b>팀 수비</b>(포지션별·선수별), <b>팀 타격</b>(타자별 요약), <b>팀 투수</b>(투수별 요약·구종 운용), <b>팀 추이</b>(상대별 전적).'},
       {icon:'🔍', text:'⭐⭐⭐ <b>수비 분석 3화면 대폭 확장 — 리그 대비 상세 비교</b> — 기존엔 팀 OAA 합계나 개인 순위만 볼 수 있어 <b>"어느 팀 어느 포지션이 강한가"</b>를 판단할 수 없었음. 공통 엔진 <code>_leagueDefenseStats()</code> 신규(포지션별 리그 기준·선수×포지션·팀×포지션 일괄 산출) 후 3개 화면에 적용. <br><b>① 리그전 탭에 🛡️수비 서브탭 신설</b> — 팀 수비 순위(OAA·내야/외야 아웃률·리그대비·통과율), 팀×포지션 매트릭스, 포지션별 선수 리더보드(7개 포지션 각각), 개인 OAA 상하위 15명. <br><b>② 팀 탭 수비</b> — 팀×포지션 매트릭스(자기 팀 강조)와 소속 선수의 포지션별 상세(리그 평균 대비 %p·OAA/10기회·통과 수·등급) 추가. <br><b>③ 수비 분석 페이지</b> — 하단에 "리그 대비 상세" 토글 추가(팀×포지션 / 포지션별 선수). <br>모든 표에서 선수 이름 클릭 시 수비수 상세 페이지로 이동, 매트릭스 셀 호버 시 아웃률·기회·OAA 표시.'},
       {icon:'🧤', text:'⭐⭐⭐ <b>OAA에 수비 범위(range) 반영 — 내야 통과 타구 귀속</b> — 기존 OAA는 <code>cPlr</code>(실제 포구자) 기준이라 <b>내야를 뚫고 나간 땅볼이 외야수 플레이로만 잡히고 내야수 평가에서 빠졌음</b>. 즉 "닿은 공을 처리했나"만 보고 <b>"닿을 수 있느냐"(수비 범위)는 전혀 평가하지 못했음 — 따라가서 잡았다가 세이프면 감점되는데, 아예 손도 못 대고 빠뜨리면 기록조차 안 남는 역설</b>. 실측(36경기): 땅볼 994건 중 <b>166건(16.7%)이 내야 통과</b>, 이들 아웃률 5.9%. → 통과 타구를 <b>타구 방향각(sdeg) 직선 기준 최근접 내야수(12m 이내)</b>에게 귀속(158건, 95.2% 귀속 성공). 결과: 평균 xOut 0.898→0.776, 범위 0.82~0.98→<b>0.66~0.98</b>로 확대되어 "잘해도 +0.05, 놓치면 -0.95"인 비대칭이 완화되고 <b>선수 변별력 1.36→2.20(+62%)</b>. <br>귀속 기준은 실험으로 결정 — 외야 포구지점 직선보다 <b>방향각이 정확</b>(땅볼은 바운드하며 휘므로, 편차 0.019 vs 0.014), 반경은 12m가 최적(15m 이상은 결과 동일, 8m는 미귀속 과다).'},
@@ -19497,63 +19498,16 @@ function populateDefenderSelector(){
 
 // 히트맵 헬퍼 — 스프레이 차트와 같은 좌표 변환 사용
 function _renderDefenseHeatmap(plays, W=460, H=460){
-  // lx+ = LF(좌측), lx- = RF(우측). HP는 lz=-20
-  const lxAll = plays.flatMap(p => [+p.lx||0, +p.cx||0]);
-  const lzAll = plays.flatMap(p => [+p.lz||0, +p.cz||0]);
-  // 구장 전체가 보이도록 (펜스까지 포함)
-  const lxMin = Math.min(-75, ...lxAll) - 5;
-  const lxMax = Math.max(75, ...lxAll) + 5;
-  const lzMin = Math.min(-145, ...lzAll) - 5;
-  const lzMax = Math.max(-15, ...lzAll) + 5;
-  const PAD = 12;
-  const sW = W - PAD*2;
-  const sH = H - PAD*2;
-  const mPerPx = Math.max((lzMax - lzMin)/sH, (lxMax - lxMin)/sW);
-  // toX: lx+→화면왼쪽(LF), lx-→화면오른쪽(RF) — 스프레이 차트와 동일
-  // toY: lz가 더 음수일수록(외야 멀수록) 화면 위
-  const toX = lx => PAD + (lxMax - lx) / mPerPx;
-  const toY = lz => PAD + (lz - lzMin) / mPerPx;
-  
-  let items = '';
-  items += `<rect x="0" y="0" width="${W}" height="${H}" fill="#0a1a08" rx="4"/>`;
-  
-  // 외야 잔디 다각형 — HP에서 시계 반대 방향 (lz=-20부터 펜스까지)
-  const SQ2 = Math.SQRT2;
-  const HP_pt = {x: toX(0), y: toY(-20)};
-  const LFP = {x: toX(69), y: toY(-89)};     // 좌익폴 (lx+=좌측, 화면 왼쪽)
-  const LC  = {x: toX(50), y: toY(-110)};
-  const CFL = {x: toX(20), y: toY(-138)};
-  const CFR = {x: toX(-20), y: toY(-138)};
-  const RC  = {x: toX(-50), y: toY(-110)};
-  const RFP = {x: toX(-69), y: toY(-89)};    // 우익폴 (lx-=우측, 화면 오른쪽)
-  // 잔디: HP → LFP → LC → CFL → CFR → RC → RFP → HP
-  items += `<polygon points="${[HP_pt, LFP, LC, CFL, CFR, RC, RFP].map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}" fill="#1e4010" stroke="rgba(255,255,255,0.2)" stroke-width="0.7"/>`;
-  // 외야 펜스 라인 강조
-  const fencePts = [LFP, LC, CFL, CFR, RC, RFP].map(p => p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
-  items += `<polyline points="${fencePts}" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>`;
-  // 파울라인
-  items += `<line x1="${HP_pt.x.toFixed(1)}" y1="${HP_pt.y.toFixed(1)}" x2="${LFP.x.toFixed(1)}" y2="${LFP.y.toFixed(1)}" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>`;
-  items += `<line x1="${HP_pt.x.toFixed(1)}" y1="${HP_pt.y.toFixed(1)}" x2="${RFP.x.toFixed(1)}" y2="${RFP.y.toFixed(1)}" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>`;
-  // 다이아몬드 (HP/1루/2루/3루)
-  const BD = 27.4;
-  // 1루: lx- (우측, 화면 오른쪽), 3루: lx+ (좌측, 화면 왼쪽)
-  const B1 = {x: toX(-BD/SQ2), y: toY(-20-BD/SQ2)};
-  const B2 = {x: toX(0), y: toY(-20-BD*SQ2)};
-  const B3 = {x: toX(BD/SQ2), y: toY(-20-BD/SQ2)};
-  items += `<polygon points="${[HP_pt, B1, B2, B3].map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>`;
-  // 베이스 라벨
-  items += `<text x="${B1.x.toFixed(1)}" y="${(B1.y-4).toFixed(1)}" fill="#aaa" font-size="9" text-anchor="middle">1B</text>`;
-  items += `<text x="${B2.x.toFixed(1)}" y="${(B2.y-4).toFixed(1)}" fill="#aaa" font-size="9" text-anchor="middle">2B</text>`;
-  items += `<text x="${B3.x.toFixed(1)}" y="${(B3.y-4).toFixed(1)}" fill="#aaa" font-size="9" text-anchor="middle">3B</text>`;
-  
-  // 포구 점들
-  plays.forEach(p => {
-    const x = toX(+p.cx||0), y = toY(+p.cz||0);
-    const col = p._isOut ? '#39ff8a' : '#ff4560';
-    const r = p._ev >= 105 ? 4 : 3;
-    items += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${col}" opacity="0.7" stroke="#000" stroke-width="0.3"/>`;
-  });
-  return `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="background:#000;border-radius:6px">${items}</svg>`;
+  // V11.5: 구버전 근사 좌표(폴 ±69m·중앙 -138m·BD 27.4)를 쓰고 있던 것을
+  //        공통 실측 FIELD 상수 기반 _renderSprayField()로 교체 — 다른 화면과 구장 모양 통일
+  const dots = plays.map(p => ({
+    lx: +p.cx || 0,
+    lz: +p.cz || 0,
+    color: p._isOut ? '#39ff8a' : '#ff4560',
+    r: (p._ev >= 105 ? 4 : 3),
+    op: 0.75
+  }));
+  return _renderSprayField(dots, {w:W, h:H, pad:12});
 }
 
 function renderDefenderPage(){
@@ -20536,11 +20490,14 @@ function _renderBallMapField(balls){
 
 // ═══ V11.5: 리그 수비 통계 (포지션별 리그 기준 + 선수/팀 집계) ═══
 // 여러 화면(리그전 수비탭·수비 분석·팀 수비탭)에서 공용. gameFilter로 대상 경기 제한 가능.
-function _leagueDefenseStats(gameIdSet){
+// teamMap: {선수명: 팀} — 리그전 탭처럼 "해당 범위 경기 기준 소속팀"을 주입할 때 사용.
+//   미지정이면 _playerTeam(전체 활성 경기 기준)으로 폴백.
+//   (리그전에서 다른 카테고리 소속으로 잘못 분류되던 문제 대응 — 리그전 팀기록과 동일 로직)
+function _leagueDefenseStats(gameIdSet, teamMap){
   // 캐시 키: 경기 ID 집합의 내용까지 반영 (크기만 같고 내용이 다른 경우 오염 방지)
-  const key = gameIdSet
+  const key = (gameIdSet
     ? ('g:'+gameIdSet.size+':'+[...gameIdSet].sort().slice(0,40).join(','))
-    : 'all';
+    : 'all') + (teamMap ? '|tm' : '');
   if(!window._lgDefStatsCacheMap || window._lgDefStatsCacheMap._k!==G.length)
     window._lgDefStatsCacheMap={_k:G.length, m:{}};
   const cached = window._lgDefStatsCacheMap.m[key];
@@ -20576,7 +20533,7 @@ function _leagueDefenseStats(gameIdSet){
   });
   const players=Object.values(pp).map(s=>{
     const lg=lgPos[s.pos]||{outRate:0};
-    s.team=_playerTeam(s.name,'batter');
+    s.team = teamMap ? (teamMap[s.name] || null) : _playerTeam(s.name,'batter');
     s.outRate=s.n>0?s.outs/s.n:0;
     s.vsLeague=(s.outRate-lg.outRate)*100;
     s.oaaPer10=s.n>0?s.oaa/s.n*10:0;
@@ -20595,7 +20552,7 @@ function _leagueDefenseStats(gameIdSet){
   // 팀 × 포지션
   const teamPos={};
   players.forEach(s=>{
-    if(!s.team||s.team==='—') return;
+    if(!s.team||s.team==='—') return;   // teamMap 사용 시 해당 범위 미출전 선수는 자동 제외
     const k=s.team+'\u0000'+s.pos;
     if(!teamPos[k]) teamPos[k]={team:s.team,pos:s.pos,n:0,outs:0,oaa:0,players:[]};
     const t=teamPos[k];
@@ -20757,7 +20714,18 @@ function _renderLeagueDefense(season, games){
   try{
     // 리그전 탭이 이미 시즌·페이즈로 걸러 넘긴 games의 ID만 사용
     const ids=new Set(games.map(g=>g.id));
-    const S=_leagueDefenseStats(ids);
+    // V11.5 fix: 선수 소속팀도 "이 리그전 경기 기준"으로 재판정
+    //   (리그전 팀기록과 동일 로직 — _leaguePlayerTeams + 리그전 출전팀 화이트리스트)
+    //   전체 활성 경기 기준 _playerTeam을 쓰면 연습경기 소속으로 잘못 분류되어
+    //   리그전에 없는 팀(TWP·Dt·GE 등)이 표에 나타남
+    const PT=_leaguePlayerTeams(games);
+    const lgTeams=new Set();
+    games.forEach(g=>{ const i=_parseGameName(g.name);
+      [i.teamA,i.teamB].forEach(t=>{const n=_normalizeTeam(t); if(n) lgTeams.add(n);}); });
+    const tmap={};
+    Object.entries(PT.batter||{}).forEach(([n,t])=>{ if(t&&lgTeams.has(t)) tmap[n]=t; });
+    Object.entries(PT.pitcher||{}).forEach(([n,t])=>{ if(!tmap[n]&&t&&lgTeams.has(t)) tmap[n]=t; });
+    const S=_leagueDefenseStats(ids, tmap);
     if(!S||!S.players.length) return '<div style="padding:40px;text-align:center;color:var(--muted)">수비 데이터가 없습니다</div>';
     if(!window._lgDefView) window._lgDefView='team';
     const view=window._lgDefView;
