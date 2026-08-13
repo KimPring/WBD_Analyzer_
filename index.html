@@ -13897,6 +13897,7 @@ const CHANGELOG = [
     title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화',
     badge: '#ff8c44',
     changes: [
+      {icon:'🔗', text:'⭐⭐⭐ <b>OAA 값 불일치 수정 — 전 화면 통일</b> — 같은 선수의 OAA가 <b>화면마다 다르게 표시</b>되던 문제. 수비 분석·수비수 상세·팀 탭·내보내기는 <code>oaaWeighted</code>(난이도 가중 1.0~1.5배)를, 리그전 수비 탭은 순수 OAA를 써서 최대 50% 차이가 났음. → <b>가중치를 제거하고 순수 OAA로 통일</b>. 근거: ① 난이도는 <b>xOut에 이미 반영</b>되어 있어(어려운 타구는 xOut이 낮아 잡으면 큰 플러스) 가중치는 이중 계산 ② 무엇보다 <b>가중을 곱하면 zero-sum이 깨짐</b>(시뮬 2000플레이: 순수합 +0.5 vs 가중합 −51.0) — 구역별·포지션별 캘리브레이션으로 잡아둔 편향이 무의미해짐. 이제 어느 화면에서 봐도 동일한 값이며 리그 합계 0이 유지됨.'},
       {icon:'🐛', text:'⭐⭐ <b>리그전 수비 탭 — 리그전 외 팀이 섞이던 문제 수정</b> — 리그전 수비 순위에 <b>해당 시즌 리그전이 아닌 팀(TWP·Dt·GE 등)이 함께 표시</b>되던 오류. 원인은 <b>캐시 키가 경기 수만 반영</b>해, 다른 화면(팀 탭·수비 분석)에서 먼저 계산한 전체 범위 결과를 리그전 탭이 재사용한 것. → 캐시 키에 <b>경기 ID 내용까지 포함</b>하도록 수정. 리그전 탭이 이미 시즌·페이즈로 걸러 넘기는 경기 목록을 그대로 쓰므로 별도 팀 필터는 불필요.'},
       {icon:'↕️', text:'⭐⭐ <b>표 정렬 기능 추가 (9개 표)</b> — 범용 정렬 헬퍼 <code>_sortTable()</code> 신규 — 헤더 클릭으로 오름/내림 전환, 재렌더 없이 즉시 정렬되고 순번(#)도 자동 재부여. <code>+16.4</code>·<code>81.0%</code>·<code>+3.3%p</code>·<code>.346</code> 같은 표기를 자동 파싱(15종 검증 완료). 적용: <b>리그전 수비</b>(팀 순위·포지션별 선수·개인 랭킹), <b>팀 수비</b>(포지션별·선수별), <b>팀 타격</b>(타자별 요약), <b>팀 투수</b>(투수별 요약·구종 운용), <b>팀 추이</b>(상대별 전적).'},
       {icon:'🔍', text:'⭐⭐⭐ <b>수비 분석 3화면 대폭 확장 — 리그 대비 상세 비교</b> — 기존엔 팀 OAA 합계나 개인 순위만 볼 수 있어 <b>"어느 팀 어느 포지션이 강한가"</b>를 판단할 수 없었음. 공통 엔진 <code>_leagueDefenseStats()</code> 신규(포지션별 리그 기준·선수×포지션·팀×포지션 일괄 산출) 후 3개 화면에 적용. <br><b>① 리그전 탭에 🛡️수비 서브탭 신설</b> — 팀 수비 순위(OAA·내야/외야 아웃률·리그대비·통과율), 팀×포지션 매트릭스, 포지션별 선수 리더보드(7개 포지션 각각), 개인 OAA 상하위 15명. <br><b>② 팀 탭 수비</b> — 팀×포지션 매트릭스(자기 팀 강조)와 소속 선수의 포지션별 상세(리그 평균 대비 %p·OAA/10기회·통과 수·등급) 추가. <br><b>③ 수비 분석 페이지</b> — 하단에 "리그 대비 상세" 토글 추가(팀×포지션 / 포지션별 선수). <br>모든 표에서 선수 이름 클릭 시 수비수 상세 페이지로 이동, 매트릭스 셀 호버 시 아웃률·기회·OAA 표시.'},
@@ -19853,7 +19854,7 @@ function renderDefenderPage(){
     <div class="card section">
       <div class="card-title">🎯 포지션별 수비 성적 — 각 포지션 따로</div>
       <div style="font-size:11px;color:#9ab;margin-bottom:10px;line-height:1.5">
-        ⓘ 같은 포지션 × 거리 × EV × 발사각의 평균과 비교한 가중 OAA. 
+        ⓘ 같은 포지션 × 거리 × EV × 발사각의 평균 아웃 확률과 비교한 OAA. 
         <b>어려운 잡기</b> = 평균 아웃확률 30% 미만 타구 처리. 
         <b>쉬운 놓치기</b> = 70%+ 타구 놓침 (큰 페널티).
       </div>
@@ -20250,15 +20251,13 @@ function _computeDefenseData(){
     if(p._isHit) s.hits++;
     s.oaa += (p._isOut ? 1 : 0) - p._xOut;
     
-    // 난이도 가중 OAA
-    const diff = p._difficulty;
-    let weight;
-    if(p._isOut){
-      weight = diff >= 0.7 ? 1.5 : diff >= 0.5 ? 1.2 : 1.0;
-    } else {
-      weight = diff >= 0.7 ? 1.0 : diff >= 0.5 ? 1.2 : 1.5;
-    }
-    s.oaaWeighted += ((p._isOut ? 1 : 0) - p._xOut) * weight;
+    // V11.5: 난이도 가중치 제거 — 순수 OAA로 통일
+    //   기존엔 난이도별 weight(1.0~1.5)를 곱했으나, 이는 xOut에 이미 반영된 난이도를
+    //   한 번 더 보상하는 이중 계산이었고 무엇보다 zero-sum이 깨졌음
+    //   (실측 시뮬 2000플레이: 순수합 +0.5 vs 가중합 -51.0).
+    //   구역별·포지션별 캘리브레이션으로 잡아둔 편향이 가중치 때문에 무의미해지므로
+    //   oaaWeighted를 순수 OAA와 동일하게 유지 — 전 화면(수비분석·수비수상세·팀탭·리그전·내보내기) 값 통일.
+    s.oaaWeighted += (p._isOut ? 1 : 0) - p._xOut;
     
     let cat;
     if(p._xOut >= 0.7) cat = s.easy;
@@ -20953,7 +20952,7 @@ function renderDefensePage(){
       <td style="color:var(--muted);font-size:10.5px" title="이 포지션에서 가장 자주 사용한 키">${s.displayHeight ? s.displayHeight.toFixed(1)+'cm' : '-'}</td>
       <td>${s.displayChances}</td>
       <td style="color:${outCol};font-weight:600">${(s.displayOutRate*100).toFixed(1)}%</td>
-      <td style="color:${oaaCol};font-weight:800;font-family:var(--mono)" title="난이도 가중 OAA — '못 잡을 걸 잡으면 +α, 쉬운 걸 놓치면 -α'">${s.displayOaa>0?'+':''}${s.displayOaa.toFixed(1)}</td>
+      <td style="color:${oaaCol};font-weight:800;font-family:var(--mono)" title="OAA = 실제 아웃 − 기대 아웃률(xOut). 어려운 타구(xOut 낮음)를 잡으면 큰 플러스, 쉬운 타구를 놓치면 큰 마이너스">${s.displayOaa>0?'+':''}${s.displayOaa.toFixed(1)}</td>
       <td style="color:${oaa10Col};font-family:var(--mono)">${oaaPer10>0?'+':''}${oaaPer10.toFixed(2)}</td>
       <td style="color:${hardCol};font-family:var(--mono);font-weight:600" title="어려운 타구 (평균 아웃확률 30% 미만)에서 잡은 비율">${s.displayHardTotal>0?s.displayHardCatch.toFixed(0)+'%':'-'}<div style="font-size:9px;color:#789;font-weight:400">${s.displayHardTotal>0?'('+Math.round(s.displayHardCatch/100*s.displayHardTotal)+'/'+s.displayHardTotal+')':''}</div></td>
       <td style="color:${easyCol};font-family:var(--mono);font-weight:600" title="쉬운 타구 (평균 아웃확률 70%+)에서 놓친 수">${s.displayEasyTotal>0?s.displayEasyMiss:'-'}<div style="font-size:9px;color:#789;font-weight:400">${s.displayEasyTotal>0?'/'+s.displayEasyTotal:''}</div></td>
@@ -21006,7 +21005,7 @@ function renderDefensePage(){
           <th title="이 포지션에서 가장 자주 사용한 키 (cm)">키</th>
           <th onclick="setDefenseSort('chances')" style="cursor:pointer">기회${arrow('chances')}</th>
           <th onclick="setDefenseSort('outRate')" style="cursor:pointer">아웃%${arrow('outRate')}</th>
-          <th onclick="setDefenseSort('oaa')" style="cursor:pointer" title="난이도 가중 OAA">OAA${arrow('oaa')}</th>
+          <th onclick="setDefenseSort('oaa')" style="cursor:pointer" title="OAA = 실제 아웃 − 기대 아웃률. 리그 합계 0 기준">OAA${arrow('oaa')}</th>
           <th onclick="setDefenseSort('oaaPer10')" style="cursor:pointer" title="10기회당 OAA — 표본 정규화">OAA/10${arrow('oaaPer10')}</th>
           <th onclick="setDefenseSort('hardCatch')" style="cursor:pointer" title="어려운 타구 처리율 — 평균 아웃확률 30% 미만 타구">어려운 잡기${arrow('hardCatch')}</th>
           <th onclick="setDefenseSort('easyMiss')" style="cursor:pointer" title="쉬운 타구 놓치기 — 평균 아웃확률 70%+ 타구 놓침">쉬운 놓치기${arrow('easyMiss')}</th>
@@ -30517,6 +30516,7 @@ function exportAnalyticsBundle(opts){
       eraPlus:'ERA+ — 리그 평균 RA9 / 본인 ERA × 100. 100=리그 평균, 높을수록 좋음(150 = 평균보다 50% 우수). FIP-와 방향이 반대이므로 주의',
       pythWinPct:'피타고리안 기대승률 — 득점^1.83/(득점^1.83+실점^1.83). 실제 승률과 크게 다르면 운·클러치 영향이 컸다는 뜻(높으면 저평가, 낮으면 초과달성)',
       infieldPassRate:'내야 통과율 — 땅볼 중 내야를 뚫고 외야로 나간 비율. 추정 없이 직접 집계되며(포구자가 외야수면 통과) 낮을수록 내야 수비 범위가 넓음. OAA와 달리 모델 가정이 없어 신뢰도가 높음',
+      oaa:'OAA(Outs Above Average) = 실제 아웃(1/0) − 기대 아웃률(xOut)의 합. xOut은 포지션별 이동거리 커브(외야는 요구속도×방향)로 리그 실측에서 산출. 난이도는 xOut에 이미 반영되므로 별도 가중치 없음 — 전 화면 동일 계산',
       oaaCalibration:'OAA는 내야/외야 구역별로 각각 zero-sum 보정됨 — 각 구역 합계가 0. 내야(아웃률 85~95%)와 외야(27~40%)는 난이도 분포가 달라 전체 일괄 보정 시 내야가 구조적으로 불리해지므로 분리 처리',
       vsLeague:'리그 대비 — 같은 포지션(또는 구역) 리그 평균 아웃률과의 차이(%p). +면 평균보다 잘 잡음',
       oaaPer10:'10기회당 OAA — 기회 수가 다른 선수끼리 비교할 때 사용',
