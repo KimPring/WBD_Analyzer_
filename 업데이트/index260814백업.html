@@ -13897,7 +13897,6 @@ const CHANGELOG = [
     title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화',
     badge: '#ff8c44',
     changes: [
-      {icon:'🧮', text:'⭐⭐⭐ <b>OAA 기대 아웃률(xOut) 모델 재설계</b> — 분석기 로직을 정확히 재현해(실제 내보내기 대비 평균오차 0.15) 수십 가지 변수·조합을 실측 비교한 뒤 개편. <b>내야</b>: 포지션별 1D 이동거리 커브 → <b>2D 그리드(이동거리 × 발사각, 5×4 + 3×3 이웃 가중 스무딩)</b>. 그룹을 쪼개면 표본이 갈라져 불안정해지던 문제를 이웃 셀 참조로 해결 — 포지션 편차 <b>0.0057→0.0019(3배 개선)</b>하면서 변별력은 오히려 상승. <b>외야</b>: 요구속도(거리/체공시간) → <b>이동거리 기반</b>으로 교체(방향 분리는 유지). 요구속도는 체공시간 결측이 8~21%라 폴백이 잦고 난이도 추정도 부정확했음 — 편차 <b>0.0273→0.0132</b>, 외야 Brier <b>0.1592→0.1114(30% 개선)</b>. 전체 Brier 0.1645→0.1427. <br><b>검증 과정에서 걸러낸 것</b>: 포구 깊이·1루 송구거리는 예측력이 압도적으로 보였으나 <b>귀속 플레이(내야 통과)의 포구점이 외야라 "통과 여부"를 직접 알려주는 데이터 누수</b>였음(귀속 78.6m/아웃률 0% vs 일반 36.0m/90%). 주자 수(단독 설명력 21.8%p)·타자 발속도·EV 추가는 변별력만 떨어뜨려 미채택. <br>실제 영향: 우익수가 유독 과대평가(리그 합 +12.0)되던 것이 정상화, SS는 외야 타구 난이도가 제대로 반영되며 팀 OAA −3.2→+3.2(단 외야는 여전히 리그 최하위).'},
       {icon:'🗺️', text:'<b>수비 히트맵 구장 최신화</b> — 수비수 상세 페이지의 포구 위치 히트맵이 <b>구버전 근사 좌표</b>(폴 ±69m·중앙 -138m·베이스 27.4 근사)를 쓰고 있던 것을 공통 실측 <code>FIELD</code> 상수 기반 <code>_renderSprayField()</code>로 교체 — 타자 스프레이·타구 분석·팀 탭과 구장 모양이 완전히 통일됨(폴 ±74m·좌우중간 ±54.74/-117.5·중앙 135m·실측 베이스). 전수 점검 결과 구버전 좌표를 쓰던 곳은 이곳 하나였음.'},
       {icon:'🔗', text:'⭐⭐⭐ <b>OAA 값 불일치 수정 — 전 화면 통일</b> — 같은 선수의 OAA가 <b>화면마다 다르게 표시</b>되던 문제. 수비 분석·수비수 상세·팀 탭·내보내기는 <code>oaaWeighted</code>(난이도 가중 1.0~1.5배)를, 리그전 수비 탭은 순수 OAA를 써서 최대 50% 차이가 났음. → <b>가중치를 제거하고 순수 OAA로 통일</b>. 근거: ① 난이도는 <b>xOut에 이미 반영</b>되어 있어(어려운 타구는 xOut이 낮아 잡으면 큰 플러스) 가중치는 이중 계산 ② 무엇보다 <b>가중을 곱하면 zero-sum이 깨짐</b>(시뮬 2000플레이: 순수합 +0.5 vs 가중합 −51.0) — 구역별·포지션별 캘리브레이션으로 잡아둔 편향이 무의미해짐. 이제 어느 화면에서 봐도 동일한 값이며 리그 합계 0이 유지됨.'},
       {icon:'🐛', text:'⭐⭐ <b>리그전 수비 탭 — 리그전 외 팀이 섞이던 문제 수정</b> — 리그전 수비 순위에 <b>해당 시즌 리그전이 아닌 팀(TWP·Dt·GE 등)이 표시</b>되던 오류. 원인 두 가지: ① <b>선수 소속팀을 전체 활성 경기 기준으로 판정</b>해, 연습경기 출전이 더 많은 선수가 그 팀으로 분류됨(예: 리그전 SS 50타석 + 연습 TWP 80타석 → TWP로 집계) ② 캐시 키가 경기 수만 반영해 다른 화면의 전체 범위 결과를 재사용. → <b>리그전 팀기록과 동일한 로직 적용</b> — <code>_leaguePlayerTeams(games)</code>로 해당 리그전 경기 기준 소속팀을 재판정하고 리그전 출전팀 화이트리스트로 필터링, 캐시 키에도 경기 ID 내용 반영.'},
@@ -20078,86 +20077,44 @@ function _computeDefenseData(){
     };
   }
   
-  // ═══ V11.6: xOut 모델 재설계 ═══
-  //  실측 검증(36경기 2,068플레이, 분석기 로직 정확 재현 기준):
-  //   · 내야: 포지션별 1D 거리 커브 → 2D 그리드(거리×발사각). 편차 0.0057→0.0019(3배↓)
-  //   · 외야: 요구속도(거리/체공시간) → 이동거리 기반. 요구속도는 _T 결측이 8~21%라 폴백이 잦았고
-  //           난이도 추정도 부정확했음. 편차 0.0273→0.0132(2배↓), Brier 0.1592→0.1114(30%↓)
-  //   · 방향(전진/후퇴/측면) 분리는 유효하므로 유지
-  //  ※ 포구 깊이·1루 송구거리는 강력해 보이나 귀속 플레이(내야 통과)의 포구점이 외야라
-  //    "통과 여부"를 직접 알려주는 데이터 누수 → 제외.
-  //  ※ 주자 수·타자 발속도·EV 추가는 변별력만 떨어뜨려 미채택.
-  const _ofAll = enriched.filter(p => p._pos && !INFIELD_POS[p._pos]);
+  const _ofFly = enriched.filter(p => p._pos && !INFIELD_POS[p._pos] && p._ldeg>=10 && p._T!=null && p._moveDist!=null);
+  const _ofLine = enriched.filter(p => p._pos && !INFIELD_POS[p._pos] && p._ldeg<10);
   const _ifAll = enriched.filter(p => p._pos && INFIELD_POS[p._pos]);
+  
+  // V10.2: 외야 플라이를 방향(전진/후퇴/측면)으로 분리해 각각 요구속도 커브 — 방향이 37%p 영향.
   const _dirOf = p => (p._catchDir==null ? 'side' : (p._catchDir > 3 ? 'back' : (p._catchDir < -3 ? 'front' : 'side')));
-
-  // ── 내야: 2D 그리드 (이동거리 × 발사각) + 3×3 이웃 가중 스무딩 ──
-  //   1D 커브를 포지션×조건으로 쪼개면 표본이 갈라져 불안정해지는데,
-  //   그리드는 이웃 셀을 빌려 쓰므로 세분화하면서도 안정적.
-  const _IF_NB1 = 5, _IF_NB2 = 4, _IF_MINC = 8;
-  const _ifGrid = (()=>{
-    const md = _ifAll.map(p=>p._moveDist).filter(v=>v!=null && !isNaN(v));
-    const la = _ifAll.map(p=>p._ldeg);
-    if(!md.length) return null;
-    const lo1=Math.min(...md), hi1=Math.max(...md), lo2=Math.min(...la), hi2=Math.max(...la);
-    const w1=Math.max(1e-9,(hi1-lo1)/_IF_NB1), w2=Math.max(1e-9,(hi2-lo2)/_IF_NB2);
-    const cell={}, posFb={};
-    let gN=0, gO=0;
-    _ifAll.forEach(p=>{
-      const pk=p._pos;
-      if(!posFb[pk]) posFb[pk]={n:0,o:0};
-      posFb[pk].n++; gN++;
-      if(p._isOut){ posFb[pk].o++; gO++; }
-      if(p._moveDist==null || isNaN(p._moveDist)) return;
-      const i1=Math.min(_IF_NB1-1,Math.max(0,Math.floor((p._moveDist-lo1)/w1)));
-      const i2=Math.min(_IF_NB2-1,Math.max(0,Math.floor((p._ldeg-lo2)/w2)));
-      const k=pk+'|'+i1+'|'+i2;
-      if(!cell[k]) cell[k]={n:0,o:0};
-      cell[k].n++; if(p._isOut) cell[k].o++;
-    });
-    const gFb = gN>0 ? gO/gN : GLOBAL_OUT_RATE;
-    return (p)=>{
-      if(p._moveDist!=null && !isNaN(p._moveDist)){
-        const i1=Math.min(_IF_NB1-1,Math.max(0,Math.floor((p._moveDist-lo1)/w1)));
-        const i2=Math.min(_IF_NB2-1,Math.max(0,Math.floor((p._ldeg-lo2)/w2)));
-        let s=0,c=0;
-        for(let di=-1;di<=1;di++) for(let dj=-1;dj<=1;dj++){
-          const cc=cell[p._pos+'|'+(i1+di)+'|'+(i2+dj)];
-          if(cc && cc.n>0){ const wt=(di===0&&dj===0)?1:0.5; s+=cc.o*wt; c+=cc.n*wt; }
-        }
-        if(c>=_IF_MINC) return s/c;
-      }
-      const pf=posFb[p._pos];
-      return (pf && pf.n>0) ? pf.o/pf.n : gFb;
-    };
-  })();
-
-  // ── 외야: 이동거리 커브 (포지션 × 방향 × 발사각2단), 표본 부족 시 2단 폴백 ──
-  const _OF_LA_CUT = 25, _OF_MING = 60;
-  const _ofKey1 = p => p._pos+'|'+_dirOf(p)+'|'+(p._ldeg>=_OF_LA_CUT?1:0);
-  const _ofKey2 = p => p._pos+'|'+(p._ldeg>=_OF_LA_CUT?1:0);
-  const _ofCurves = {}, _ofCurves2 = {};
-  (function(){
-    const g1={}, g2={};
-    _ofAll.forEach(p=>{ (g1[_ofKey1(p)]||(g1[_ofKey1(p)]=[])).push(p);
-                        (g2[_ofKey2(p)]||(g2[_ofKey2(p)]=[])).push(p); });
-    Object.keys(g1).forEach(k=>{ if(g1[k].length>=_OF_MING) _ofCurves[k]=_buildCurve(g1[k], p=>p._moveDist, 5, 60); });
-    Object.keys(g2).forEach(k=>{ if(g2[k].length>=_OF_MING) _ofCurves2[k]=_buildCurve(g2[k], p=>p._moveDist, 5, 60); });
-  })();
-  const _ofFallback = _buildCurve(_ofAll, p=>p._moveDist, 5, 60);
-
+  const _ofFlyFront = _ofFly.filter(p=>_dirOf(p)==='front');
+  const _ofFlyBack  = _ofFly.filter(p=>_dirOf(p)==='back');
+  const _ofFlySide  = _ofFly.filter(p=>_dirOf(p)==='side');
+  const _vGet = p => Math.min(8, p._moveDist/p._T);
+  // 방향 그룹 표본이 충분하면 분리 커브, 적으면 전체 커브로 폴백
+  const curveFlyAll = _buildCurve(_ofFly, _vGet, 0.5, 8);
+  const curveFlyFront = _ofFlyFront.length>=30 ? _buildCurve(_ofFlyFront, _vGet, 0.5, 8) : curveFlyAll;
+  const curveFlyBack  = _ofFlyBack.length>=30  ? _buildCurve(_ofFlyBack, _vGet, 0.5, 8)  : curveFlyAll;
+  const curveFlySide  = _ofFlySide.length>=30  ? _buildCurve(_ofFlySide, _vGet, 0.5, 8)  : curveFlyAll;
+  const curveOfFly = (v, dir) => dir==='front'?curveFlyFront(v) : dir==='back'?curveFlyBack(v) : curveFlySide(v);
+  const curveOfLine = _buildCurve(_ofLine, p => p._moveDist, 5, 40);                    // 라이너: 거리 약커브
+  const curveInf = _buildCurve(_ifAll, p => p._moveDist, 3, 21);                        // 내야: 거리 커브(폴백용)
+  // ═══ V11.5: 내야 커브를 포지션별로 분리 ═══
+  // 같은 이동거리라도 포지션별 난이도가 크게 다름 (실측 12~16m: 1B 87% vs 2B 48%).
+  // 통합 커브를 쓰면 1루수는 과대평가, 유격수는 과소평가되어 구조적 편향 발생.
+  //   검증(FW 63경기 + 섬머 36경기): 포지션 간 편차 0.059→0.011 / 0.030→0.012로 개선,
+  //   변별력 손실은 거의 없음(섬머는 동일). 1루수 편향 +0.093→0.000.
+  const _infByPos = {};
+  Object.keys(INFIELD_POS).forEach(pos => {
+    const sub = _ifAll.filter(p => p._pos === pos);
+    _infByPos[pos] = sub.length >= 150 ? _buildCurve(sub, p => p._moveDist, 3, 21) : null;  // 표본 부족 시 통합 커브 폴백
+  });
+  const curveInfPos = (pos, dist) => (_infByPos[pos] ? _infByPos[pos](dist) : curveInf(dist));
+  
   enriched.forEach(p => {
     if(!p._pos){ p._xOut = GLOBAL_OUT_RATE; p._difficulty = 0.5; return; }
     let xOut;
-    if(INFIELD_POS[p._pos]){
-      xOut = _ifGrid ? _ifGrid(p) : GLOBAL_OUT_RATE;
-    } else {
-      const f = _ofCurves[_ofKey1(p)] || _ofCurves2[_ofKey2(p)] || _ofFallback;
-      xOut = f(p._moveDist);
-    }
+    if(INFIELD_POS[p._pos]) xOut = curveInfPos(p._pos, p._moveDist);
+    else if(p._ldeg>=10 && p._T!=null && p._moveDist!=null) xOut = curveOfFly(Math.min(8, p._moveDist/p._T), _dirOf(p));
+    else xOut = curveOfLine(p._moveDist);
     p._xOut = Math.max(0.02, Math.min(0.98, xOut));
   });
-
   // ═══ V11.5: zero-sum 캘리브레이션 — 내야/외야 구역별로 분리 ═══
   // 기존엔 리그 전체를 한 번에 보정했으나, 내야(아웃률 85~95%)와 외야(27~40%)의
   // 스무딩 편향 방향이 반대라 상쇄되지 않았음.
@@ -30528,7 +30485,7 @@ function exportAnalyticsBundle(opts){
       eraPlus:'ERA+ — 리그 평균 RA9 / 본인 ERA × 100. 100=리그 평균, 높을수록 좋음(150 = 평균보다 50% 우수). FIP-와 방향이 반대이므로 주의',
       pythWinPct:'피타고리안 기대승률 — 득점^1.83/(득점^1.83+실점^1.83). 실제 승률과 크게 다르면 운·클러치 영향이 컸다는 뜻(높으면 저평가, 낮으면 초과달성)',
       infieldPassRate:'내야 통과율 — 땅볼 중 내야를 뚫고 외야로 나간 비율. 추정 없이 직접 집계되며(포구자가 외야수면 통과) 낮을수록 내야 수비 범위가 넓음. OAA와 달리 모델 가정이 없어 신뢰도가 높음',
-      oaa:'OAA(Outs Above Average) = 실제 아웃(1/0) − 기대 아웃률(xOut)의 합. xOut은 리그 실측에서 산출 — 내야는 이동거리×발사각 2D 그리드(포지션별), 외야는 포지션×방향(전진/후퇴/측면)×발사각별 이동거리 커브. 난이도는 xOut에 이미 반영되므로 별도 가중치 없음 — 전 화면 동일 계산',
+      oaa:'OAA(Outs Above Average) = 실제 아웃(1/0) − 기대 아웃률(xOut)의 합. xOut은 포지션별 이동거리 커브(외야는 요구속도×방향)로 리그 실측에서 산출. 난이도는 xOut에 이미 반영되므로 별도 가중치 없음 — 전 화면 동일 계산',
       oaaCalibration:'OAA는 내야/외야 구역별로 각각 zero-sum 보정됨 — 각 구역 합계가 0. 내야(아웃률 85~95%)와 외야(27~40%)는 난이도 분포가 달라 전체 일괄 보정 시 내야가 구조적으로 불리해지므로 분리 처리',
       vsLeague:'리그 대비 — 같은 포지션(또는 구역) 리그 평균 아웃률과의 차이(%p). +면 평균보다 잘 잡음',
       oaaPer10:'10기회당 OAA — 기회 수가 다른 선수끼리 비교할 때 사용',
