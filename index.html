@@ -13898,6 +13898,7 @@ const CHANGELOG = [
     title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화',
     badge: '#ff8c44',
     changes: [
+      {icon:'🔗', text:'⭐⭐⭐ <b>선수 병합(별칭)이 팀 판정에 적용되지 않던 문제 수정</b> — 병합된 선수(오띵__→낑깡__, にゃんこ3K→にゃんこ65K 등)의 <b>팀이 "—"로 잡히거나 기록이 갈리던 문제</b>. 원인은 별칭 정규화가 일부 경로에만 적용된 것: <code>_leaguePlayerTeams</code>(리그전 시즌 기준 팀 판정)와 <code>_computeTeamProfiles</code>(팀 프로파일 투구 집계)가 <b>원본 이름(bName/pName)을 그대로 키로 사용</b>해, 수비 쪽에서 정규화된 이름으로 조회하면 매칭이 실패했음. → 두 함수 모두 <code>_canonPlayer</code> 경유하도록 수정. 이제 <b>_rebuildCaches · 수비 · 리그전 팀판정 · 팀 프로파일 · 포지션 판정 전 경로</b>에서 병합이 일관되게 적용됨.'},
       {icon:'🔗', text:'⭐⭐ <b>선수 병합(별칭)이 수비 기록에 적용되지 않던 문제 수정</b> — 닉변·계정변경 병합(<code>_canonPlayer</code>)이 <b>투수명(pName)·타자명(bName)에만 적용</b>되고 <b>수비 집계에 쓰이는 포구자(cPlr)와 포지션별 선수명에는 적용되지 않았음</b>. 그 결과 같은 선수가 이름별로 갈려 수비 기록이 흩어지고, 팀 매칭이 안 되면 아예 어느 팀에도 집계되지 않았음(실제 사례: 2루 59기회가 팀 미상으로 누락되어 해당 팀 2루가 3기회로 표시). → <b>cPlr·9개 포지션명 전부 별칭 정규화</b> 적용. 원본 이름을 <code>_raw*</code>에 보관해 별칭을 바꿔도 항상 원본에서 다시 매핑하므로 중복 적용·오염 없음.'},
       {icon:'🐛', text:'⭐⭐ <b>리그전 수비 탭이 활성 경기만 집계하던 문제 수정</b> — 리그전의 다른 탭(기록실·팀기록)은 <code>_withSeasonGames()</code>로 <b>해당 시즌 경기를 임시 활성화한 뒤 계산</b>해 비활성 경기까지 포함하는데, <b>수비 탭만 현재 활성 경기에서 뽑아 시즌 표본이 통째로 누락</b>됐음(예: 63경기 시즌인데 36경기만 집계). → 수비도 동일하게 <code>_withSeasonGames</code>를 경유하도록 변경. 이 과정에서 수비 계열 캐시 5종(<code>_defenseDataCache</code>·<code>_lgDefStatsCacheMap</code>·<code>_ifPassCache</code> 등)도 임시 격리하도록 <code>_withSeasonGames</code>를 확장 — 시즌 기준 계산이 활성 경기 캐시를 오염시키지 않음.'},
       {icon:'🧮', text:'⭐⭐⭐ <b>OAA 기대 아웃률(xOut) 모델 재설계</b> — 분석기 로직을 정확히 재현해(실제 내보내기 대비 평균오차 0.15) 수십 가지 변수·조합을 실측 비교한 뒤 개편. <b>내야</b>: 포지션별 1D 이동거리 커브 → <b>2D 그리드(이동거리 × 발사각, 5×4 + 3×3 이웃 가중 스무딩)</b>. 그룹을 쪼개면 표본이 갈라져 불안정해지던 문제를 이웃 셀 참조로 해결 — 포지션 편차 <b>0.0057→0.0019(3배 개선)</b>하면서 변별력은 오히려 상승. <b>외야</b>: 요구속도(거리/체공시간) → <b>이동거리 기반</b>으로 교체(방향 분리는 유지). 요구속도는 체공시간 결측이 8~21%라 폴백이 잦고 난이도 추정도 부정확했음 — 편차 <b>0.0273→0.0132</b>, 외야 Brier <b>0.1592→0.1114(30% 개선)</b>. 전체 Brier 0.1645→0.1427. <br><b>검증 과정에서 걸러낸 것</b>: 포구 깊이·1루 송구거리는 예측력이 압도적으로 보였으나 <b>귀속 플레이(내야 통과)의 포구점이 외야라 "통과 여부"를 직접 알려주는 데이터 누수</b>였음(귀속 78.6m/아웃률 0% vs 일반 36.0m/90%). 주자 수(단독 설명력 21.8%p)·타자 발속도·EV 추가는 변별력만 떨어뜨려 미채택. <br>실제 영향: 우익수가 유독 과대평가(리그 합 +12.0)되던 것이 정상화, SS는 외야 타구 난이도가 제대로 반영되며 팀 OAA −3.2→+3.2(단 외야는 여전히 리그 최하위).'},
@@ -24490,7 +24491,7 @@ function _computeTeamProfiles(){
   Object.keys(PT.pitcher).forEach(n=>pTeamOf[n]=PT.pitcher[n]);
   for(let i=0;i<G.length;i++){
     const d=G[i];
-    const bt=bTeamOf[d.bName], pt=pTeamOf[d.pName];
+    const bt=bTeamOf[_canonPlayer(d.bName)], pt=pTeamOf[_canonPlayer(d.pName)];  // V11.6: 별칭 정규화
     if(bt&&teams[bt]){
       const T=teams[bt];
       const _sw=_isSwing(d), _wh=_isWhiff(d);
@@ -26240,7 +26241,8 @@ function _leaguePlayerTeams(games){
       const half=+d.half;
       const batTeam = half===1 ? tA : tB;   // 공격팀
       const pitTeam = half===1 ? tB : tA;   // 수비팀
-      const bn=d.bName, pn=d.pName;
+      // V11.6: 별칭 정규화 — 닉변/계정변경 선수가 이름별로 갈려 팀 매칭이 실패하던 문제
+      const bn=d.bName?_canonPlayer(d.bName):null, pn=d.pName?_canonPlayer(d.pName):null;
       if(bn){ bat[bn]=bat[bn]||{}; bat[bn][batTeam]=(bat[bn][batTeam]||0)+1; }
       if(pn){ pit[pn]=pit[pn]||{}; pit[pn][pitTeam]=(pit[pn][pitTeam]||0)+1; }
     });
