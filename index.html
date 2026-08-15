@@ -2125,6 +2125,7 @@ function _rebuildCaches(){
   window._teamPitchCache=null; window._teamProfCache=null; window._gIdxMap=null; window._formCache=null;
   window._bbqLeagueCache=null; window._scoutLeagueCache=null; window._teamScoutLeagueCache=null;
   window._defenseDataCache=null; window._lgDefCache=null; window._lgClutchCache=null; window._ifPassCache=null; window._lgDefStatsCacheMap=null;
+
   c.pitcherData = {};
   c.batterData = {};
   c.pitcherCard = {};
@@ -13897,6 +13898,8 @@ const CHANGELOG = [
     title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화',
     badge: '#ff8c44',
     changes: [
+      {icon:'🔗', text:'⭐⭐ <b>선수 병합(별칭)이 수비 기록에 적용되지 않던 문제 수정</b> — 닉변·계정변경 병합(<code>_canonPlayer</code>)이 <b>투수명(pName)·타자명(bName)에만 적용</b>되고 <b>수비 집계에 쓰이는 포구자(cPlr)와 포지션별 선수명에는 적용되지 않았음</b>. 그 결과 같은 선수가 이름별로 갈려 수비 기록이 흩어지고, 팀 매칭이 안 되면 아예 어느 팀에도 집계되지 않았음(실제 사례: 2루 59기회가 팀 미상으로 누락되어 해당 팀 2루가 3기회로 표시). → <b>cPlr·9개 포지션명 전부 별칭 정규화</b> 적용. 원본 이름을 <code>_raw*</code>에 보관해 별칭을 바꿔도 항상 원본에서 다시 매핑하므로 중복 적용·오염 없음.'},
+      {icon:'🐛', text:'⭐⭐ <b>리그전 수비 탭이 활성 경기만 집계하던 문제 수정</b> — 리그전의 다른 탭(기록실·팀기록)은 <code>_withSeasonGames()</code>로 <b>해당 시즌 경기를 임시 활성화한 뒤 계산</b>해 비활성 경기까지 포함하는데, <b>수비 탭만 현재 활성 경기에서 뽑아 시즌 표본이 통째로 누락</b>됐음(예: 63경기 시즌인데 36경기만 집계). → 수비도 동일하게 <code>_withSeasonGames</code>를 경유하도록 변경. 이 과정에서 수비 계열 캐시 5종(<code>_defenseDataCache</code>·<code>_lgDefStatsCacheMap</code>·<code>_ifPassCache</code> 등)도 임시 격리하도록 <code>_withSeasonGames</code>를 확장 — 시즌 기준 계산이 활성 경기 캐시를 오염시키지 않음.'},
       {icon:'🧮', text:'⭐⭐⭐ <b>OAA 기대 아웃률(xOut) 모델 재설계</b> — 분석기 로직을 정확히 재현해(실제 내보내기 대비 평균오차 0.15) 수십 가지 변수·조합을 실측 비교한 뒤 개편. <b>내야</b>: 포지션별 1D 이동거리 커브 → <b>2D 그리드(이동거리 × 발사각, 5×4 + 3×3 이웃 가중 스무딩)</b>. 그룹을 쪼개면 표본이 갈라져 불안정해지던 문제를 이웃 셀 참조로 해결 — 포지션 편차 <b>0.0057→0.0019(3배 개선)</b>하면서 변별력은 오히려 상승. <b>외야</b>: 요구속도(거리/체공시간) → <b>이동거리 기반</b>으로 교체(방향 분리는 유지). 요구속도는 체공시간 결측이 8~21%라 폴백이 잦고 난이도 추정도 부정확했음 — 편차 <b>0.0273→0.0132</b>, 외야 Brier <b>0.1592→0.1114(30% 개선)</b>. 전체 Brier 0.1645→0.1427. <br><b>검증 과정에서 걸러낸 것</b>: 포구 깊이·1루 송구거리는 예측력이 압도적으로 보였으나 <b>귀속 플레이(내야 통과)의 포구점이 외야라 "통과 여부"를 직접 알려주는 데이터 누수</b>였음(귀속 78.6m/아웃률 0% vs 일반 36.0m/90%). 주자 수(단독 설명력 21.8%p)·타자 발속도·EV 추가는 변별력만 떨어뜨려 미채택. <br>실제 영향: 우익수가 유독 과대평가(리그 합 +12.0)되던 것이 정상화, SS는 외야 타구 난이도가 제대로 반영되며 팀 OAA −3.2→+3.2(단 외야는 여전히 리그 최하위).'},
       {icon:'🗺️', text:'<b>수비 히트맵 구장 최신화</b> — 수비수 상세 페이지의 포구 위치 히트맵이 <b>구버전 근사 좌표</b>(폴 ±69m·중앙 -138m·베이스 27.4 근사)를 쓰고 있던 것을 공통 실측 <code>FIELD</code> 상수 기반 <code>_renderSprayField()</code>로 교체 — 타자 스프레이·타구 분석·팀 탭과 구장 모양이 완전히 통일됨(폴 ±74m·좌우중간 ±54.74/-117.5·중앙 135m·실측 베이스). 전수 점검 결과 구버전 좌표를 쓰던 곳은 이곳 하나였음.'},
       {icon:'🔗', text:'⭐⭐⭐ <b>OAA 값 불일치 수정 — 전 화면 통일</b> — 같은 선수의 OAA가 <b>화면마다 다르게 표시</b>되던 문제. 수비 분석·수비수 상세·팀 탭·내보내기는 <code>oaaWeighted</code>(난이도 가중 1.0~1.5배)를, 리그전 수비 탭은 순수 OAA를 써서 최대 50% 차이가 났음. → <b>가중치를 제거하고 순수 OAA로 통일</b>. 근거: ① 난이도는 <b>xOut에 이미 반영</b>되어 있어(어려운 타구는 xOut이 낮아 잡으면 큰 플러스) 가중치는 이중 계산 ② 무엇보다 <b>가중을 곱하면 zero-sum이 깨짐</b>(시뮬 2000플레이: 순수합 +0.5 vs 가중합 −51.0) — 구역별·포지션별 캘리브레이션으로 잡아둔 편향이 무의미해짐. 이제 어느 화면에서 봐도 동일한 값이며 리그 합계 0이 유지됨.'},
@@ -19876,10 +19879,23 @@ function _computeDefenseData(){
   
   // V9.9: 비-선수 cPlr 필터 — bName으로 한 번도 등장 안 한 cPlr은 운영진/AI/디버그
   const bNameSet = new Set();
-  G.forEach(d => { if(d.bName) bNameSet.add(d.bName); });
+  G.forEach(d => { if(d.bName) bNameSet.add(_canonPlayer(d.bName)); });
   
   // 인플레이 타구 (call=2, result=1 FlyOut or 2 GroundBall) — bName 등록된 사람만
   // 홈런(result=4)은 result 필터에서 자연스럽게 제외됨
+  // V11.6: 별칭(닉변/계정변경) 정규화 — 기존엔 pName/bName에만 적용되어
+  //        수비 집계(cPlr·포지션Name)는 병합이 안 먹었음 (같은 선수가 다른 이름으로 갈림)
+  const _POSNAME_KEYS=['PName','CName','1BName','2BName','3BName','SSName','LFName','CFName','RFName'];
+  G.forEach(d => {
+    // 원본 이름을 _raw*에 보관 → 별칭이 바뀌어도 항상 원본에서 다시 매핑 (중복 적용 방지)
+    if(d._rawCPlr === undefined) d._rawCPlr = d.cPlr;
+    if(d._rawCPlr) d.cPlr = _canonPlayer(d._rawCPlr);
+    for(const k of _POSNAME_KEYS){
+      const rk='_raw'+k;
+      if(d[rk] === undefined) d[rk] = d[k];
+      if(d[rk]) d[k] = _canonPlayer(d[rk]);
+    }
+  });
   const plays = G.filter(d => 
     +d.call === 2 && (+d.result === 1 || +d.result === 2) 
     && d.cPlr && d.cPlr !== '' && bNameSet.has(d.cPlr)
@@ -20756,8 +20772,8 @@ function _renderDefMatrix(S, highlightTeam){
 // ═══ V11.5: 리그전 수비 탭 ═══
 function _renderLeagueDefense(season, games){
   try{
-    // 리그전 탭이 이미 시즌·페이즈로 걸러 넘긴 games의 ID만 사용
-    const ids=new Set(games.map(g=>g.id));
+    // V11.6: 다른 리그전 탭과 동일하게 _withSeasonGames로 시즌 전체를 계산
+    //   (기존엔 활성 경기에서만 뽑아 비활성 경기가 통째로 누락됐음)
     // V11.5 fix: 선수 소속팀도 "이 리그전 경기 기준"으로 재판정
     //   (리그전 팀기록과 동일 로직 — _leaguePlayerTeams + 리그전 출전팀 화이트리스트)
     //   전체 활성 경기 기준 _playerTeam을 쓰면 연습경기 소속으로 잘못 분류되어
@@ -20769,7 +20785,9 @@ function _renderLeagueDefense(season, games){
     const tmap={};
     Object.entries(PT.batter||{}).forEach(([n,t])=>{ if(t&&lgTeams.has(t)) tmap[n]=t; });
     Object.entries(PT.pitcher||{}).forEach(([n,t])=>{ if(!tmap[n]&&t&&lgTeams.has(t)) tmap[n]=t; });
-    const S=_leagueDefenseStats(ids, tmap);
+    // 시즌 경기를 임시 활성화한 상태에서 계산 (비활성 경기 포함)
+    const S=_withSeasonGames(games, ()=>_leagueDefenseStats(null, tmap));
+    const PASS=_withSeasonGames(games, ()=>{ try{ return _teamInfieldPassRate(); }catch(_){ return null; } });
     if(!S||!S.players.length) return '<div style="padding:40px;text-align:center;color:var(--muted)">수비 데이터가 없습니다</div>';
     if(!window._lgDefView) window._lgDefView='team';
     const view=window._lgDefView;
@@ -20781,7 +20799,7 @@ function _renderLeagueDefense(season, games){
     </div>`;
 
     if(view==='team'){
-      const pass=(()=>{ try{ return _teamInfieldPassRate(); }catch(_){ return null; } })();
+      const pass=PASS;
       const rows=S.teams.map(t=>{
         const oc=v=>v>1?'#39ff8a':v<-1?'#ff4560':'var(--text)';
         const vc=v=>v>3?'#39ff8a':v<-3?'#ff4560':'var(--muted)';
@@ -26156,9 +26174,17 @@ function _withSeasonGames(games, fn){
   const ids=new Set(games.map(g=>g.id)); const saved=new Set(activeGameIds);
   activeGameIds.clear(); ids.forEach(id=>activeGameIds.add(id)); rebuildG();
   const sc=window._recordsCache; window._recordsCache={key:null,batters:null,pitchers:null};
+  // V11.6: 수비 계열 캐시도 임시 격리 — 이 블록 안의 계산이 활성 경기 캐시를 오염시키지 않도록.
+  //   (수비 지표를 시즌 전체 기준으로 뽑으려면 _computeDefenseData를 이 안에서 호출해야 함)
+  const _sd=window._defenseDataCache, _sl=window._lgDefCache, _sm=window._lgDefStatsCacheMap,
+        _sp=window._ifPassCache, _sc2=window._lgClutchCache;
+  window._defenseDataCache=null; window._lgDefCache=null; window._lgDefStatsCacheMap=null;
+  window._ifPassCache=null; window._lgClutchCache=null;
   let out; try{ out=fn(); }catch(e){ out=null; }
   activeGameIds.clear(); saved.forEach(id=>activeGameIds.add(id)); rebuildG();
   window._recordsCache=sc;
+  window._defenseDataCache=_sd; window._lgDefCache=_sl; window._lgDefStatsCacheMap=_sm;
+  window._ifPassCache=_sp; window._lgClutchCache=_sc2;
   return out;
 }
 // V11: 시즌 투수 결과기록 누적 (승/패/세이브/홀드/QS/QS+)
