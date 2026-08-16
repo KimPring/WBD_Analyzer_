@@ -2124,8 +2124,7 @@ function _rebuildCaches(){
   window._lgInPlayCache=null; window._lgBBQCache=null; window._lgDirCache=null;
   window._teamPitchCache=null; window._teamProfCache=null; window._gIdxMap=null; window._formCache=null;
   window._bbqLeagueCache=null; window._scoutLeagueCache=null; window._teamScoutLeagueCache=null;
-  window._defenseDataCache=null; window._lgDefCache=null; window._lgClutchCache=null; window._ifPassCache=null; window._lgDefStatsCacheMap=null;
-
+  window._defenseDataCache=null; window._lgDefCache=null; window._lgClutchCache=null;
   c.pitcherData = {};
   c.batterData = {};
   c.pitcherCard = {};
@@ -11929,7 +11928,7 @@ function renderTeamBat(){
         <div class="card">
           <div class="card-title">팀 스프레이 차트</div>
           ${_teamSprayZoneBtns('bat')}
-          <div style="max-width:420px;width:100%;margin:0 auto">${sprayHTML}</div>
+          <div style="text-align:center">${sprayHTML}</div>
           <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:4px">🟡 홈런 · 🟢 안타 · ⚪ 아웃</div>
         </div>
         <div class="card">
@@ -11941,7 +11940,7 @@ function renderTeamBat(){
       <div class="card section">
         <div class="card-title">타자별 요약 (${bs.length}명)</div>
         <div class="tbl-wrap"><table class="data-table"><thead><tr>
-          ${_sortTh('선수')}${_sortTh('타석')}${_sortTh('타율')}${_sortTh('OPS')}${_sortTh('홈런')}${_sortTh('평균EV')}${_sortTh('배럴+%')}${_sortTh('평균LA')}${_sortTh('oWAR')}
+          <th>선수</th><th>타석</th><th>타율</th><th>OPS</th><th>홈런</th><th>평균EV</th><th>배럴+%</th><th>평균LA</th><th>oWAR</th>
         </tr></thead><tbody>${rows}</tbody></table></div>
       </div>`;
     }catch(e){
@@ -12067,7 +12066,7 @@ function renderTeamPit(){
         <div class="card">
           <div class="card-title">구종 운용</div>
           <div class="tbl-wrap"><table class="data-table"><thead><tr>
-            ${_sortTh('구종')}${_sortTh('투구')}${_sortTh('비율')}${_sortTh('헛스윙%')}${_sortTh('피EV')}${_sortTh('피배럴+%')}
+            <th>구종</th><th>투구</th><th>비율</th><th>헛스윙%</th><th>피EV</th><th>피배럴+%</th>
           </tr></thead><tbody>${gRows}</tbody></table></div>
           <div style="margin-top:10px;padding:8px;background:var(--card2);border-radius:4px;font-size:11px;color:var(--muted)">
             총 ${pitches.length}구 · 헛스윙 <b style="color:var(--text)">${t.pWhiffPct.toFixed(1)}%</b> ·
@@ -12100,7 +12099,7 @@ function renderTeamPit(){
         <div class="card">
           <div class="card-title">피타구 스프레이</div>
           ${_teamSprayZoneBtns('pit')}
-          <div style="max-width:420px;width:100%;margin:0 auto">${sprayHTML}</div>
+          <div style="text-align:center">${sprayHTML}</div>
           <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:4px">🟡 피홈런 · 🔴 피안타 · 🟢 아웃</div>
         </div>
         <div class="card">
@@ -12112,7 +12111,7 @@ function renderTeamPit(){
       <div class="card section">
         <div class="card-title">투수별 요약 (${ps.length}명)</div>
         <div class="tbl-wrap"><table class="data-table"><thead><tr>
-          ${_sortTh('선수')}${_sortTh('이닝')}${_sortTh('ERA')}${_sortTh('FIP')}${_sortTh('WHIP')}${_sortTh('K')}${_sortTh('BB')}${_sortTh('피배럴+%')}${_sortTh('pWAR')}
+          <th>선수</th><th>이닝</th><th>ERA</th><th>FIP</th><th>WHIP</th><th>K</th><th>BB</th><th>피배럴+%</th><th>pWAR</th>
         </tr></thead><tbody>${rows}</tbody></table></div>
       </div>`;
     }catch(e){
@@ -12122,41 +12121,6 @@ function renderTeamPit(){
   },30);
 }
 // ═══ 팀 수비 탭 ═══
-// ═══ V11.5: 팀 내야 통과율 — 땅볼 중 내야를 뚫고 나간 비율 ═══
-// OAA와 달리 추정 없이 직접 계산됨(포구자가 외야수면 통과). 팀 내야 수비 범위의 직접 지표.
-function _teamInfieldPassRate(){
-  if(window._ifPassCache && window._ifPassCache._k===G.length) return window._ifPassCache.v;
-  const IFA=['1B','2B','3B','SS'], OF=['LF','CF','RF'];
-  const POSK=['P','C','1B','2B','3B','SS','LF','CF','RF'];
-  const teams={};
-  let lgGB=0, lgPass=0;
-  for(let i=0;i<G.length;i++){
-    const d=G[i];
-    if(!(+d.ev>0) || +d.result===3) continue;
-    if(!(+d.ldeg<10)) continue;                    // 땅볼만
-    // 수비 팀 = 내야수 소속팀
-    let tm=null;
-    for(const pk of IFA){
-      const n=d[`${pk}Name`];
-      if(n){ const t=_playerTeam(n,'batter'); if(t&&t!=='—'){ tm=t; break; } }
-    }
-    if(!tm) continue;
-    let cPos=null;
-    for(const pk of POSK){ if(d[`${pk}Name`]===d.cPlr){ cPos=pk; break; } }
-    if(!cPos) continue;
-    if(!teams[tm]) teams[tm]={gb:0,pass:0};
-    teams[tm].gb++; lgGB++;
-    if(OF.includes(cPos)){ teams[tm].pass++; lgPass++; }
-  }
-  const lgRate=lgGB>0?lgPass/lgGB*100:0;
-  const v={lgRate, lgGB, lgPass, byTeam:Object.fromEntries(Object.entries(teams).map(([t,x])=>[t,{
-    gb:x.gb, pass:x.pass, rate:x.gb>0?x.pass/x.gb*100:0,
-    vsLeague:(x.gb>0?x.pass/x.gb*100:0)-lgRate
-  }]))};
-  window._ifPassCache={_k:G.length, v};
-  return v;
-}
-
 function renderTeamDef(){
   const el=document.getElementById('team-def-content');
   if(!el) return;
@@ -12303,7 +12267,7 @@ function renderTeamDef(){
       <div class="grid2 section" style="gap:14px;grid-template-columns:1fr 1fr">
         <div class="card">
           <div class="card-title">팀 수비 종합</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px;margin-bottom:12px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
             <div style="background:var(--card2);border-radius:6px;padding:10px;text-align:center">
               <div style="font-size:10px;color:var(--muted)">팀 OAA</div>
               <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:${oc(teamOAA)}">${sgn(teamOAA)}</div>
@@ -12335,22 +12299,6 @@ function renderTeamDef(){
               };
               return box('내야',ifOAA,ifCh,myIf,lgIf)+box('외야',ofOAA,ofCh,myOf,lgOf);
             })()}
-            ${(()=>{  // V11.5: 내야 통과율 (땅볼이 내야를 뚫고 나간 비율 — 수비 범위 직접 지표)
-              try{
-                const P=_teamInfieldPassRate(), t=P.byTeam[team];
-                if(!t||t.gb<20) return '';
-                const d=t.vsLeague;   // 낮을수록 좋음
-                const col = d<-3?'#39ff8a' : d>3?'#ff4560' : 'var(--muted)';
-                const ranked=Object.entries(P.byTeam).filter(([,x])=>x.gb>=20).sort((a,b)=>a[1].rate-b[1].rate);
-                const rk=ranked.findIndex(([tm])=>tm===team)+1;
-                return `<div style="background:var(--card2);border-radius:6px;padding:10px;text-align:center">
-                  <div style="font-size:10px;color:var(--muted)" title="땅볼 중 내야를 통과해 외야로 나간 비율 — 낮을수록 내야 수비 범위가 넓음">내야 통과율</div>
-                  <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:${col}">${t.rate.toFixed(1)}%</div>
-                  <div style="font-size:9px;color:var(--muted)">땅볼 ${t.gb} · 통과 ${t.pass}${rk?` · ${rk}/${ranked.length}위`:''}</div>
-                  <div style="font-size:9.5px;color:${col};font-weight:${Math.abs(d)>3?'700':'400'}">리그 ${P.lgRate.toFixed(1)}% 대비 ${d>=0?'+':''}${d.toFixed(1)}%p</div>
-                </div>`;
-              }catch(_){ return ''; }
-            })()}
           </div>
           <div style="font-size:11px;color:var(--muted);line-height:1.7">
             총 ${teamCh}회 수비 기회 · 수비수 ${members.length}명<br>
@@ -12365,28 +12313,17 @@ function renderTeamDef(){
       <div class="card section">
         <div class="card-title">포지션별 수비 <span style="font-size:10px;color:var(--muted);font-weight:400">(리그 = 같은 포지션 전체 평균)</span></div>
         <div class="tbl-wrap"><table class="data-table"><thead><tr>
-          ${_sortTh('포지션')}${_sortTh('기회')}${_sortTh('OAA')}${_sortTh('OAA/10','10기회당 OAA')}
-          ${_sortTh('아웃률 / 리그','우리 아웃률 / 리그 평균 아웃률')}
-          ${_sortTh('리그 대비','리그 평균 대비 아웃률 차이')}
-          ${_sortTh('리그 순위','같은 포지션 선수들 중 위치')}<th>선수</th>
+          <th>포지션</th><th>기회</th><th>OAA</th><th title="10기회당 OAA">OAA/10</th>
+          <th title="우리 아웃률 / 리그 평균 아웃률">아웃률 / 리그</th>
+          <th title="리그 평균 대비 아웃률 차이">리그 대비</th>
+          <th title="같은 포지션 선수들 중 위치">리그 순위</th><th>선수</th>
         </tr></thead><tbody>${posRows}</tbody></table></div>
       </div>
-      ${(()=>{ // V11.5: 팀 × 포지션 매트릭스 + 포지션별 선수 상세
-        try{
-          const S=_leagueDefenseStats(null);
-          if(!S) return '';
-          return _renderDefMatrix(S, team) +
-            `<div class="card section" style="padding:10px 14px;font-size:11px;color:var(--muted)">
-              아래는 <b>${team}</b> 선수별 상세 — 같은 포지션 리그 평균과 비교
-            </div>` +
-            _renderDefPosLeaderboard(S,{minChances:3, team});
-        }catch(_){ return ''; }
-      })()}
       <div class="card section">
-        <div class="card-title">선수별 수비 (요약) <span style="font-size:10px;color:var(--muted);font-weight:400">(주 포지션 기준 · 이름 클릭 = 수비수 상세)</span></div>
+        <div class="card-title">선수별 수비 <span style="font-size:10px;color:var(--muted);font-weight:400">(주 포지션 기준 · 이름 클릭 = 수비수 상세)</span></div>
         <div class="tbl-wrap"><table class="data-table"><thead><tr>
-          ${_sortTh('선수')}${_sortTh('포지션')}${_sortTh('기회')}${_sortTh('OAA')}${_sortTh('OAA/10')}
-          ${_sortTh('아웃률 / 리그')}${_sortTh('리그 대비')}${_sortTh('리그 순위')}
+          <th>선수</th><th>포지션</th><th>기회</th><th>OAA</th><th>OAA/10</th>
+          <th>아웃률 / 리그</th><th>리그 대비</th><th>리그 순위</th>
         </tr></thead><tbody>${playerRows||'<tr><td colspan="8" style="text-align:center;color:var(--muted)">데이터 없음</td></tr>'}</tbody></table></div>
         <div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.6">
           <b>리그 대비</b>: 같은 포지션 리그 평균 아웃률과의 차이(%p). <span style="color:#39ff8a">+</span>면 평균보다 잘 잡음, <span style="color:#ff4560">−</span>면 못 잡음.<br>
@@ -12562,7 +12499,7 @@ function renderTeamTrend(){
       <div class="card section">
         <div class="card-title">상대별 전적</div>
         <div class="tbl-wrap"><table class="data-table"><thead><tr>
-          ${_sortTh('상대')}${_sortTh('경기')}<th>전적</th>${_sortTh('승률')}${_sortTh('득점')}${_sortTh('실점')}${_sortTh('득실')}
+          <th>상대</th><th>경기</th><th>전적</th><th>승률</th><th>득점</th><th>실점</th><th>득실</th>
         </tr></thead><tbody>${vsRows}</tbody></table></div>
       </div>
       <div style="font-size:10px;color:var(--muted);text-align:center;padding:8px">
@@ -13898,20 +13835,6 @@ const CHANGELOG = [
     title: '🏆 팀 탭 전면 개편 · ⚔️ 상대 비교 · 📏 평가 지표 재설계 · ⚡ 성능 최적화',
     badge: '#ff8c44',
     changes: [
-      {icon:'📏', text:'⭐⭐⭐ <b>내야 통과 타구 귀속 반경 — EV별 차등으로 재설계</b> — 기존 <b>12m 고정</b>은 강하게 빠져나간 타구까지 내야수 책임으로 잡아 과도했음. 경로거리를 고정하고 EV만 바꿔 비교한 결과 <b>같은 거리에서 EV만으로 처리율이 56%p 차이</b>(4~7m 구간: EV&lt;95 89.3% / 110~125 41.0% / 125+ 33.3%), 특히 <b>EV 125+는 9~12m에서 16건 중 0건(0%)</b>으로 물리적으로 닿을 수 없는 타구였음. 원인은 도달시간 — 같은 3m 거리에서 EV&lt;95는 2.41초, EV125+는 <b>1.62초</b>로 반응 여유가 33% 적음. → 각 구간 처리율이 40~50%가 되는 지점을 경계로 <b>EV 125+ 4m / 110~125 6m / 95~110 8m / 95 미만 11m</b> 적용. <br><b>검증</b>: 280개 파라미터 조합을 그리드 탐색하고 <b>두 시즌 교차 검증</b> — 채택안은 FW 78.4%·섬머 84.2%(평균 81.3%)로 최상위권이며 시즌 간 편차도 안정적. 기존 12m는 75.9%로 최하위. FW 단독 최적값(3/4/9/10)은 섬머에서 79.5%로 급락해 <b>과적합으로 확인·기각</b>. 물리 모델(감속계수 기반 도달시간)과 실측 체공시간 방식도 시험했으나 각각 77.3%·67.5%로 더 낮았음. <br><b>결과</b>: 귀속 건수 FW 412→241(−42%)·섬머 158→61(−61%), 내야 Brier FW −12.3%·섬머 −25.4% 개선. 팀 순위는 상위권이 소폭 내려가고 하위권이 올라가는 방향(기존 12m가 범위 넓은 팀에 과보상, 좁은 팀에 과페널티였음).'},
-      {icon:'🔗', text:'⭐⭐⭐ <b>선수 병합(별칭)이 팀 판정에 적용되지 않던 문제 수정</b> — 병합된 선수(오띵__→낑깡__, にゃんこ3K→にゃんこ65K 등)의 <b>팀이 "—"로 잡히거나 기록이 갈리던 문제</b>. 원인은 별칭 정규화가 일부 경로에만 적용된 것: <code>_leaguePlayerTeams</code>(리그전 시즌 기준 팀 판정)와 <code>_computeTeamProfiles</code>(팀 프로파일 투구 집계)가 <b>원본 이름(bName/pName)을 그대로 키로 사용</b>해, 수비 쪽에서 정규화된 이름으로 조회하면 매칭이 실패했음. → 두 함수 모두 <code>_canonPlayer</code> 경유하도록 수정. 이제 <b>_rebuildCaches · 수비 · 리그전 팀판정 · 팀 프로파일 · 포지션 판정 전 경로</b>에서 병합이 일관되게 적용됨.'},
-      {icon:'🔗', text:'⭐⭐ <b>선수 병합(별칭)이 수비 기록에 적용되지 않던 문제 수정</b> — 닉변·계정변경 병합(<code>_canonPlayer</code>)이 <b>투수명(pName)·타자명(bName)에만 적용</b>되고 <b>수비 집계에 쓰이는 포구자(cPlr)와 포지션별 선수명에는 적용되지 않았음</b>. 그 결과 같은 선수가 이름별로 갈려 수비 기록이 흩어지고, 팀 매칭이 안 되면 아예 어느 팀에도 집계되지 않았음(실제 사례: 2루 59기회가 팀 미상으로 누락되어 해당 팀 2루가 3기회로 표시). → <b>cPlr·9개 포지션명 전부 별칭 정규화</b> 적용. 원본 이름을 <code>_raw*</code>에 보관해 별칭을 바꿔도 항상 원본에서 다시 매핑하므로 중복 적용·오염 없음.'},
-      {icon:'🐛', text:'⭐⭐ <b>리그전 수비 탭이 활성 경기만 집계하던 문제 수정</b> — 리그전의 다른 탭(기록실·팀기록)은 <code>_withSeasonGames()</code>로 <b>해당 시즌 경기를 임시 활성화한 뒤 계산</b>해 비활성 경기까지 포함하는데, <b>수비 탭만 현재 활성 경기에서 뽑아 시즌 표본이 통째로 누락</b>됐음(예: 63경기 시즌인데 36경기만 집계). → 수비도 동일하게 <code>_withSeasonGames</code>를 경유하도록 변경. 이 과정에서 수비 계열 캐시 5종(<code>_defenseDataCache</code>·<code>_lgDefStatsCacheMap</code>·<code>_ifPassCache</code> 등)도 임시 격리하도록 <code>_withSeasonGames</code>를 확장 — 시즌 기준 계산이 활성 경기 캐시를 오염시키지 않음.'},
-      {icon:'🧮', text:'⭐⭐⭐ <b>OAA 기대 아웃률(xOut) 모델 재설계</b> — 분석기 로직을 정확히 재현해(실제 내보내기 대비 평균오차 0.15) 수십 가지 변수·조합을 실측 비교한 뒤 개편. <b>내야</b>: 포지션별 1D 이동거리 커브 → <b>2D 그리드(이동거리 × 발사각, 5×4 + 3×3 이웃 가중 스무딩)</b>. 그룹을 쪼개면 표본이 갈라져 불안정해지던 문제를 이웃 셀 참조로 해결 — 포지션 편차 <b>0.0057→0.0019(3배 개선)</b>하면서 변별력은 오히려 상승. <b>외야</b>: 요구속도(거리/체공시간) → <b>이동거리 기반</b>으로 교체(방향 분리는 유지). 요구속도는 체공시간 결측이 8~21%라 폴백이 잦고 난이도 추정도 부정확했음 — 편차 <b>0.0273→0.0132</b>, 외야 Brier <b>0.1592→0.1114(30% 개선)</b>. 전체 Brier 0.1645→0.1427. <br><b>검증 과정에서 걸러낸 것</b>: 포구 깊이·1루 송구거리는 예측력이 압도적으로 보였으나 <b>귀속 플레이(내야 통과)의 포구점이 외야라 "통과 여부"를 직접 알려주는 데이터 누수</b>였음(귀속 78.6m/아웃률 0% vs 일반 36.0m/90%). 주자 수(단독 설명력 21.8%p)·타자 발속도·EV 추가는 변별력만 떨어뜨려 미채택. <br>실제 영향: 우익수가 유독 과대평가(리그 합 +12.0)되던 것이 정상화, SS는 외야 타구 난이도가 제대로 반영되며 팀 OAA −3.2→+3.2(단 외야는 여전히 리그 최하위).'},
-      {icon:'🗺️', text:'<b>수비 히트맵 구장 최신화</b> — 수비수 상세 페이지의 포구 위치 히트맵이 <b>구버전 근사 좌표</b>(폴 ±69m·중앙 -138m·베이스 27.4 근사)를 쓰고 있던 것을 공통 실측 <code>FIELD</code> 상수 기반 <code>_renderSprayField()</code>로 교체 — 타자 스프레이·타구 분석·팀 탭과 구장 모양이 완전히 통일됨(폴 ±74m·좌우중간 ±54.74/-117.5·중앙 135m·실측 베이스). 전수 점검 결과 구버전 좌표를 쓰던 곳은 이곳 하나였음.'},
-      {icon:'🔗', text:'⭐⭐⭐ <b>OAA 값 불일치 수정 — 전 화면 통일</b> — 같은 선수의 OAA가 <b>화면마다 다르게 표시</b>되던 문제. 수비 분석·수비수 상세·팀 탭·내보내기는 <code>oaaWeighted</code>(난이도 가중 1.0~1.5배)를, 리그전 수비 탭은 순수 OAA를 써서 최대 50% 차이가 났음. → <b>가중치를 제거하고 순수 OAA로 통일</b>. 근거: ① 난이도는 <b>xOut에 이미 반영</b>되어 있어(어려운 타구는 xOut이 낮아 잡으면 큰 플러스) 가중치는 이중 계산 ② 무엇보다 <b>가중을 곱하면 zero-sum이 깨짐</b>(시뮬 2000플레이: 순수합 +0.5 vs 가중합 −51.0) — 구역별·포지션별 캘리브레이션으로 잡아둔 편향이 무의미해짐. 이제 어느 화면에서 봐도 동일한 값이며 리그 합계 0이 유지됨.'},
-      {icon:'🐛', text:'⭐⭐ <b>리그전 수비 탭 — 리그전 외 팀이 섞이던 문제 수정</b> — 리그전 수비 순위에 <b>해당 시즌 리그전이 아닌 팀(TWP·Dt·GE 등)이 표시</b>되던 오류. 원인 두 가지: ① <b>선수 소속팀을 전체 활성 경기 기준으로 판정</b>해, 연습경기 출전이 더 많은 선수가 그 팀으로 분류됨(예: 리그전 SS 50타석 + 연습 TWP 80타석 → TWP로 집계) ② 캐시 키가 경기 수만 반영해 다른 화면의 전체 범위 결과를 재사용. → <b>리그전 팀기록과 동일한 로직 적용</b> — <code>_leaguePlayerTeams(games)</code>로 해당 리그전 경기 기준 소속팀을 재판정하고 리그전 출전팀 화이트리스트로 필터링, 캐시 키에도 경기 ID 내용 반영.'},
-      {icon:'↕️', text:'⭐⭐ <b>표 정렬 기능 추가 (9개 표)</b> — 범용 정렬 헬퍼 <code>_sortTable()</code> 신규 — 헤더 클릭으로 오름/내림 전환, 재렌더 없이 즉시 정렬되고 순번(#)도 자동 재부여. <code>+16.4</code>·<code>81.0%</code>·<code>+3.3%p</code>·<code>.346</code> 같은 표기를 자동 파싱(15종 검증 완료). 적용: <b>리그전 수비</b>(팀 순위·포지션별 선수·개인 랭킹), <b>팀 수비</b>(포지션별·선수별), <b>팀 타격</b>(타자별 요약), <b>팀 투수</b>(투수별 요약·구종 운용), <b>팀 추이</b>(상대별 전적).'},
-      {icon:'🔍', text:'⭐⭐⭐ <b>수비 분석 3화면 대폭 확장 — 리그 대비 상세 비교</b> — 기존엔 팀 OAA 합계나 개인 순위만 볼 수 있어 <b>"어느 팀 어느 포지션이 강한가"</b>를 판단할 수 없었음. 공통 엔진 <code>_leagueDefenseStats()</code> 신규(포지션별 리그 기준·선수×포지션·팀×포지션 일괄 산출) 후 3개 화면에 적용. <br><b>① 리그전 탭에 🛡️수비 서브탭 신설</b> — 팀 수비 순위(OAA·내야/외야 아웃률·리그대비·통과율), 팀×포지션 매트릭스, 포지션별 선수 리더보드(7개 포지션 각각), 개인 OAA 상하위 15명. <br><b>② 팀 탭 수비</b> — 팀×포지션 매트릭스(자기 팀 강조)와 소속 선수의 포지션별 상세(리그 평균 대비 %p·OAA/10기회·통과 수·등급) 추가. <br><b>③ 수비 분석 페이지</b> — 하단에 "리그 대비 상세" 토글 추가(팀×포지션 / 포지션별 선수). <br>모든 표에서 선수 이름 클릭 시 수비수 상세 페이지로 이동, 매트릭스 셀 호버 시 아웃률·기회·OAA 표시.'},
-      {icon:'🧤', text:'⭐⭐⭐ <b>OAA에 수비 범위(range) 반영 — 내야 통과 타구 귀속</b> — 기존 OAA는 <code>cPlr</code>(실제 포구자) 기준이라 <b>내야를 뚫고 나간 땅볼이 외야수 플레이로만 잡히고 내야수 평가에서 빠졌음</b>. 즉 "닿은 공을 처리했나"만 보고 <b>"닿을 수 있느냐"(수비 범위)는 전혀 평가하지 못했음 — 따라가서 잡았다가 세이프면 감점되는데, 아예 손도 못 대고 빠뜨리면 기록조차 안 남는 역설</b>. 실측(36경기): 땅볼 994건 중 <b>166건(16.7%)이 내야 통과</b>, 이들 아웃률 5.9%. → 통과 타구를 <b>타구 방향각(sdeg) 직선 기준 최근접 내야수(12m 이내)</b>에게 귀속(158건, 95.2% 귀속 성공). 결과: 평균 xOut 0.898→0.776, 범위 0.82~0.98→<b>0.66~0.98</b>로 확대되어 "잘해도 +0.05, 놓치면 -0.95"인 비대칭이 완화되고 <b>선수 변별력 1.36→2.20(+62%)</b>. <br>귀속 기준은 실험으로 결정 — 외야 포구지점 직선보다 <b>방향각이 정확</b>(땅볼은 바운드하며 휘므로, 편차 0.019 vs 0.014), 반경은 12m가 최적(15m 이상은 결과 동일, 8m는 미귀속 과다).'},
-      {icon:'📐', text:'⭐⭐ <b>팀 내야 통과율 지표 신규</b> — 땅볼 중 내야를 뚫고 나간 비율. <b>추정이 전혀 없는 직접 집계</b>라 OAA보다 신뢰도가 높음. 팀 수비 탭에 리그 평균 대비·순위와 함께 표시하고 내보내기(<code>teamDefense.infieldPass</code>, schema v17)에도 포함. 실측 리그 평균 16.7%.'},
-      {icon:'🎯', text:'⭐⭐⭐ <b>OAA 내야 커브 포지션별 분리 — 구조적 편향 제거</b> — 기존엔 <b>1루수·2루수·3루수·유격수가 동일한 기대 아웃률 커브</b>를 공유했으나, 실측 결과 같은 이동거리에서 난이도가 크게 달랐음(12~16m 구간: <b>1B 87% vs 2B 48%</b>). 그 결과 1루수는 과대평가(+0.093/기회), 유격수는 과소평가(-0.043/기회)되는 구조적 편향 발생. → <b>1B/2B/3B/SS 각각 독립 커브</b>로 분리(표본 150건 미만이면 통합 커브 폴백 — P·C가 해당). <br><b>2개 시즌 교차 검증</b>: FW 리그전 63경기에서 포지션 편차 0.0590→0.0110(5.4배 개선), 섬머 1R 36경기에서 0.0303→0.0117(2.6배). <b>변별력 손실은 거의 없음</b>(FW 3.82→3.55, 섬머 1.89→1.89 동일). 1루수 편향은 +0.093→-0.004로 소멸. <br>※ 난이도 가중치(w=1-|xOut-0.5|×1.4)와 xOut≥0.85 제외도 함께 실험했으나, 전자는 변별력을 30% 깎고 후자는 오히려 편차를 키워(1B -0.043) 미채택.'},
-      {icon:'🛡️', text:'⭐⭐⭐ <b>OAA 계산 편향 수정 — 구역별 zero-sum 보정</b> — OAA는 리그 전체 합이 0이어야 하는데 실측 결과 <b>-37.1</b>로 크게 벗어나 있었음. 원인은 <b>내야(아웃률 85~95%)와 외야(27~40%)의 스무딩 편향 방향이 반대</b>인데 전체를 한 번에 보정해 상쇄되지 않은 것 — 내야 총합 -66.3 / 외야 +29.2로, <b>9팀 전원 내야 OAA가 마이너스</b>인 비정상 상태였음(내야수는 잘해도 감점되는 구조). → 캘리브레이션을 <b>내야/외야 각각 독립 적용</b>하도록 변경. 결과: 리그 합계 0 복원, 내야가 5팀 플러스/4팀 마이너스로 정상 분포, 팀 순위 왜곡은 1쌍 교체에 그침. 보정 후 OAA가 <code>vsLeague</code>(리그 평균 아웃률 대비) 지표와 결론이 일치해 교차 검증됨.'},
       {icon:'📊', text:'⭐⭐ <b>RA9 · ERA+ 지표 신규 (전 화면 적용)</b> — <b>RA9</b>(9이닝당 실점)는 pWAR 산출의 기반 지표인데 정작 어디에도 표시되지 않던 것을 추가. <b>ERA+</b>(리그평균 RA9 / 본인 ERA × 100, 100=평균)를 신규 도입 — 기존 FIP-와 짝을 이루되 <b>높을수록 좋은</b> 방향이라 직관적. 적용 범위: <b>투수 분석 헤더</b>·<b>선수 카드 상세</b>(ERA 옆 ERA+, 실점 옆 RA9 — ERA+는 130↑ 초록, 70↓ 빨강으로 색상 구분), <b>일반 기록실·리그전 기록실</b>(고정 컬럼으로 승격해 그룹과 무관하게 항상 표시), <b>일반 리더보드</b>(RA9 낮은순·ERA+ 높은순), <b>리그전 리더보드</b>(ERA+ 카드), <b>리그전 팀기록 투수탭</b>(팀 단위 RA9·ERA+), <b>내보내기</b>(개별 투수 advanced + 팀 pitching, schema v16), glossary 정의 포함. 팀 ERA+는 리그 전체 RA9를 기준선으로 산출.'},
       {icon:'🐛', text:'⭐⭐ <b>기록실 투수 실점 컬럼 표시 안 되던 문제 수정</b> — 컬럼 정의(<code>{k:\'runs\', l:\'실점\'}</code>)는 있었으나 <b>컬럼 그룹(기본/피안타/피타구질/전체) 어디에도 <code>runs</code>가 포함되지 않아</b> 필터에서 걸러져 화면에 나오지 않던 상태. <b>일반 기록실·리그전 기록실 양쪽 모두</b> 실점을 고정 컬럼(피안타 뒤·ERA 앞)으로 승격 — ERA 산출 근거이자 기본 기록이므로 그룹과 무관하게 항상 표시. <br>또한 리그전 리더보드 "투수 누적" 섹션이 카드 5개로 4+1 줄바꿈되어 마지막 줄에 가로 스크롤이 생기던 것을 <b>3+2 배치</b>로 분리 — 둘째 줄(실점 적은순·RA9)은 flex가 자동으로 절반씩 나눠 쓰도록.'},
       {icon:'📋', text:'⭐⭐ <b>리그전 팀 기록 — 3탭 구조 개편</b> — 기존 타격/투수 2탭에 <b>📋 일반</b> 탭 신설. 일반 탭에는 <b>경기·승·패·승률·득점·실점·득실차·경기당 득실</b>과 핵심 지표(타율·OPS·홈런·ERA·WHIP·oWAR·pWAR·총WAR)를 모아 순위표 역할을 겸하도록 구성. <b>투수 탭</b>에는 팀 단위 <b>승·패·세이브·홀드·QS·QS+</b>를 추가(개별 투수 결과기록을 팀 합산). 탭 전환 시 현재 탭에 없는 정렬 키면 기본값(일반=승률·타격=OPS·투수=ERA)으로 자동 폴백. <br>※ 타자 개인 득점(R)·타점(RBI)은 원시 데이터로 정확한 산출이 어려워 보류.'},
@@ -19504,17 +19427,63 @@ function populateDefenderSelector(){
 
 // 히트맵 헬퍼 — 스프레이 차트와 같은 좌표 변환 사용
 function _renderDefenseHeatmap(plays, W=460, H=460){
-  // V11.5: 구버전 근사 좌표(폴 ±69m·중앙 -138m·BD 27.4)를 쓰고 있던 것을
-  //        공통 실측 FIELD 상수 기반 _renderSprayField()로 교체 — 다른 화면과 구장 모양 통일
-  const dots = plays.map(p => ({
-    lx: +p.cx || 0,
-    lz: +p.cz || 0,
-    color: p._isOut ? '#39ff8a' : '#ff4560',
-    r: (p._ev >= 105 ? 4 : 3),
-    op: 0.75
-  }));
-  // 구버전과 동일한 표시 크기 유지 (makeSVG는 width:100%라 컨테이너 폭만큼 커지므로 상한 지정)
-  return `<div style="max-width:${W}px;width:100%;margin:0 auto">${_renderSprayField(dots, {w:W, h:H, pad:12})}</div>`;
+  // lx+ = LF(좌측), lx- = RF(우측). HP는 lz=-20
+  const lxAll = plays.flatMap(p => [+p.lx||0, +p.cx||0]);
+  const lzAll = plays.flatMap(p => [+p.lz||0, +p.cz||0]);
+  // 구장 전체가 보이도록 (펜스까지 포함)
+  const lxMin = Math.min(-75, ...lxAll) - 5;
+  const lxMax = Math.max(75, ...lxAll) + 5;
+  const lzMin = Math.min(-145, ...lzAll) - 5;
+  const lzMax = Math.max(-15, ...lzAll) + 5;
+  const PAD = 12;
+  const sW = W - PAD*2;
+  const sH = H - PAD*2;
+  const mPerPx = Math.max((lzMax - lzMin)/sH, (lxMax - lxMin)/sW);
+  // toX: lx+→화면왼쪽(LF), lx-→화면오른쪽(RF) — 스프레이 차트와 동일
+  // toY: lz가 더 음수일수록(외야 멀수록) 화면 위
+  const toX = lx => PAD + (lxMax - lx) / mPerPx;
+  const toY = lz => PAD + (lz - lzMin) / mPerPx;
+  
+  let items = '';
+  items += `<rect x="0" y="0" width="${W}" height="${H}" fill="#0a1a08" rx="4"/>`;
+  
+  // 외야 잔디 다각형 — HP에서 시계 반대 방향 (lz=-20부터 펜스까지)
+  const SQ2 = Math.SQRT2;
+  const HP_pt = {x: toX(0), y: toY(-20)};
+  const LFP = {x: toX(69), y: toY(-89)};     // 좌익폴 (lx+=좌측, 화면 왼쪽)
+  const LC  = {x: toX(50), y: toY(-110)};
+  const CFL = {x: toX(20), y: toY(-138)};
+  const CFR = {x: toX(-20), y: toY(-138)};
+  const RC  = {x: toX(-50), y: toY(-110)};
+  const RFP = {x: toX(-69), y: toY(-89)};    // 우익폴 (lx-=우측, 화면 오른쪽)
+  // 잔디: HP → LFP → LC → CFL → CFR → RC → RFP → HP
+  items += `<polygon points="${[HP_pt, LFP, LC, CFL, CFR, RC, RFP].map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}" fill="#1e4010" stroke="rgba(255,255,255,0.2)" stroke-width="0.7"/>`;
+  // 외야 펜스 라인 강조
+  const fencePts = [LFP, LC, CFL, CFR, RC, RFP].map(p => p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
+  items += `<polyline points="${fencePts}" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>`;
+  // 파울라인
+  items += `<line x1="${HP_pt.x.toFixed(1)}" y1="${HP_pt.y.toFixed(1)}" x2="${LFP.x.toFixed(1)}" y2="${LFP.y.toFixed(1)}" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>`;
+  items += `<line x1="${HP_pt.x.toFixed(1)}" y1="${HP_pt.y.toFixed(1)}" x2="${RFP.x.toFixed(1)}" y2="${RFP.y.toFixed(1)}" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>`;
+  // 다이아몬드 (HP/1루/2루/3루)
+  const BD = 27.4;
+  // 1루: lx- (우측, 화면 오른쪽), 3루: lx+ (좌측, 화면 왼쪽)
+  const B1 = {x: toX(-BD/SQ2), y: toY(-20-BD/SQ2)};
+  const B2 = {x: toX(0), y: toY(-20-BD*SQ2)};
+  const B3 = {x: toX(BD/SQ2), y: toY(-20-BD/SQ2)};
+  items += `<polygon points="${[HP_pt, B1, B2, B3].map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>`;
+  // 베이스 라벨
+  items += `<text x="${B1.x.toFixed(1)}" y="${(B1.y-4).toFixed(1)}" fill="#aaa" font-size="9" text-anchor="middle">1B</text>`;
+  items += `<text x="${B2.x.toFixed(1)}" y="${(B2.y-4).toFixed(1)}" fill="#aaa" font-size="9" text-anchor="middle">2B</text>`;
+  items += `<text x="${B3.x.toFixed(1)}" y="${(B3.y-4).toFixed(1)}" fill="#aaa" font-size="9" text-anchor="middle">3B</text>`;
+  
+  // 포구 점들
+  plays.forEach(p => {
+    const x = toX(+p.cx||0), y = toY(+p.cz||0);
+    const col = p._isOut ? '#39ff8a' : '#ff4560';
+    const r = p._ev >= 105 ? 4 : 3;
+    items += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${col}" opacity="0.7" stroke="#000" stroke-width="0.3"/>`;
+  });
+  return `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="background:#000;border-radius:6px">${items}</svg>`;
 }
 
 function renderDefenderPage(){
@@ -19815,7 +19784,7 @@ function renderDefenderPage(){
     <div class="card section">
       <div class="card-title">🎯 포지션별 수비 성적 — 각 포지션 따로</div>
       <div style="font-size:11px;color:#9ab;margin-bottom:10px;line-height:1.5">
-        ⓘ 같은 포지션 × 거리 × EV × 발사각의 평균 아웃 확률과 비교한 OAA. 
+        ⓘ 같은 포지션 × 거리 × EV × 발사각의 평균과 비교한 가중 OAA. 
         <b>어려운 잡기</b> = 평균 아웃확률 30% 미만 타구 처리. 
         <b>쉬운 놓치기</b> = 70%+ 타구 놓침 (큰 페널티).
       </div>
@@ -19881,23 +19850,10 @@ function _computeDefenseData(){
   
   // V9.9: 비-선수 cPlr 필터 — bName으로 한 번도 등장 안 한 cPlr은 운영진/AI/디버그
   const bNameSet = new Set();
-  G.forEach(d => { if(d.bName) bNameSet.add(_canonPlayer(d.bName)); });
+  G.forEach(d => { if(d.bName) bNameSet.add(d.bName); });
   
   // 인플레이 타구 (call=2, result=1 FlyOut or 2 GroundBall) — bName 등록된 사람만
   // 홈런(result=4)은 result 필터에서 자연스럽게 제외됨
-  // V11.6: 별칭(닉변/계정변경) 정규화 — 기존엔 pName/bName에만 적용되어
-  //        수비 집계(cPlr·포지션Name)는 병합이 안 먹었음 (같은 선수가 다른 이름으로 갈림)
-  const _POSNAME_KEYS=['PName','CName','1BName','2BName','3BName','SSName','LFName','CFName','RFName'];
-  G.forEach(d => {
-    // 원본 이름을 _raw*에 보관 → 별칭이 바뀌어도 항상 원본에서 다시 매핑 (중복 적용 방지)
-    if(d._rawCPlr === undefined) d._rawCPlr = d.cPlr;
-    if(d._rawCPlr) d.cPlr = _canonPlayer(d._rawCPlr);
-    for(const k of _POSNAME_KEYS){
-      const rk='_raw'+k;
-      if(d[rk] === undefined) d[rk] = d[k];
-      if(d[rk]) d[k] = _canonPlayer(d[rk]);
-    }
-  });
   const plays = G.filter(d => 
     +d.call === 2 && (+d.result === 1 || +d.result === 2) 
     && d.cPlr && d.cPlr !== '' && bNameSet.has(d.cPlr)
@@ -19993,61 +19949,6 @@ function _computeDefenseData(){
     d._noiseyDist = isNoiseyDist;
     if(finalPos != null) enriched.push(d);  // 포지션 못 찾거나 노이즈는 제외
   }
-
-  // ═══ V11.5: 내야 통과 땅볼 귀속 (range 반영) ═══
-  // 기존엔 cPlr(실제 포구자) 기준이라 내야를 뚫고 나간 땅볼이 외야수 플레이로만 잡히고
-  // 내야수 평가에서 빠졌음 → "닿은 공 처리력"만 보고 "닿을 수 있느냐"(수비 범위)는 미평가.
-  //   실측(36경기): 땅볼 994건 중 166건(16.7%)이 내야 통과, 이들 아웃률 5.9%
-  //   포함 시 내야 평균 xOut 0.898→0.776, xOut 범위 0.82~0.98→0.66~0.98로 확대되어
-  //   "잘해도 +0.05, 놓치면 -0.95"인 비대칭이 완화됨. 선수 변별력 1.36→2.20(+62%).
-  // 귀속 방식: 타구 방향각(sdeg) 직선에 가장 가까운 내야수, 12m 이내만.
-  //   (외야 포구지점 직선보다 방향각이 정확 — 땅볼은 바운드하며 휘므로. 실측 편차 0.019 vs 0.014)
-  const _IF_ASSIGN_POS = ['1B','2B','3B','SS'];
-  // V11.6: 귀속 반경을 타구 속도(EV)별로 차등 적용
-  //   기존 12m 고정은 "강하게 빠져나간 타구"까지 내야수 책임으로 잡아 과도했음.
-  //   실측(FW 63경기 땅볼 1,521건) — 경로거리를 고정하고 EV만 바꿔 비교:
-  //     거리 4~7m: EV<95 89.3% / 95~110 74.0% / 110~125 41.0% / 125+ 33.3%
-  //     거리 7~10m: EV<95 66.1% / 95~110 57.1% / 110~125 19.6% / 125+ 16.1%
-  //     거리 9~12m: EV 125+ 는 16건 중 0건(0%) — 물리적으로 닿을 수 없는 타구
-  //   원인은 도달시간 — 같은 3m 거리에서 EV<95는 2.41초, EV125+는 1.62초로 반응 여유가 33% 적음.
-  //   → 각 구간의 처리율이 40~50%가 되는 지점을 경계로 설정 (그 이상은 "못 잡는 게 정상")
-  const _assignRadius = (ev) => ev>=125 ? 4 : (ev>=110 ? 6 : (ev>=95 ? 8 : 11));
-  for(let _j=0; _j<plays.length; _j++){
-    const d = plays[_j];
-    if(!(+d.ev > 0) || +d.result === 3) continue;          // 인플레이만
-    if(!(+d.ldeg < 10)) continue;                           // 땅볼만
-    const cPos = findPlayerPos(d);
-    if(!cPos || (cPos!=='LF' && cPos!=='CF' && cPos!=='RF')) continue;   // 외야수가 잡은 것만 = 내야 통과
-    const s = +d.sdeg;
-    if(isNaN(s)) continue;
-    // 홈에서 방향각 s로 뻗은 직선 (sdeg 음수=좌측/lx+)
-    const ax=0, ay=-20, rad=(-s)*Math.PI/180;
-    const bx = ax + 100*Math.sin(rad), by = ay - 100*Math.cos(rad);
-    const L2 = (bx-ax)*(bx-ax) + (by-ay)*(by-ay);
-    let best=null, bestD=Infinity;
-    for(const pk of _IF_ASSIGN_POS){
-      const sx=+d[`${pk}PosX`], sy=+d[`${pk}PosY`];
-      if(sx==null||sy==null||isNaN(sx)||isNaN(sy)) continue;
-      const t = Math.max(0, Math.min(1, ((sx-ax)*(bx-ax)+(sy-ay)*(by-ay))/L2));
-      const px=ax+t*(bx-ax), py=ay+t*(by-ay);
-      const dd=Math.hypot(sx-px, sy-py);
-      if(dd<bestD){ bestD=dd; best=pk; }
-    }
-    if(!best || bestD > _assignRadius(+d.ev||0)) continue;
-    const nm = d[`${best}Name`];
-    if(!nm) continue;
-    // 가상 플레이 레코드 — 그 내야수가 "닿지 못한" 기회로 집계
-    enriched.push({
-      _cplr:nm, _pos:best, _moveDist:bestD,
-      _isOut:false, _isHit:true,
-      _ev:+d.ev||0, _ldeg:+d.ldeg||0, _T:null,
-      _hitDistFromHP:_distM(0,-20,+d.lx||0,+d.lz||0),
-      _catchDir:null, _playerH:(playerHeight[nm]||null),
-      _noiseyDist:false, _assigned:true,        // 귀속 플레이 표식
-      _gameId:d._gameId, _gameName:d._gameName,
-      cPlr:nm, pName:d.pName, bName:d.bName, inn:d.inn, half:d.half
-    });
-  }
   
   // ━━━ V9.9 OAA v3: 포지션별 분리, 이동거리·EV·발사각 baseline ━━━
   // baseline grid: 포지션 × 이동거리(3m) × EV(10mph) × 발사각(GB/LD/FB)
@@ -20104,108 +20005,41 @@ function _computeDefenseData(){
     };
   }
   
-  // ═══ V11.6: xOut 모델 재설계 ═══
-  //  실측 검증(36경기 2,068플레이, 분석기 로직 정확 재현 기준):
-  //   · 내야: 포지션별 1D 거리 커브 → 2D 그리드(거리×발사각). 편차 0.0057→0.0019(3배↓)
-  //   · 외야: 요구속도(거리/체공시간) → 이동거리 기반. 요구속도는 _T 결측이 8~21%라 폴백이 잦았고
-  //           난이도 추정도 부정확했음. 편차 0.0273→0.0132(2배↓), Brier 0.1592→0.1114(30%↓)
-  //   · 방향(전진/후퇴/측면) 분리는 유효하므로 유지
-  //  ※ 포구 깊이·1루 송구거리는 강력해 보이나 귀속 플레이(내야 통과)의 포구점이 외야라
-  //    "통과 여부"를 직접 알려주는 데이터 누수 → 제외.
-  //  ※ 주자 수·타자 발속도·EV 추가는 변별력만 떨어뜨려 미채택.
-  const _ofAll = enriched.filter(p => p._pos && !INFIELD_POS[p._pos]);
+  const _ofFly = enriched.filter(p => p._pos && !INFIELD_POS[p._pos] && p._ldeg>=10 && p._T!=null && p._moveDist!=null);
+  const _ofLine = enriched.filter(p => p._pos && !INFIELD_POS[p._pos] && p._ldeg<10);
   const _ifAll = enriched.filter(p => p._pos && INFIELD_POS[p._pos]);
+  
+  // V10.2: 외야 플라이를 방향(전진/후퇴/측면)으로 분리해 각각 요구속도 커브 — 방향이 37%p 영향.
   const _dirOf = p => (p._catchDir==null ? 'side' : (p._catchDir > 3 ? 'back' : (p._catchDir < -3 ? 'front' : 'side')));
-
-  // ── 내야: 2D 그리드 (이동거리 × 발사각) + 3×3 이웃 가중 스무딩 ──
-  //   1D 커브를 포지션×조건으로 쪼개면 표본이 갈라져 불안정해지는데,
-  //   그리드는 이웃 셀을 빌려 쓰므로 세분화하면서도 안정적.
-  const _IF_NB1 = 5, _IF_NB2 = 4, _IF_MINC = 8;
-  const _ifGrid = (()=>{
-    const md = _ifAll.map(p=>p._moveDist).filter(v=>v!=null && !isNaN(v));
-    const la = _ifAll.map(p=>p._ldeg);
-    if(!md.length) return null;
-    const lo1=Math.min(...md), hi1=Math.max(...md), lo2=Math.min(...la), hi2=Math.max(...la);
-    const w1=Math.max(1e-9,(hi1-lo1)/_IF_NB1), w2=Math.max(1e-9,(hi2-lo2)/_IF_NB2);
-    const cell={}, posFb={};
-    let gN=0, gO=0;
-    _ifAll.forEach(p=>{
-      const pk=p._pos;
-      if(!posFb[pk]) posFb[pk]={n:0,o:0};
-      posFb[pk].n++; gN++;
-      if(p._isOut){ posFb[pk].o++; gO++; }
-      if(p._moveDist==null || isNaN(p._moveDist)) return;
-      const i1=Math.min(_IF_NB1-1,Math.max(0,Math.floor((p._moveDist-lo1)/w1)));
-      const i2=Math.min(_IF_NB2-1,Math.max(0,Math.floor((p._ldeg-lo2)/w2)));
-      const k=pk+'|'+i1+'|'+i2;
-      if(!cell[k]) cell[k]={n:0,o:0};
-      cell[k].n++; if(p._isOut) cell[k].o++;
-    });
-    const gFb = gN>0 ? gO/gN : GLOBAL_OUT_RATE;
-    return (p)=>{
-      if(p._moveDist!=null && !isNaN(p._moveDist)){
-        const i1=Math.min(_IF_NB1-1,Math.max(0,Math.floor((p._moveDist-lo1)/w1)));
-        const i2=Math.min(_IF_NB2-1,Math.max(0,Math.floor((p._ldeg-lo2)/w2)));
-        let s=0,c=0;
-        for(let di=-1;di<=1;di++) for(let dj=-1;dj<=1;dj++){
-          const cc=cell[p._pos+'|'+(i1+di)+'|'+(i2+dj)];
-          if(cc && cc.n>0){ const wt=(di===0&&dj===0)?1:0.5; s+=cc.o*wt; c+=cc.n*wt; }
-        }
-        if(c>=_IF_MINC) return s/c;
-      }
-      const pf=posFb[p._pos];
-      return (pf && pf.n>0) ? pf.o/pf.n : gFb;
-    };
-  })();
-
-  // ── 외야: 이동거리 커브 (포지션 × 방향 × 발사각2단), 표본 부족 시 2단 폴백 ──
-  const _OF_LA_CUT = 25, _OF_MING = 60;
-  const _ofKey1 = p => p._pos+'|'+_dirOf(p)+'|'+(p._ldeg>=_OF_LA_CUT?1:0);
-  const _ofKey2 = p => p._pos+'|'+(p._ldeg>=_OF_LA_CUT?1:0);
-  const _ofCurves = {}, _ofCurves2 = {};
-  (function(){
-    const g1={}, g2={};
-    _ofAll.forEach(p=>{ (g1[_ofKey1(p)]||(g1[_ofKey1(p)]=[])).push(p);
-                        (g2[_ofKey2(p)]||(g2[_ofKey2(p)]=[])).push(p); });
-    Object.keys(g1).forEach(k=>{ if(g1[k].length>=_OF_MING) _ofCurves[k]=_buildCurve(g1[k], p=>p._moveDist, 5, 60); });
-    Object.keys(g2).forEach(k=>{ if(g2[k].length>=_OF_MING) _ofCurves2[k]=_buildCurve(g2[k], p=>p._moveDist, 5, 60); });
-  })();
-  const _ofFallback = _buildCurve(_ofAll, p=>p._moveDist, 5, 60);
-
+  const _ofFlyFront = _ofFly.filter(p=>_dirOf(p)==='front');
+  const _ofFlyBack  = _ofFly.filter(p=>_dirOf(p)==='back');
+  const _ofFlySide  = _ofFly.filter(p=>_dirOf(p)==='side');
+  const _vGet = p => Math.min(8, p._moveDist/p._T);
+  // 방향 그룹 표본이 충분하면 분리 커브, 적으면 전체 커브로 폴백
+  const curveFlyAll = _buildCurve(_ofFly, _vGet, 0.5, 8);
+  const curveFlyFront = _ofFlyFront.length>=30 ? _buildCurve(_ofFlyFront, _vGet, 0.5, 8) : curveFlyAll;
+  const curveFlyBack  = _ofFlyBack.length>=30  ? _buildCurve(_ofFlyBack, _vGet, 0.5, 8)  : curveFlyAll;
+  const curveFlySide  = _ofFlySide.length>=30  ? _buildCurve(_ofFlySide, _vGet, 0.5, 8)  : curveFlyAll;
+  const curveOfFly = (v, dir) => dir==='front'?curveFlyFront(v) : dir==='back'?curveFlyBack(v) : curveFlySide(v);
+  const curveOfLine = _buildCurve(_ofLine, p => p._moveDist, 5, 40);                    // 라이너: 거리 약커브
+  const curveInf = _buildCurve(_ifAll, p => p._moveDist, 3, 21);                        // 내야: 거리 커브
+  
   enriched.forEach(p => {
     if(!p._pos){ p._xOut = GLOBAL_OUT_RATE; p._difficulty = 0.5; return; }
     let xOut;
-    if(INFIELD_POS[p._pos]){
-      xOut = _ifGrid ? _ifGrid(p) : GLOBAL_OUT_RATE;
-    } else {
-      const f = _ofCurves[_ofKey1(p)] || _ofCurves2[_ofKey2(p)] || _ofFallback;
-      xOut = f(p._moveDist);
-    }
+    if(INFIELD_POS[p._pos]) xOut = curveInf(p._moveDist);
+    else if(p._ldeg>=10 && p._T!=null && p._moveDist!=null) xOut = curveOfFly(Math.min(8, p._moveDist/p._T), _dirOf(p));
+    else xOut = curveOfLine(p._moveDist);
     p._xOut = Math.max(0.02, Math.min(0.98, xOut));
   });
-
-  // ═══ V11.5: zero-sum 캘리브레이션 — 내야/외야 구역별로 분리 ═══
-  // 기존엔 리그 전체를 한 번에 보정했으나, 내야(아웃률 85~95%)와 외야(27~40%)의
-  // 스무딩 편향 방향이 반대라 상쇄되지 않았음.
-  //   실측(36경기): 내야 총 OAA -66.3 / 외야 +29.2 → 리그 합 -37.1 (0이어야 정상)
-  //   결과적으로 9팀 전원 내야 OAA가 마이너스 = 내야수는 잘해도 감점되는 구조
-  // → 구역별로 각각 합이 0이 되도록 보정. 순위 왜곡은 거의 없고(1쌍 교체)
-  //   내야 평균 수비수가 0 근처로 정상화되어 포지션 간 비교도 유지됨.
+  // zero-sum 캘리브레이션: 리그 전체 기대 아웃 합 = 실제 아웃 합 (스무딩 편향 제거)
+  // 보정 없으면 전 선수 OAA 합이 0에서 벗어나 평균 수비수도 +/- 점수를 받게 됨
   window._defPerf.curves = performance.now();
-  const _calibZone = (arr) => {
-    if(!arr.length) return 0;
-    const act = arr.filter(p => p._isOut).length;
-    let exp = 0; arr.forEach(p => { exp += p._xOut; });
-    return (act - exp)/arr.length;
-  };
-  const _zoneOf = p => (p._pos && INFIELD_POS[p._pos]) ? 'IF' : 'OF';
-  const _byZone = {IF:[], OF:[]};
-  enriched.forEach(p => { _byZone[_zoneOf(p)].push(p); });
-  const _calibIF = _calibZone(_byZone.IF);
-  const _calibOF = _calibZone(_byZone.OF);
+  const _totActual = enriched.filter(p => p._isOut).length;
+  let _totExp = 0; enriched.forEach(p => { _totExp += p._xOut; });
+  const _calib = enriched.length > 0 ? (_totActual - _totExp)/enriched.length : 0;
   enriched.forEach(p => {
-    const _c = _zoneOf(p)==='IF' ? _calibIF : _calibOF;
-    p._xOut = Math.max(0.02, Math.min(0.98, p._xOut + _c));
+    p._xOut = Math.max(0.02, Math.min(0.98, p._xOut + _calib));
     p._difficulty = 1 - p._xOut;  // 0(쉬움)~1(어려움)
   });
   
@@ -20275,13 +20109,15 @@ function _computeDefenseData(){
     if(p._isHit) s.hits++;
     s.oaa += (p._isOut ? 1 : 0) - p._xOut;
     
-    // V11.5: 난이도 가중치 제거 — 순수 OAA로 통일
-    //   기존엔 난이도별 weight(1.0~1.5)를 곱했으나, 이는 xOut에 이미 반영된 난이도를
-    //   한 번 더 보상하는 이중 계산이었고 무엇보다 zero-sum이 깨졌음
-    //   (실측 시뮬 2000플레이: 순수합 +0.5 vs 가중합 -51.0).
-    //   구역별·포지션별 캘리브레이션으로 잡아둔 편향이 가중치 때문에 무의미해지므로
-    //   oaaWeighted를 순수 OAA와 동일하게 유지 — 전 화면(수비분석·수비수상세·팀탭·리그전·내보내기) 값 통일.
-    s.oaaWeighted += (p._isOut ? 1 : 0) - p._xOut;
+    // 난이도 가중 OAA
+    const diff = p._difficulty;
+    let weight;
+    if(p._isOut){
+      weight = diff >= 0.7 ? 1.5 : diff >= 0.5 ? 1.2 : 1.0;
+    } else {
+      weight = diff >= 0.7 ? 1.0 : diff >= 0.5 ? 1.2 : 1.5;
+    }
+    s.oaaWeighted += ((p._isOut ? 1 : 0) - p._xOut) * weight;
     
     let cat;
     if(p._xOut >= 0.7) cat = s.easy;
@@ -20558,320 +20394,6 @@ function _renderBallMapField(balls){
   });
 }
 
-// ═══ V11.5: 리그 수비 통계 (포지션별 리그 기준 + 선수/팀 집계) ═══
-// 여러 화면(리그전 수비탭·수비 분석·팀 수비탭)에서 공용. gameFilter로 대상 경기 제한 가능.
-// teamMap: {선수명: 팀} — 리그전 탭처럼 "해당 범위 경기 기준 소속팀"을 주입할 때 사용.
-//   미지정이면 _playerTeam(전체 활성 경기 기준)으로 폴백.
-//   (리그전에서 다른 카테고리 소속으로 잘못 분류되던 문제 대응 — 리그전 팀기록과 동일 로직)
-function _leagueDefenseStats(gameIdSet, teamMap){
-  // 캐시 키: 경기 ID 집합의 내용까지 반영 (크기만 같고 내용이 다른 경우 오염 방지)
-  const key = (gameIdSet
-    ? ('g:'+gameIdSet.size+':'+[...gameIdSet].sort().slice(0,40).join(','))
-    : 'all') + (teamMap ? '|tm' : '');
-  if(!window._lgDefStatsCacheMap || window._lgDefStatsCacheMap._k!==G.length)
-    window._lgDefStatsCacheMap={_k:G.length, m:{}};
-  const cached = window._lgDefStatsCacheMap.m[key];
-  if(cached) return cached;
-  const data=_computeDefenseData();
-  if(!data||!data.enriched) return null;
-  const IFA=new Set(['P','C','1B','2B','3B','SS']);
-  const rows=data.enriched.filter(p=>{
-    if(!p._pos) return false;
-    if(gameIdSet && !gameIdSet.has(p._gameId)) return false;
-    return true;
-  });
-  // 포지션별 리그 기준
-  const lgPos={};
-  rows.forEach(p=>{
-    const k=p._pos;
-    if(!lgPos[k]) lgPos[k]={n:0,outs:0,oaa:0};
-    lgPos[k].n++; if(p._isOut)lgPos[k].outs++;
-    lgPos[k].oaa += (p._isOut?1:0) - (p._xOut||0);
-  });
-  Object.values(lgPos).forEach(v=>{ v.outRate=v.n>0?v.outs/v.n:0; });
-  // 선수 × 포지션
-  const pp={};
-  rows.forEach(p=>{
-    const _nm = p._cplr || p.cPlr;
-    if(!_nm) return;
-    const k=_nm+'\u0000'+p._pos;
-    if(!pp[k]) pp[k]={name:_nm,pos:p._pos,n:0,outs:0,oaa:0,assigned:0,team:null};
-    const s=pp[k];
-    s.n++; if(p._isOut)s.outs++;
-    s.oaa += (p._isOut?1:0) - (p._xOut||0);
-    if(p._assigned) s.assigned++;
-  });
-  const players=Object.values(pp).map(s=>{
-    const lg=lgPos[s.pos]||{outRate:0};
-    s.team = teamMap ? (teamMap[s.name] || null) : _playerTeam(s.name,'batter');
-    s.outRate=s.n>0?s.outs/s.n:0;
-    s.vsLeague=(s.outRate-lg.outRate)*100;
-    s.oaaPer10=s.n>0?s.oaa/s.n*10:0;
-    s.lgOutRate=lg.outRate;
-    return s;
-  });
-  // 포지션별 백분위
-  const byPos={};
-  players.forEach(s=>{ (byPos[s.pos]||(byPos[s.pos]=[])).push(s); });
-  Object.values(byPos).forEach(arr=>{
-    const qual=arr.filter(s=>s.n>=5).map(s=>s.oaaPer10).sort((a,b)=>a-b);
-    arr.forEach(s=>{
-      s.pctile = qual.length>=3 ? qual.filter(v=>v<=s.oaaPer10).length/qual.length : null;
-    });
-  });
-  // 팀 × 포지션
-  const teamPos={};
-  players.forEach(s=>{
-    if(!s.team||s.team==='—') return;   // teamMap 사용 시 해당 범위 미출전 선수는 자동 제외
-    const k=s.team+'\u0000'+s.pos;
-    if(!teamPos[k]) teamPos[k]={team:s.team,pos:s.pos,n:0,outs:0,oaa:0,players:[]};
-    const t=teamPos[k];
-    t.n+=s.n; t.outs+=s.outs; t.oaa+=s.oaa; t.players.push(s);
-  });
-  Object.values(teamPos).forEach(t=>{
-    const lg=lgPos[t.pos]||{outRate:0};
-    t.outRate=t.n>0?t.outs/t.n:0;
-    t.vsLeague=(t.outRate-lg.outRate)*100;
-    t.players.sort((a,b)=>b.n-a.n);
-  });
-  // 팀 종합
-  const teams={};
-  Object.values(teamPos).forEach(t=>{
-    if(!teams[t.team]) teams[t.team]={team:t.team,oaa:0,n:0,ifOaa:0,ifN:0,ifOuts:0,ofOaa:0,ofN:0,ofOuts:0,byPos:{}};
-    const T=teams[t.team];
-    T.oaa+=t.oaa; T.n+=t.n; T.byPos[t.pos]=t;
-    if(IFA.has(t.pos)){ T.ifOaa+=t.oaa; T.ifN+=t.n; T.ifOuts+=t.outs; }
-    else { T.ofOaa+=t.oaa; T.ofN+=t.n; T.ofOuts+=t.outs; }
-  });
-  // 리그 내야/외야 기준
-  let lgIfN=0,lgIfO=0,lgOfN=0,lgOfO=0;
-  Object.entries(lgPos).forEach(([pos,v])=>{
-    if(IFA.has(pos)){lgIfN+=v.n;lgIfO+=v.outs;} else {lgOfN+=v.n;lgOfO+=v.outs;}
-  });
-  const lgIfRate=lgIfN>0?lgIfO/lgIfN:0, lgOfRate=lgOfN>0?lgOfO/lgOfN:0;
-  Object.values(teams).forEach(T=>{
-    T.ifOutRate=T.ifN>0?T.ifOuts/T.ifN:0;
-    T.ofOutRate=T.ofN>0?T.ofOuts/T.ofN:0;
-    T.ifVsLeague=(T.ifOutRate-lgIfRate)*100;
-    T.ofVsLeague=(T.ofOutRate-lgOfRate)*100;
-  });
-  const teamArr=Object.values(teams).sort((a,b)=>b.oaa-a.oaa);
-  teamArr.forEach((t,i)=>t.rank=i+1);
-  const v={lgPos, players, byPos, teamPos, teams:teamArr,
-           lgIfRate, lgOfRate, totalPlays:rows.length};
-  window._lgDefStatsCacheMap.m[key]=v;
-  return v;
-}
-
-// ═══ V11.5: 범용 테이블 정렬 (클라이언트 사이드, 재렌더 불필요) ═══
-// data-sort 속성이 있는 th를 클릭하면 tbody 행을 정렬. 숫자/문자 자동 판별.
-function _sortTable(th){
-  const table=th.closest('table'); if(!table) return;
-  const tbody=table.querySelector('tbody'); if(!tbody) return;
-  const idx=Array.from(th.parentNode.children).indexOf(th);
-  const cur=table.getAttribute('data-sort-col');
-  const curDir=table.getAttribute('data-sort-dir')||'desc';
-  const dir = (String(cur)===String(idx) && curDir==='desc') ? 'asc' : 'desc';
-  table.setAttribute('data-sort-col',idx);
-  table.setAttribute('data-sort-dir',dir);
-  const parse=(td)=>{
-    const raw=(td.getAttribute('data-v') != null) ? td.getAttribute('data-v') : td.textContent;
-    const s=String(raw).replace(/[,%p\s]/g,'').replace(/[^\d.+-eE]/g,'');
-    const n=parseFloat(s);
-    return isNaN(n) ? null : n;
-  };
-  const rows=Array.from(tbody.querySelectorAll('tr'));
-  rows.sort((a,b)=>{
-    const ta=a.children[idx], tb=b.children[idx];
-    if(!ta||!tb) return 0;
-    const na=parse(ta), nb=parse(tb);
-    if(na!=null && nb!=null) return dir==='desc' ? nb-na : na-nb;
-    const sa=(ta.textContent||'').trim(), sb=(tb.textContent||'').trim();
-    return dir==='desc' ? sb.localeCompare(sa) : sa.localeCompare(sb);
-  });
-  rows.forEach(r=>tbody.appendChild(r));
-  // 헤더 화살표 갱신
-  th.parentNode.querySelectorAll('th').forEach(h=>{
-    const b=h.getAttribute('data-label');
-    if(b!=null) h.innerHTML=b;
-  });
-  const lbl=th.getAttribute('data-label')||th.textContent;
-  th.innerHTML=lbl+`<span style="color:var(--amber);margin-left:2px">${dir==='desc'?'▼':'▲'}</span>`;
-  // 순번 열(#) 재부여
-  rows.forEach((r,i)=>{
-    const c0=r.children[0];
-    if(c0 && c0.getAttribute('data-rank')!=null) c0.textContent=i+1;
-  });
-}
-// 정렬 가능한 th 생성기
-function _sortTh(label, title){
-  const t=title?` title="${title}"`:'';
-  return `<th data-label="${label}" onclick="_sortTable(this)" style="cursor:pointer;user-select:none"${t}>${label}</th>`;
-}
-
-// ═══ V11.5: 수비 공통 렌더 헬퍼 ═══
-const _DEF_POSORD=['1B','2B','3B','SS','LF','CF','RF'];
-function _defColor(v,hi,lo){ return v>=hi?'#39ff8a':v<=lo?'#ff4560':'var(--text)'; }
-// 포지션별 선수 리더보드 (여러 화면 공용)
-function _renderDefPosLeaderboard(S, opts){
-  opts=opts||{};
-  const minCh=opts.minChances||5;
-  const teamFilter=opts.team||null;
-  let html='';
-  _DEF_POSORD.forEach(pos=>{
-    const lg=S.lgPos[pos];
-    if(!lg||lg.n<20) return;
-    let arr=(S.byPos[pos]||[]).filter(s=>s.n>=minCh);
-    if(teamFilter) arr=arr.filter(s=>s.team===teamFilter);
-    if(!arr.length) return;
-    arr.sort((a,b)=>b.oaaPer10-a.oaaPer10);
-    const rows=arr.map((s,i)=>{
-      const vc=_defColor(s.vsLeague,8,-8);
-      const oc=_defColor(s.oaa,1,-1);
-      const nm=String(s.name).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      return `<tr>
-        <td style="color:var(--muted);font-size:10px">${i+1}</td>
-        <td style="font-weight:600;cursor:pointer;color:var(--amber)" onclick="showPage('defender');setTimeout(()=>{const el=document.getElementById('defender-sel');if(el){el.value='${nm}';el.dispatchEvent(new Event('change'));}},120)">${s.name}</td>
-        <td style="font-size:10px;color:var(--muted)">${s.team||'-'}</td>
-        <td style="font-family:var(--mono)">${s.n}</td>
-        <td style="font-family:var(--mono)">${(s.outRate*100).toFixed(1)}%</td>
-        <td style="font-family:var(--mono);color:${vc};font-weight:${Math.abs(s.vsLeague)>8?'700':'400'}">${s.vsLeague>=0?'+':''}${s.vsLeague.toFixed(1)}%p</td>
-        <td style="font-family:var(--mono);color:${oc};font-weight:600">${s.oaa>=0?'+':''}${s.oaa.toFixed(1)}</td>
-        <td style="font-family:var(--mono);color:${oc}">${s.oaaPer10>=0?'+':''}${s.oaaPer10.toFixed(2)}</td>
-        ${opts.showAssigned!==false?`<td style="font-family:var(--mono);color:${s.assigned>0?'#ff8c44':'var(--muted)'}">${s.assigned||0}</td>`:''}
-        <td style="font-size:10px">${s.pctile!=null?`<span style="color:${_pctColor(s.pctile)}">${_pctTier(s.pctile)}</span>`:'-'}</td>
-      </tr>`;
-    }).join('');
-    html+=`<div class="card section">
-      <div class="card-title">${(_computeDefenseData().posNameKor||{})[pos]||pos}
-        <span style="font-size:10px;color:var(--muted);font-weight:400">리그 아웃률 ${(lg.outRate*100).toFixed(1)}% · ${lg.n}기회 · ${minCh}기회 이상</span></div>
-      <div class="tbl-wrap"><table class="data-table compact"><thead><tr>
-        <th>#</th>${_sortTh('선수')}${_sortTh('팀')}${_sortTh('기회')}${_sortTh('아웃률')}${_sortTh('리그대비','리그 동일 포지션 평균 대비')}
-        ${_sortTh('OAA')}${_sortTh('OAA/10','10기회당 OAA — 기회 수가 다른 선수 비교용')}
-        ${opts.showAssigned!==false?_sortTh('통과','내야를 통과당한 땅볼 수 (수비 범위 지표)'):''}
-        ${_sortTh('등급','같은 포지션 내 등급')}
-      </tr></thead><tbody>${rows}</tbody></table></div>
-    </div>`;
-  });
-  return html||'<div style="padding:20px;text-align:center;color:var(--muted)">표시할 데이터가 없습니다</div>';
-}
-// 팀 × 포지션 매트릭스
-function _renderDefMatrix(S, highlightTeam){
-  const teams=S.teams.map(t=>t.team);
-  if(!teams.length) return '';
-  const head=`<tr><th style="text-align:left">포지션</th><th>리그</th>${teams.map(t=>`<th style="${t===highlightTeam?'color:var(--amber)':''}">${t}</th>`).join('')}</tr>`;
-  const body=_DEF_POSORD.map(pos=>{
-    const lg=S.lgPos[pos];
-    if(!lg||lg.n<20) return '';
-    const cells=teams.map(t=>{
-      const tp=S.teamPos[t+'\u0000'+pos];
-      if(!tp||tp.n<5) return '<td style="color:var(--muted)">-</td>';
-      const c=_defColor(tp.vsLeague,8,-8);
-      return `<td style="font-family:var(--mono);color:${c};font-weight:${Math.abs(tp.vsLeague)>8?'700':'400'};${t===highlightTeam?'background:rgba(245,166,35,0.08)':''}" title="${tp.team} ${pos}: 아웃률 ${(tp.outRate*100).toFixed(1)}% (${tp.n}기회) · OAA ${tp.oaa.toFixed(1)}">${tp.vsLeague>=0?'+':''}${tp.vsLeague.toFixed(1)}</td>`;
-    }).join('');
-    return `<tr><td style="font-weight:600;text-align:left">${(_computeDefenseData().posNameKor||{})[pos]||pos}</td>
-      <td style="font-family:var(--mono);color:var(--muted)">${(lg.outRate*100).toFixed(0)}%</td>${cells}</tr>`;
-  }).join('');
-  return `<div class="card section">
-    <div class="card-title">팀 × 포지션 매트릭스 <span style="font-size:10px;color:var(--muted);font-weight:400">(리그 평균 아웃률 대비 %p · 5기회 이상)</span></div>
-    <div class="tbl-wrap"><table class="data-table compact" style="text-align:center"><thead>${head}</thead><tbody>${body}</tbody></table></div>
-    <div style="font-size:10px;color:var(--muted);margin-top:6px">🟢 +8%p 이상 · 🔴 −8%p 이하 · 셀에 마우스를 올리면 상세</div>
-  </div>`;
-}
-
-// ═══ V11.5: 리그전 수비 탭 ═══
-function _renderLeagueDefense(season, games){
-  try{
-    // V11.6: 다른 리그전 탭과 동일하게 _withSeasonGames로 시즌 전체를 계산
-    //   (기존엔 활성 경기에서만 뽑아 비활성 경기가 통째로 누락됐음)
-    // V11.5 fix: 선수 소속팀도 "이 리그전 경기 기준"으로 재판정
-    //   (리그전 팀기록과 동일 로직 — _leaguePlayerTeams + 리그전 출전팀 화이트리스트)
-    //   전체 활성 경기 기준 _playerTeam을 쓰면 연습경기 소속으로 잘못 분류되어
-    //   리그전에 없는 팀(TWP·Dt·GE 등)이 표에 나타남
-    const PT=_leaguePlayerTeams(games);
-    const lgTeams=new Set();
-    games.forEach(g=>{ const i=_parseGameName(g.name);
-      [i.teamA,i.teamB].forEach(t=>{const n=_normalizeTeam(t); if(n) lgTeams.add(n);}); });
-    const tmap={};
-    Object.entries(PT.batter||{}).forEach(([n,t])=>{ if(t&&lgTeams.has(t)) tmap[n]=t; });
-    Object.entries(PT.pitcher||{}).forEach(([n,t])=>{ if(!tmap[n]&&t&&lgTeams.has(t)) tmap[n]=t; });
-    // 시즌 경기를 임시 활성화한 상태에서 계산 (비활성 경기 포함)
-    const S=_withSeasonGames(games, ()=>_leagueDefenseStats(null, tmap));
-    const PASS=_withSeasonGames(games, ()=>{ try{ return _teamInfieldPassRate(); }catch(_){ return null; } });
-    if(!S||!S.players.length) return '<div style="padding:40px;text-align:center;color:var(--muted)">수비 데이터가 없습니다</div>';
-    if(!window._lgDefView) window._lgDefView='team';
-    const view=window._lgDefView;
-    const vb=(k,l)=>`<button onclick="window._lgDefView='${k}';renderLeaguePage()" style="font-size:12px;padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:${view===k?'var(--amber)':'var(--bg2)'};color:${view===k?'#000':'var(--muted)'};font-weight:600;cursor:pointer">${l}</button>`;
-
-    let html=`<div class="card section" style="padding:10px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-      <span style="font-size:12px;color:var(--muted);margin-right:4px">${season} 수비</span>
-      ${vb('team','🏆 팀 순위')}${vb('matrix','🔢 팀×포지션')}${vb('pos','👤 포지션별 선수')}${vb('best','⭐ 개인 랭킹')}
-    </div>`;
-
-    if(view==='team'){
-      const pass=PASS;
-      const rows=S.teams.map(t=>{
-        const oc=v=>v>1?'#39ff8a':v<-1?'#ff4560':'var(--text)';
-        const vc=v=>v>3?'#39ff8a':v<-3?'#ff4560':'var(--muted)';
-        const p=pass&&pass.byTeam[t.team];
-        return `<tr>
-          <td style="color:var(--muted)">${t.rank}</td>
-          <td style="font-weight:600">${_teamLogoHTML(t.team,20)}${t.team}</td>
-          <td style="font-family:var(--mono);color:${oc(t.oaa)};font-weight:700">${t.oaa>=0?'+':''}${t.oaa.toFixed(1)}</td>
-          <td style="font-family:var(--mono)">${t.n}</td>
-          <td style="font-family:var(--mono);color:${oc(t.ifOaa)}">${t.ifOaa>=0?'+':''}${t.ifOaa.toFixed(1)}</td>
-          <td style="font-family:var(--mono)">${(t.ifOutRate*100).toFixed(1)}%</td>
-          <td style="font-family:var(--mono);color:${vc(t.ifVsLeague)}">${t.ifVsLeague>=0?'+':''}${t.ifVsLeague.toFixed(1)}%p</td>
-          <td style="font-family:var(--mono);color:${oc(t.ofOaa)}">${t.ofOaa>=0?'+':''}${t.ofOaa.toFixed(1)}</td>
-          <td style="font-family:var(--mono)">${(t.ofOutRate*100).toFixed(1)}%</td>
-          <td style="font-family:var(--mono);color:${vc(t.ofVsLeague)}">${t.ofVsLeague>=0?'+':''}${t.ofVsLeague.toFixed(1)}%p</td>
-          <td style="font-family:var(--mono);color:${p?(p.vsLeague<-3?'#39ff8a':p.vsLeague>3?'#ff4560':'var(--muted)'):'var(--muted)'}">${p?p.rate.toFixed(1)+'%':'-'}</td>
-        </tr>`;
-      }).join('');
-      html+=`<div class="card section">
-        <div class="card-title">팀 수비 순위 <span style="font-size:10px;color:var(--muted);font-weight:400">(리그 내야 ${(S.lgIfRate*100).toFixed(1)}% · 외야 ${(S.lgOfRate*100).toFixed(1)}%)</span></div>
-        <div class="tbl-wrap"><table class="data-table"><thead><tr>
-          <th>#</th>${_sortTh('팀')}${_sortTh('OAA')}${_sortTh('기회')}
-          ${_sortTh('내야','내야 OAA')}${_sortTh('아웃률','내야 아웃률')}${_sortTh('리그대비','내야 리그 평균 대비')}
-          ${_sortTh('외야','외야 OAA')}${_sortTh('아웃률','외야 아웃률')}${_sortTh('리그대비','외야 리그 평균 대비')}
-          ${_sortTh('통과율','땅볼 중 내야를 통과한 비율 — 낮을수록 범위 넓음')}
-        </tr></thead><tbody>${rows}</tbody></table></div>
-      </div>`;
-      html+=_renderDefMatrix(S);
-    }
-    else if(view==='matrix'){ html+=_renderDefMatrix(S); }
-    else if(view==='pos'){ html+=_renderDefPosLeaderboard(S,{minChances:5}); }
-    else if(view==='best'){
-      const qual=S.players.filter(s=>s.n>=8);
-      const mk=(arr,title,asc)=>{
-        const rows=arr.map((s,i)=>{
-          const c=s.oaa>=0?'#39ff8a':'#ff4560';
-          return `<tr><td style="color:var(--muted)">${i+1}</td>
-            <td style="font-weight:600">${s.name}</td><td style="font-size:10px;color:var(--muted)">${s.team||'-'}</td>
-            <td>${(_computeDefenseData().posNameKor||{})[s.pos]||s.pos}</td>
-            <td style="font-family:var(--mono)">${s.n}</td>
-            <td style="font-family:var(--mono)">${(s.outRate*100).toFixed(1)}%</td>
-            <td style="font-family:var(--mono);color:${s.vsLeague>0?'#39ff8a':'#ff4560'}">${s.vsLeague>=0?'+':''}${s.vsLeague.toFixed(1)}%p</td>
-            <td style="font-family:var(--mono);color:${c};font-weight:700">${s.oaa>=0?'+':''}${s.oaa.toFixed(1)}</td>
-            <td style="font-family:var(--mono);color:${c}">${s.oaaPer10>=0?'+':''}${s.oaaPer10.toFixed(2)}</td></tr>`;
-        }).join('');
-        return `<div class="card section"><div class="card-title">${title} <span style="font-size:10px;color:var(--muted);font-weight:400">8기회 이상</span></div>
-          <div class="tbl-wrap"><table class="data-table compact"><thead><tr><th>#</th>${_sortTh('선수')}${_sortTh('팀')}${_sortTh('POS')}${_sortTh('기회')}${_sortTh('아웃률')}${_sortTh('리그대비')}${_sortTh('OAA')}${_sortTh('OAA/10')}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
-      };
-      html+=mk(qual.slice().sort((a,b)=>b.oaa-a.oaa).slice(0,15),'⭐ OAA 상위 15');
-      html+=mk(qual.slice().sort((a,b)=>a.oaa-b.oaa).slice(0,15),'🔻 OAA 하위 15');
-    }
-    html+=`<div style="font-size:10px;color:var(--muted);text-align:center;padding:10px;line-height:1.7">
-      ※ OAA는 타구 난이도(포지션별 이동거리 커브) 기반 추정 지표 — 참고용으로 활용<br>
-      리그대비 = 같은 포지션 리그 평균 아웃률과의 차이 · 총 ${S.totalPlays}플레이 분석
-    </div>`;
-    return html;
-  }catch(e){
-    console.error('league defense error',e);
-    return `<div class="card section" style="padding:30px;text-align:center;color:#ff4560">수비 분석 오류: ${e.message}</div>`;
-  }
-}
-
 function renderDefensePage(){
   const root = document.getElementById('defense-content');
   if(!G || !G.length){
@@ -20992,7 +20514,7 @@ function renderDefensePage(){
       <td style="color:var(--muted);font-size:10.5px" title="이 포지션에서 가장 자주 사용한 키">${s.displayHeight ? s.displayHeight.toFixed(1)+'cm' : '-'}</td>
       <td>${s.displayChances}</td>
       <td style="color:${outCol};font-weight:600">${(s.displayOutRate*100).toFixed(1)}%</td>
-      <td style="color:${oaaCol};font-weight:800;font-family:var(--mono)" title="OAA = 실제 아웃 − 기대 아웃률(xOut). 어려운 타구(xOut 낮음)를 잡으면 큰 플러스, 쉬운 타구를 놓치면 큰 마이너스">${s.displayOaa>0?'+':''}${s.displayOaa.toFixed(1)}</td>
+      <td style="color:${oaaCol};font-weight:800;font-family:var(--mono)" title="난이도 가중 OAA — '못 잡을 걸 잡으면 +α, 쉬운 걸 놓치면 -α'">${s.displayOaa>0?'+':''}${s.displayOaa.toFixed(1)}</td>
       <td style="color:${oaa10Col};font-family:var(--mono)">${oaaPer10>0?'+':''}${oaaPer10.toFixed(2)}</td>
       <td style="color:${hardCol};font-family:var(--mono);font-weight:600" title="어려운 타구 (평균 아웃확률 30% 미만)에서 잡은 비율">${s.displayHardTotal>0?s.displayHardCatch.toFixed(0)+'%':'-'}<div style="font-size:9px;color:#789;font-weight:400">${s.displayHardTotal>0?'('+Math.round(s.displayHardCatch/100*s.displayHardTotal)+'/'+s.displayHardTotal+')':''}</div></td>
       <td style="color:${easyCol};font-family:var(--mono);font-weight:600" title="쉬운 타구 (평균 아웃확률 70%+)에서 놓친 수">${s.displayEasyTotal>0?s.displayEasyMiss:'-'}<div style="font-size:9px;color:#789;font-weight:400">${s.displayEasyTotal>0?'/'+s.displayEasyTotal:''}</div></td>
@@ -21045,7 +20567,7 @@ function renderDefensePage(){
           <th title="이 포지션에서 가장 자주 사용한 키 (cm)">키</th>
           <th onclick="setDefenseSort('chances')" style="cursor:pointer">기회${arrow('chances')}</th>
           <th onclick="setDefenseSort('outRate')" style="cursor:pointer">아웃%${arrow('outRate')}</th>
-          <th onclick="setDefenseSort('oaa')" style="cursor:pointer" title="OAA = 실제 아웃 − 기대 아웃률. 리그 합계 0 기준">OAA${arrow('oaa')}</th>
+          <th onclick="setDefenseSort('oaa')" style="cursor:pointer" title="난이도 가중 OAA">OAA${arrow('oaa')}</th>
           <th onclick="setDefenseSort('oaaPer10')" style="cursor:pointer" title="10기회당 OAA — 표본 정규화">OAA/10${arrow('oaaPer10')}</th>
           <th onclick="setDefenseSort('hardCatch')" style="cursor:pointer" title="어려운 타구 처리율 — 평균 아웃확률 30% 미만 타구">어려운 잡기${arrow('hardCatch')}</th>
           <th onclick="setDefenseSort('easyMiss')" style="cursor:pointer" title="쉬운 타구 놓치기 — 평균 아웃확률 70%+ 타구 놓침">쉬운 놓치기${arrow('easyMiss')}</th>
@@ -21056,22 +20578,6 @@ function renderDefensePage(){
       </table>
       </div>
     </div>
-    ${(()=>{  // V11.5: 리그 대비 분석 확장 — 팀×포지션 매트릭스 + 포지션별 선수 랭킹
-      try{
-        const S=_leagueDefenseStats(null);
-        if(!S||!S.players.length) return '';
-        if(!window._defExtView) window._defExtView='off';
-        const v=window._defExtView;
-        const btn=(k,l)=>`<button onclick="window._defExtView='${k}';renderDefensePage()" style="font-size:12px;padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:${v===k?'var(--amber)':'var(--bg2)'};color:${v===k?'#000':'var(--muted)'};font-weight:600;cursor:pointer">${l}</button>`;
-        let out=`<div class="card section" style="padding:10px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-          <span style="font-size:12px;color:var(--muted);margin-right:4px">🔍 리그 대비 상세</span>
-          ${btn('off','접기')}${btn('matrix','팀×포지션')}${btn('pos','포지션별 선수')}
-        </div>`;
-        if(v==='matrix') out+=_renderDefMatrix(S);
-        else if(v==='pos') out+=_renderDefPosLeaderboard(S,{minChances:5});
-        return out;
-      }catch(_){ return ''; }
-    })()}
   `;
 }
 
@@ -21339,7 +20845,7 @@ function renderScoutingPage(){
             return `<button onclick="window._scoutSprayZone=(window._scoutSprayZone==='${v}'?'off':'${v}');renderScoutingPage()" style="padding:3px 9px;font-size:10px;border:1px solid ${on?'var(--amber)':'var(--border)'};background:${on?'rgba(245,166,35,0.15)':'transparent'};color:${on?'var(--amber)':'var(--muted)'};border-radius:4px;cursor:pointer">${l}</button>`;
           }).join('')}
         </div>
-        <div style="max-width:380px;width:100%;margin:8px auto 0">${spray}</div>
+        <div style="text-align:center;margin-top:8px">${spray}</div>
         <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:4px">
           🟡 홈런 · ${state.mode==='pitcher'?'🔴 피안타':'🟢 안타'} · ⚪ 아웃
         </div>
@@ -24500,7 +24006,7 @@ function _computeTeamProfiles(){
   Object.keys(PT.pitcher).forEach(n=>pTeamOf[n]=PT.pitcher[n]);
   for(let i=0;i<G.length;i++){
     const d=G[i];
-    const bt=bTeamOf[_canonPlayer(d.bName)], pt=pTeamOf[_canonPlayer(d.pName)];  // V11.6: 별칭 정규화
+    const bt=bTeamOf[d.bName], pt=pTeamOf[d.pName];
     if(bt&&teams[bt]){
       const T=teams[bt];
       const _sw=_isSwing(d), _wh=_isWhiff(d);
@@ -26184,17 +25690,9 @@ function _withSeasonGames(games, fn){
   const ids=new Set(games.map(g=>g.id)); const saved=new Set(activeGameIds);
   activeGameIds.clear(); ids.forEach(id=>activeGameIds.add(id)); rebuildG();
   const sc=window._recordsCache; window._recordsCache={key:null,batters:null,pitchers:null};
-  // V11.6: 수비 계열 캐시도 임시 격리 — 이 블록 안의 계산이 활성 경기 캐시를 오염시키지 않도록.
-  //   (수비 지표를 시즌 전체 기준으로 뽑으려면 _computeDefenseData를 이 안에서 호출해야 함)
-  const _sd=window._defenseDataCache, _sl=window._lgDefCache, _sm=window._lgDefStatsCacheMap,
-        _sp=window._ifPassCache, _sc2=window._lgClutchCache;
-  window._defenseDataCache=null; window._lgDefCache=null; window._lgDefStatsCacheMap=null;
-  window._ifPassCache=null; window._lgClutchCache=null;
   let out; try{ out=fn(); }catch(e){ out=null; }
   activeGameIds.clear(); saved.forEach(id=>activeGameIds.add(id)); rebuildG();
   window._recordsCache=sc;
-  window._defenseDataCache=_sd; window._lgDefCache=_sl; window._lgDefStatsCacheMap=_sm;
-  window._ifPassCache=_sp; window._lgClutchCache=_sc2;
   return out;
 }
 // V11: 시즌 투수 결과기록 누적 (승/패/세이브/홀드/QS/QS+)
@@ -26250,8 +25748,7 @@ function _leaguePlayerTeams(games){
       const half=+d.half;
       const batTeam = half===1 ? tA : tB;   // 공격팀
       const pitTeam = half===1 ? tB : tA;   // 수비팀
-      // V11.6: 별칭 정규화 — 닉변/계정변경 선수가 이름별로 갈려 팀 매칭이 실패하던 문제
-      const bn=d.bName?_canonPlayer(d.bName):null, pn=d.pName?_canonPlayer(d.pName):null;
+      const bn=d.bName, pn=d.pName;
       if(bn){ bat[bn]=bat[bn]||{}; bat[bn][batTeam]=(bat[bn][batTeam]||0)+1; }
       if(pn){ pit[pn]=pit[pn]||{}; pit[pn][pitTeam]=(pit[pn][pitTeam]||0)+1; }
     });
@@ -26779,7 +26276,7 @@ function renderLeaguePage(){
   if(!window._leagueTab) window._leagueTab = 'home';
   const tab = window._leagueTab;
   const tabBar = `<div style="display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0">
-    ${[['home','🏆 순위'],['leaders','🏅 리더보드'],['records','📚 기록실'],['teams','👥 팀 기록'],['defense','🛡️ 수비']].map(([k,lbl])=>
+    ${[['home','🏆 순위'],['leaders','🏅 리더보드'],['records','📚 기록실'],['teams','👥 팀 기록']].map(([k,lbl])=>
       `<button onclick="window._leagueTab='${k}';renderLeaguePage()" style="font-size:12px;padding:8px 14px;background:none;border:none;border-bottom:2px solid ${tab===k?'var(--amber)':'transparent'};color:${tab===k?'var(--amber)':'var(--muted)'};font-weight:${tab===k?'700':'400'};cursor:pointer">${lbl}</button>`
     ).join('')}
   </div>`;
@@ -26788,7 +26285,6 @@ function renderLeaguePage(){
   if(tab === 'records'){ el.innerHTML = tabBar + _renderLeagueRecords(curSeason, games); return; }
   if(tab === 'teams'){ el.innerHTML = tabBar + _renderLeagueTeamRecords(curSeason, games); return; }
   if(tab === 'leaders'){ el.innerHTML = tabBar + _renderLeagueLeaders(curSeason, games); return; }
-  if(tab === 'defense'){ el.innerHTML = tabBar + _renderLeagueDefense(curSeason, games); return; }
   // 이하 home 탭 (순위표+리더보드+최근경기) — 맨 앞에 탭바 삽입용 마커
   window._leagueTabBar = tabBar;
 
@@ -29702,14 +29198,8 @@ function exportAnalyticsBundle(opts){
   const meta={
     generatedAt:new Date().toISOString(),
     appVersion:'V11.4',
-    schemaVersion:17,
+    schemaVersion:16,
     schemaChanges:{
-      v17_changes:[
-        '🆕 teamDefense.teams[i].infieldPass — 팀 내야 통과율',
-        '   · groundBalls(땅볼 수) / passed(내야 통과) / rate(통과율%) / lgRate(리그 평균) / vsLeague(리그 대비 %p)',
-        '   · 추정 없이 직접 집계(포구자가 외야수면 통과) — OAA보다 신뢰도 높은 수비 범위 지표',
-        '📌 OAA 계산 방식 변경: 내야 통과 땅볼을 방향각 기준 최근접 내야수(12m 이내)에게 귀속 — 수비 범위 반영'
-      ],
       v16_changes:[
         '🆕 pitchers[i].season.advanced에 RA9 / ERAplus 추가',
         '   · RA9 = 실점/이닝×9 (pWAR 산출 기반). WBD는 자책 구분이 없어 ERA와 동일값이나 비교 기준으로 명시',
@@ -30502,14 +29992,9 @@ function exportAnalyticsBundle(opts){
           lgOutRate:+(lgz.ch>0?lgz.outs/lgz.ch:0).toFixed(3),
           vsLeague:+(((z.chances>0?z.outs/z.chances:0)-(lgz.ch>0?lgz.outs/lgz.ch:0))*100).toFixed(1)
         });
-        let _pass={byTeam:{},lgRate:0};
-        try{ _pass=_teamInfieldPassRate(); }catch(_){}
         const arr=Object.values(teams).map(T=>({
           team:T.team,
           oaa:+T.oaa.toFixed(1), chances:T.chances,
-          infieldPass:(()=>{ const x=_pass.byTeam[T.team];
-            return x?{groundBalls:x.gb, passed:x.pass, rate:+x.rate.toFixed(1),
-                      lgRate:+_pass.lgRate.toFixed(1), vsLeague:+x.vsLeague.toFixed(1)}:null; })(),
           outRate:+(T.chances>0?T.outs/T.chances:0).toFixed(3),
           infield:zoneStat(T.infield,lgIf),
           outfield:zoneStat(T.outfield,lgOf),
@@ -30564,10 +30049,6 @@ function exportAnalyticsBundle(opts){
       ra9:'9이닝당 실점 — 실점/이닝×9. pWAR 산출 기반 지표. WBD는 자책 구분이 없어 ERA와 값이 같으나, 이닝이 다른 투수 비교 시 명확한 기준. 낮을수록 좋음',
       eraPlus:'ERA+ — 리그 평균 RA9 / 본인 ERA × 100. 100=리그 평균, 높을수록 좋음(150 = 평균보다 50% 우수). FIP-와 방향이 반대이므로 주의',
       pythWinPct:'피타고리안 기대승률 — 득점^1.83/(득점^1.83+실점^1.83). 실제 승률과 크게 다르면 운·클러치 영향이 컸다는 뜻(높으면 저평가, 낮으면 초과달성)',
-      assignRadius:'내야 통과 타구 귀속 반경 — 타구 방향각 직선에서 이 거리 안에 있던 내야수에게 "닿을 수 있었던 기회"로 귀속. 타구 속도(EV)별 차등: 125+ 4m / 110~125 6m / 95~110 8m / 95 미만 11m. 강한 타구일수록 도달시간이 짧아 반응 여유가 없기 때문(실측: 같은 3m 거리에서 EV<95는 2.41초, EV125+는 1.62초)',
-      infieldPassRate:'내야 통과율 — 땅볼 중 내야를 뚫고 외야로 나간 비율. 추정 없이 직접 집계되며(포구자가 외야수면 통과) 낮을수록 내야 수비 범위가 넓음. OAA와 달리 모델 가정이 없어 신뢰도가 높음',
-      oaa:'OAA(Outs Above Average) = 실제 아웃(1/0) − 기대 아웃률(xOut)의 합. xOut은 리그 실측에서 산출 — 내야는 이동거리×발사각 2D 그리드(포지션별), 외야는 포지션×방향(전진/후퇴/측면)×발사각별 이동거리 커브. 난이도는 xOut에 이미 반영되므로 별도 가중치 없음 — 전 화면 동일 계산',
-      oaaCalibration:'OAA는 내야/외야 구역별로 각각 zero-sum 보정됨 — 각 구역 합계가 0. 내야(아웃률 85~95%)와 외야(27~40%)는 난이도 분포가 달라 전체 일괄 보정 시 내야가 구조적으로 불리해지므로 분리 처리',
       vsLeague:'리그 대비 — 같은 포지션(또는 구역) 리그 평균 아웃률과의 차이(%p). +면 평균보다 잘 잡음',
       oaaPer10:'10기회당 OAA — 기회 수가 다른 선수끼리 비교할 때 사용',
       leaguePctile:'동일 포지션 내 백분위(0~1) — 1에 가까울수록 그 포지션 최상위',
